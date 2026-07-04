@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+---
+
+<Layout title="SERVITECH | Soporte Técnico y Soluciones Informáticas">
+	<!-- Fixed Header -->
+	<Header />
+	
+	<main class="relative bg-black min-h-screen">
+		<!-- Hero Section -->
+		<Hero />
+		
+		<!-- Additional sections (Servicios, Catálogo, Contacto, Footer) will be added here -->
+	</main>
+
+	<!-- Floating WhatsApp CTA -->
+	<WhatsAppButton phone="56912345678" message="Hola SERVITECH, me gustaría solicitar soporte técnico o una asesoría para mi negocio." />
+</Layout>
