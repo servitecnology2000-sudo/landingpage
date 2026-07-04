@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
+import Services from '../components/Services.astro';
+import SecondHand from '../components/SecondHand.astro';
+import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 ---
 
@@ -12,9 +15,16 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 	<main class="relative bg-black min-h-screen">
 		<!-- Hero Section -->
 		<Hero />
-		
-		<!-- Additional sections (Servicios, Catálogo, Contacto, Footer) will be added here -->
+
+		<!-- Services Section -->
+		<Services />
+
+		<!-- Second Hand Catalog -->
+		<SecondHand />
 	</main>
+
+	<!-- Footer -->
+	<Footer />
 
 	<!-- Floating WhatsApp CTA -->
 	<WhatsAppButton phone="56912345678" message="Hola SERVITECH, me gustaría solicitar soporte técnico o una asesoría para mi negocio." />
