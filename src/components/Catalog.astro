@@ -1,0 +1,242 @@
+---
+import Button from './Button.astro';
+
+interface ProductItem {
+	id: string;
+	title: string;
+	category: 'pantallas' | 'teclados' | 'almacenamiento' | 'ram';
+	type: 'Laptop' | 'PC Escritorio' | 'Universal';
+	price: string;
+	badge: string; // "Stock Disponible" or "Opción de Instalación"
+	whatsappText: string;
+}
+
+const products: ProductItem[] = [
+	{
+		id: "pantalla-156-ips",
+		title: "Pantalla LED 15.6\" IPS FHD 30 Pines",
+		category: "pantallas",
+		type: "Laptop",
+		price: "$45.000",
+		badge: "Stock Disponible",
+		whatsappText: "Pantalla LED 15.6\" IPS FHD 30 Pines para Laptop"
+	},
+	{
+		id: "pantalla-14-hd",
+		title: "Pantalla LED 14.0\" HD TN 40 Pines",
+		category: "pantallas",
+		type: "Laptop",
+		price: "$35.000",
+		badge: "Opción de Instalación",
+		whatsappText: "Pantalla LED 14.0\" HD TN 40 Pines para Laptop"
+	},
+	{
+		id: "teclado-lenovo",
+		title: "Teclado Original Lenovo IdeaPad Serie 300/500 (Español)",
+		category: "teclados",
+		type: "Laptop",
+		price: "$28.000",
+		badge: "Stock Disponible",
+		whatsappText: "Teclado Original Lenovo IdeaPad Serie 300/500 Español"
+	},
+	{
+		id: "teclado-mecanico",
+		title: "Teclado Mecánico USB Redragon Kumara RGB",
+		category: "teclados",
+		type: "PC Escritorio",
+		price: "$32.000",
+		badge: "Stock Disponible",
+		whatsappText: "Teclado Mecánico USB Redragon Kumara RGB para PC"
+	},
+	{
+		id: "ssd-500gb",
+		title: "Disco SSD SATA III 2.5\" — 500GB Kingston A400",
+		category: "almacenamiento",
+		type: "Universal",
+		price: "$29.990",
+		badge: "Stock Disponible",
+		whatsappText: "Disco SSD SATA III 500GB Kingston A400"
+	},
+	{
+		id: "ssd-nvme-1tb",
+		title: "SSD NVMe M.2 PCIe Gen3 — 1TB WD Blue SN570",
+		category: "almacenamiento",
+		type: "Universal",
+		price: "$52.000",
+		badge: "Opción de Instalación",
+		whatsappText: "SSD NVMe M.2 1TB WD Blue SN570"
+	},
+	{
+		id: "ram-ddr4-8gb",
+		title: "Memoria RAM DDR4 8GB 3200MHz SODIMM",
+		category: "ram",
+		type: "Laptop",
+		price: "$18.990",
+		badge: "Stock Disponible",
+		whatsappText: "Memoria RAM DDR4 8GB 3200MHz SODIMM para Laptop"
+	},
+	{
+		id: "ram-ddr4-16gb",
+		title: "Memoria RAM DDR4 16GB 3200MHz DIMM Kingston Fury Beast",
+		category: "ram",
+		type: "PC Escritorio",
+		price: "$34.990",
+		badge: "Stock Disponible",
+		whatsappText: "Memoria RAM DDR4 16GB 3200MHz DIMM Kingston Fury Beast para PC"
+	}
+];
+
+const phone = "56912345678";
+
+const categories = [
+	{ id: "todos", label: "Todos" },
+	{ id: "pantallas", label: "Pantallas" },
+	{ id: "teclados", label: "Teclados" },
+	{ id: "almacenamiento", label: "Almacenamiento" },
+	{ id: "ram", label: "RAM" },
+];
+---
+
+<section id="catalogo" class="relative py-24 bg-black overflow-hidden border-t border-white/5">
+	<!-- Background glows -->
+	<div class="absolute top-0 left-1/3 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[160px] pointer-events-none"></div>
+	<div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+	<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
+		<!-- Section Header -->
+		<div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-semibold uppercase tracking-wider">
+				Catálogo de Repuestos
+			</div>
+			<h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+				Repuestos y Componentes <br class="hidden sm:inline" />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
+					con Stock Garantizado
+				</span>
+			</h2>
+			<p class="text-slate-400 text-base md:text-lg">
+				Más de 20 artículos verificados y listos para entrega. Pantallas, teclados, almacenamiento y memorias para laptops y PCs de escritorio.
+			</p>
+		</div>
+
+		<!-- Filter Buttons -->
+		<div class="flex flex-wrap items-center justify-center gap-3 mb-12">
+			{categories.map((cat) => (
+				<button
+					data-filter={cat.id}
+					class:list={[
+						"catalog-filter px-5 py-2.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer border",
+						cat.id === "todos"
+							? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_15px_rgba(0,207,255,0.3)]"
+							: "bg-white/5 text-slate-400 border-white/10 hover:text-white hover:border-brand-cyan/30 hover:bg-white/10"
+					]}
+				>
+					{cat.label}
+				</button>
+			))}
+		</div>
+
+		<!-- Products Grid -->
+		<div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+			{products.map((product) => {
+				const msg = encodeURIComponent(`Hola SERVITECH, me interesa el repuesto: ${product.whatsappText} que vi en su catálogo web. ¿Tienen disponibilidad o valor con instalación?`);
+				const waLink = `https://wa.me/${phone}?text=${msg}`;
+
+				const typeColors: Record<string, string> = {
+					"Laptop": "text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20",
+					"PC Escritorio": "text-purple-400 bg-purple-400/10 border-purple-400/20",
+					"Universal": "text-amber-400 bg-amber-400/10 border-amber-400/20",
+				};
+
+				return (
+					<div
+						data-category={product.category}
+						class="catalog-card group flex flex-col justify-between p-6 rounded-2xl border border-white/5 bg-zinc-950/50 backdrop-blur-sm transition-all duration-300 hover:border-brand-green/25 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,255,127,0.04)] overflow-hidden"
+					>
+						<div>
+							<!-- Type badge + Category -->
+							<div class="flex items-center justify-between gap-2 mb-4">
+								<span class={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${typeColors[product.type]}`}>
+									{product.type}
+								</span>
+								<span class="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+									{product.category}
+								</span>
+							</div>
+
+							<!-- Title -->
+							<h3 class="text-sm font-bold text-white leading-snug mb-4 min-h-[2.5rem] group-hover:text-brand-green transition-colors duration-300">
+								{product.title}
+							</h3>
+
+							<!-- Badge (Stock / Installation) -->
+							<div class="flex items-center gap-2 mb-5">
+								<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse shrink-0"></span>
+								<span class="text-xs font-semibold text-brand-green">{product.badge}</span>
+							</div>
+
+							<!-- Price -->
+							<div class="flex items-baseline gap-1.5 mb-6">
+								<span class="text-2xl font-extrabold text-white tracking-tight">{product.price}</span>
+								<span class="text-[10px] text-slate-500 uppercase font-semibold">CLP</span>
+							</div>
+						</div>
+
+						<!-- CTA -->
+						<a
+							href={waLink}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-brand-green/10 border border-brand-green/20 text-brand-green text-xs font-semibold tracking-wide hover:bg-brand-green hover:text-black transition-all duration-300 active:scale-95"
+						>
+							<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+							Consultar
+						</a>
+					</div>
+				);
+			})}
+		</div>
+	</div>
+</section>
+
+<script>
+	const filterButtons = document.querySelectorAll('.catalog-filter');
+	const cards = document.querySelectorAll('.catalog-card');
+
+	function setActiveFilter(activeBtn: Element) {
+		// Reset all buttons to inactive state
+		filterButtons.forEach(btn => {
+			btn.classList.remove('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
+			btn.classList.add('bg-white/5', 'text-slate-400', 'border-white/10');
+		});
+		// Activate selected button
+		activeBtn.classList.remove('bg-white/5', 'text-slate-400', 'border-white/10');
+		activeBtn.classList.add('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
+	}
+
+	filterButtons.forEach(btn => {
+		btn.addEventListener('click', () => {
+			const filter = btn.getAttribute('data-filter');
+			setActiveFilter(btn);
+
+			cards.forEach(card => {
+				const category = card.getAttribute('data-category');
+				const el = card as HTMLElement;
+
+				if (filter === 'todos' || category === filter) {
+					el.style.display = '';
+					// Trigger a subtle fade-in
+					el.style.opacity = '0';
+					el.style.transform = 'translateY(8px)';
+					requestAnimationFrame(() => {
+						el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+						el.style.opacity = '1';
+						el.style.transform = 'translateY(0)';
+					});
+				} else {
+					el.style.display = 'none';
+				}
+			});
+		});
+	});
+</script>
