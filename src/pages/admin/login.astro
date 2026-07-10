@@ -1,8 +1,11 @@
 ---
 export const prerender = false;
 
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
+
 const cookie = Astro.cookies.get('admin_session');
-if (cookie?.value === import.meta.env.ADMIN_SECRET) {
+if (cookie?.value === adminSecret) {
 	return Astro.redirect('/admin');
 }
 
@@ -10,13 +13,13 @@ let error = '';
 if (Astro.request.method === 'POST') {
 	const formData = await Astro.request.formData();
 	const password = formData.get('password')?.toString();
-	if (password === import.meta.env.ADMIN_SECRET) {
-		Astro.cookies.set('admin_session', import.meta.env.ADMIN_SECRET, {
+	if (password === adminSecret) {
+		Astro.cookies.set('admin_session', adminSecret, {
 			path: '/',
 			httpOnly: true,
 			secure: true,
 			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 // 24 hours
+			maxAge: 60 * 60 * 24
 		});
 		return Astro.redirect('/admin');
 	} else {

@@ -3,9 +3,11 @@ export const prerender = false;
 
 import { supabase } from '../../../lib/supabase';
 
-// Auth guard
+// Auth guard — read ADMIN_SECRET at runtime via process.env
+const _runtimeEnv = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _runtimeEnv['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
 const cookie = Astro.cookies.get('admin_session');
-if (cookie?.value !== import.meta.env.ADMIN_SECRET) {
+if (cookie?.value !== adminSecret) {
 	return Astro.redirect('/admin/login');
 }
 
@@ -61,11 +63,11 @@ if (Astro.request.method === 'POST') {
 				const fileExt = file.name.split('.').pop();
 				const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 				const arrayBuffer = await file.arrayBuffer();
-				const buffer = Buffer.from(arrayBuffer);
+				const fileData = new Uint8Array(arrayBuffer);
 
 				const { data: uploadData, error: uploadError } = await supabase.storage
 					.from('imagenes-repuestos')
-					.upload(fileName, buffer, {
+					.upload(fileName, fileData, {
 						contentType: file.type
 					});
 
