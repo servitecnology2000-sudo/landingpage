@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 
 // Auth guard — runtime read
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
-const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
 const cookie = Astro.cookies.get('admin_session');
 if (cookie?.value !== adminSecret) {
 	return Astro.redirect('/admin/login');
