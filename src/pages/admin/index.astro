@@ -22,13 +22,18 @@ if (Astro.request.method === 'POST') {
 	return Astro.redirect('/admin');
 }
 
-// Fetch all products
-const { data: products } = await supabase
-	.from('repuestos_productos')
-	.select('*')
-	.order('created_at', { ascending: false });
+// Fetch all products (graceful)
+let items: any[] = [];
+try {
+	const { data: products } = await supabase
+		.from('repuestos_productos')
+		.select('*')
+		.order('created_at', { ascending: false });
+	items = products ?? [];
+} catch (e: any) {
+	console.error('[Admin] Supabase fetch error:', e?.message);
+}
 
-const items = products ?? [];
 ---
 
 <html lang="es">
