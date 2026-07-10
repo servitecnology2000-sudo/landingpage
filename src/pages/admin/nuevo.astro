@@ -1,0 +1,295 @@
+---
+export const prerender = false;
+
+import { supabase } from '../../lib/supabase';
+
+// Auth guard
+const cookie = Astro.cookies.get('admin_session');
+if (cookie?.value !== import.meta.env.ADMIN_SECRET) {
+	return Astro.redirect('/admin/login');
+}
+
+let errorMsg = '';
+let successMsg = '';
+
+if (Astro.request.method === 'POST') {
+	try {
+		const formData = await Astro.request.formData();
+		
+		const sku = formData.get('sku')?.toString().trim() || '';
+		const titulo = formData.get('titulo')?.toString().trim() || '';
+		const slug = formData.get('slug')?.toString().trim() || '';
+		const descripcion = formData.get('descripcion')?.toString().trim() || '';
+		const categoria = formData.get('categoria')?.toString().trim() || '';
+		const estado = formData.get('estado')?.toString().trim() || 'Usado Verificado';
+		const precio_venta = parseFloat(formData.get('precio_venta')?.toString() || '0');
+		const precio_costo = parseFloat(formData.get('precio_costo')?.toString() || '0');
+		const stock_disponible = formData.get('stock_disponible') === 'true';
+		
+		// Parse compatibility tags (comma separated)
+		const compatibilidadInput = formData.get('compatibilidad')?.toString() || '';
+		const compatibilidad = compatibilidadInput
+			.split(',')
+			.map(tag => tag.trim())
+			.filter(tag => tag.length > 0);
+
+		// Parse SEO fields
+		const seo_titulo = formData.get('seo_titulo')?.toString().trim() || '';
+		const seo_descripcion = formData.get('seo_descripcion')?.toString().trim() || '';
+		const seo_keywords = formData.get('seo_keywords')?.toString().trim() || '';
+
+		// Process up to 3 image uploads
+		const files = formData.getAll('imagenes');
+		const publicUrls: string[] = [];
+
+		for (const fileItem of files) {
+			const file = fileItem as File;
+			if (file && file.size > 0) {
+				const fileExt = file.name.split('.').pop();
+				const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+				const arrayBuffer = await file.arrayBuffer();
+				const buffer = Buffer.from(arrayBuffer);
+
+				const { data: uploadData, error: uploadError } = await supabase.storage
+					.from('imagenes-repuestos')
+					.upload(fileName, buffer, {
+						contentType: file.type
+					});
+
+				if (uploadError) {
+					console.error('Storage Upload Error:', uploadError);
+					throw new Error(`Error subiendo imagen: ${uploadError.message}`);
+				}
+
+				const { data: urlData } = supabase.storage
+					.from('imagenes-repuestos')
+					.getPublicUrl(fileName);
+
+				if (urlData?.publicUrl) {
+					publicUrls.push(urlData.publicUrl);
+				}
+			}
+		}
+
+		// Insert into DB
+		const { data: insertData, error: insertError } = await supabase
+			.from('repuestos_productos')
+			.insert({
+				sku,
+				titulo,
+				slug,
+				descripcion,
+				categoria,
+				estado,
+				precio_venta,
+				precio_costo,
+				compatibilidad,
+				stock_disponible,
+				imagenes: publicUrls,
+				seo_titulo,
+				seo_descripcion,
+				seo_keywords
+			});
+
+		if (insertError) {
+			console.error('Database Insert Error:', insertError);
+			throw new Error(`Error en base de datos: ${insertError.message}`);
+		}
+
+		successMsg = 'Producto agregado exitosamente';
+		return Astro.redirect('/admin');
+	} catch (err: any) {
+		errorMsg = err.message || 'Ocurrió un error inesperado';
+	}
+}
+---
+
+<html lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
+	<meta name="robots" content="noindex, nofollow" />
+	<title>SERVITECH Admin — Nuevo Producto</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { font-family: 'Inter', sans-serif; background: #09090b; color: #e2e8f0; min-height: 100vh; padding-bottom: 4rem; }
+		.topbar { background: rgba(24,24,27,0.9); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
+		.brand { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.25rem; background: linear-gradient(to right, #00FF7F, #00CFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+		.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; border: none; }
+		.btn-primary { background: linear-gradient(to right, #00CFFF, #00FF7F); color: black; }
+		.btn-primary:hover { opacity: 0.9; }
+		.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+		.btn-outline:hover { border-color: #00CFFF; color: #00CFFF; }
+		.container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+		h2 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); pb: 0.75rem; }
+		.card { background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 2rem; }
+		.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+		.col-full { grid-column: span 2; }
+		.field { display: flex; flex-col: column; display: flex; flex-direction: column; gap: 0.4rem; }
+		label { font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+		input, select, textarea { width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; color: white; font-size: 0.875rem; outline: none; transition: border-color 0.3s; }
+		input:focus, select:focus, textarea:focus { border-color: #00CFFF; }
+		textarea { height: 100px; resize: vertical; }
+		.checkbox-field { flex-direction: row; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+		.checkbox-field input { width: auto; cursor: pointer; }
+		.section-title { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: #00CFFF; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem; }
+		.actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; }
+		.error-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; }
+		.success-box { background: rgba(0,255,127,0.1); border: 1px solid rgba(0,255,127,0.2); color: #00ff7f; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; }
+		@media (max-width: 640px) {
+			.form-grid { grid-template-columns: 1fr; }
+			.col-full { grid-column: span 1; }
+		}
+	</style>
+</head>
+<body>
+	<div class="topbar">
+		<span class="brand">SERVITECH Admin</span>
+		<a href="/admin" class="btn btn-outline">Volver al Panel</a>
+	</div>
+
+	<div class="container">
+		<h2>Registrar Nuevo Repuesto / Componente</h2>
+
+		{errorMsg && <div class="error-box">{errorMsg}</div>}
+		{successMsg && <div class="success-box">{successMsg}</div>}
+
+		<div class="card">
+			<form method="POST" enctype="multipart/form-data">
+				<div class="form-grid">
+					<!-- SKU -->
+					<div class="field">
+						<label for="sku">SKU (Número de Parte)</label>
+						<input type="text" id="sku" name="sku" placeholder="Ej: PANT-156-IPS" required />
+					</div>
+
+					<!-- Categoría -->
+					<div class="field">
+						<label for="categoria">Categoría</label>
+						<select id="categoria" name="categoria" required>
+							<option value="pantallas">Pantallas</option>
+							<option value="teclados">Teclados</option>
+							<option value="almacenamiento">Almacenamiento</option>
+							<option value="ram">RAM</option>
+						</select>
+					</div>
+
+					<!-- Título -->
+					<div class="field col-full">
+						<label for="titulo">Título de Producto</label>
+						<input type="text" id="titulo" name="titulo" placeholder="Ej: Pantalla LED 15.6 pulgadas IPS" required />
+					</div>
+
+					<!-- Slug (Autogenerado) -->
+					<div class="field col-full">
+						<label for="slug">Slug (URL amigable)</label>
+						<input type="text" id="slug" name="slug" placeholder="pantalla-led-15-6-ips" required />
+					</div>
+
+					<!-- Descripción -->
+					<div class="field col-full">
+						<label for="descripcion">Descripción</label>
+						<textarea id="descripcion" name="descripcion" placeholder="Menciona detalles técnicos del repuesto..." required></textarea>
+					</div>
+
+					<!-- Estado -->
+					<div class="field">
+						<label for="estado">Estado del Repuesto</label>
+						<select id="estado" name="estado">
+							<option value="Usado Verificado">Usado Verificado</option>
+							<option value="Nuevo">Nuevo</option>
+							<option value="Reacondicionado">Reacondicionado</option>
+						</select>
+					</div>
+
+					<!-- Stock disponible -->
+					<div class="field checkbox-field">
+						<input type="checkbox" id="stock_disponible" name="stock_disponible_check" checked />
+						<input type="hidden" id="stock_disponible_val" name="stock_disponible" value="true" />
+						<label for="stock_disponible">Disponible en Stock</label>
+					</div>
+
+					<!-- Precio Venta -->
+					<div class="field">
+						<label for="precio_venta">Precio de Venta (CLP)</label>
+						<input type="number" id="precio_venta" name="precio_venta" placeholder="Ej: 45000" min="0" required />
+					</div>
+
+					<!-- Precio Costo (Oculto en público) -->
+					<div class="field">
+						<label for="precio_costo">Precio de Costo (Oculto) (CLP)</label>
+						<input type="number" id="precio_costo" name="precio_costo" placeholder="Ej: 22000" min="0" required />
+					</div>
+
+					<!-- Compatibilidad -->
+					<div class="field col-full">
+						<label for="compatibilidad">Compatibilidad (Modelos separados por comas)</label>
+						<input type="text" id="compatibilidad" name="compatibilidad" placeholder="Ej: Lenovo ThinkPad E15, Dell Latitude 3510, HP ProBook 450 G7" />
+					</div>
+
+					<!-- Imágenes (Max 3) -->
+					<div class="field col-full">
+						<label>Imágenes de Producto (Subir hasta 3 imágenes)</label>
+						<input type="file" name="imagenes" accept="image/*" style="margin-bottom:0.5rem;" />
+						<input type="file" name="imagenes" accept="image/*" style="margin-bottom:0.5rem;" />
+						<input type="file" name="imagenes" accept="image/*" />
+					</div>
+
+					<!-- SEO Title -->
+					<div class="col-full section-title">SEO Dinámico</div>
+
+					<div class="field col-full">
+						<label for="seo_titulo">Título SEO (meta title)</label>
+						<input type="text" id="seo_titulo" name="seo_titulo" placeholder="Ej: Comprar Pantalla 15.6 IPS en Santiago" />
+					</div>
+
+					<div class="field col-full">
+						<label for="seo_descripcion">Meta Descripción</label>
+						<textarea id="seo_descripcion" name="seo_descripcion" placeholder="Ej: Pantalla original usada de repuesto testeada con garantía de stock..."></textarea>
+					</div>
+
+					<div class="field col-full">
+						<label for="seo_keywords">Keywords (separadas por comas)</label>
+						<input type="text" id="seo_keywords" name="seo_keywords" placeholder="Ej: repuesto notebook, pantalla lenovo, repuestos cctv" />
+					</div>
+
+				</div>
+
+				<div class="actions">
+					<a href="/admin" class="btn btn-outline">Cancelar</a>
+					<button type="submit" class="btn btn-primary" style="padding:0.75rem 1.5rem;">Guardar Producto</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script>
+		// Automatically generate slug from Title
+		const tituloInput = document.getElementById('titulo') as HTMLInputElement;
+		const slugInput = document.getElementById('slug') as HTMLInputElement;
+
+		tituloInput?.addEventListener('input', () => {
+			const text = tituloInput.value;
+			const slug = text
+				.toLowerCase()
+				.normalize('NFD') // remove accents
+				.replace(/[\u0300-\u036f]/g, '')
+				.replace(/[^a-z0-9\s-]/g, '') // remove special characters
+				.trim()
+				.replace(/\s+/g, '-') // spaces to dashes
+				.replace(/-+/g, '-'); // collapse multiple dashes
+			slugInput.value = slug;
+		});
+
+		// Sync stock checkbox to hidden input
+		const stockCheckbox = document.getElementById('stock_disponible') as HTMLInputElement;
+		const stockHidden = document.getElementById('stock_disponible_val') as HTMLInputElement;
+		stockCheckbox?.addEventListener('change', () => {
+			stockHidden.value = stockCheckbox.checked ? 'true' : 'false';
+		});
+	</script>
+</body>
+</html>

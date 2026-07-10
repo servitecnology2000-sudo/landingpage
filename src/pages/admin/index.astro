@@ -1,0 +1,164 @@
+---
+export const prerender = false;
+
+import { supabase } from '../../lib/supabase';
+
+// Auth guard
+const cookie = Astro.cookies.get('admin_session');
+if (cookie?.value !== import.meta.env.ADMIN_SECRET) {
+	return Astro.redirect('/admin/login');
+}
+
+// Handle DELETE
+if (Astro.request.method === 'POST') {
+	const formData = await Astro.request.formData();
+	const action = formData.get('action')?.toString();
+	const id = formData.get('id')?.toString();
+	if (action === 'delete' && id) {
+		await supabase.from('repuestos_productos').delete().eq('id', id);
+	}
+	return Astro.redirect('/admin');
+}
+
+// Fetch all products
+const { data: products } = await supabase
+	.from('repuestos_productos')
+	.select('*')
+	.order('created_at', { ascending: false });
+
+const items = products ?? [];
+---
+
+<html lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
+	<meta name="robots" content="noindex, nofollow" />
+	<title>SERVITECH Admin — Dashboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { font-family: 'Inter', sans-serif; background: #09090b; color: #e2e8f0; min-height: 100vh; }
+		.topbar { background: rgba(24,24,27,0.9); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
+		.brand { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.25rem; background: linear-gradient(to right, #00FF7F, #00CFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+		.topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
+		.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; border: none; }
+		.btn-primary { background: linear-gradient(to right, #00CFFF, #00FF7F); color: black; }
+		.btn-primary:hover { opacity: 0.9; }
+		.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+		.btn-outline:hover { border-color: #00CFFF; color: #00CFFF; }
+		.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+		.btn-danger:hover { background: #ef4444; color: white; }
+		.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+		.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+		.stat-card { background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; }
+		.stat-value { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: white; }
+		.stat-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+		.table-wrap { background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; overflow: hidden; }
+		table { width: 100%; border-collapse: collapse; }
+		th { text-align: left; padding: 0.75rem 1rem; font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); }
+		td { padding: 0.75rem 1rem; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
+		tr:hover td { background: rgba(255,255,255,0.02); }
+		.sku { font-family: monospace; color: #00CFFF; font-size: 0.7rem; }
+		.stock-yes { color: #00FF7F; }
+		.stock-no { color: #f87171; }
+		.thumb { width: 40px; height: 40px; border-radius: 0.375rem; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+		.empty { text-align: center; padding: 4rem 2rem; color: #64748b; }
+		.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+		.actions-cell { display: flex; gap: 0.4rem; align-items: center; }
+		@media (max-width: 768px) {
+			.hide-mobile { display: none; }
+			td, th { padding: 0.5rem; font-size: 0.7rem; }
+		}
+	</style>
+</head>
+<body>
+	<div class="topbar">
+		<span class="brand">SERVITECH Admin</span>
+		<div class="topbar-actions">
+			<a href="/admin/nuevo" class="btn btn-primary">+ Nuevo Producto</a>
+			<a href="/" class="btn btn-outline">Ver Sitio</a>
+			<a href="/admin/logout" class="btn btn-outline">Cerrar sesión</a>
+		</div>
+	</div>
+
+	<div class="container">
+		<!-- Stats -->
+		<div class="stats">
+			<div class="stat-card">
+				<div class="stat-value">{items.length}</div>
+				<div class="stat-label">Productos totales</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" style="color: #00FF7F;">{items.filter(p => p.stock_disponible).length}</div>
+				<div class="stat-label">Con stock</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" style="color: #f87171;">{items.filter(p => !p.stock_disponible).length}</div>
+				<div class="stat-label">Sin stock</div>
+			</div>
+		</div>
+
+		<!-- Products Table -->
+		<div class="table-wrap">
+			{items.length === 0 ? (
+				<div class="empty">
+					<div class="empty-icon">📦</div>
+					<p>No hay productos registrados.</p>
+					<p style="margin-top: 0.5rem;"><a href="/admin/nuevo" class="btn btn-primary" style="display: inline-flex; margin-top: 1rem;">+ Crear primer producto</a></p>
+				</div>
+			) : (
+				<table>
+					<thead>
+						<tr>
+							<th>Img</th>
+							<th>SKU</th>
+							<th>Título</th>
+							<th class="hide-mobile">Categoría</th>
+							<th class="hide-mobile">Precio</th>
+							<th>Stock</th>
+							<th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						{items.map(p => (
+							<tr>
+								<td>
+									{p.imagenes?.[0] ? (
+										<img src={p.imagenes[0]} alt="" class="thumb" />
+									) : (
+										<div class="thumb" style="background: #27272a; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:#64748b;">—</div>
+									)}
+								</td>
+								<td><span class="sku">{p.sku}</span></td>
+								<td>{p.titulo}</td>
+								<td class="hide-mobile">{p.categoria}</td>
+								<td class="hide-mobile">${p.precio_venta?.toLocaleString('es-CL')}</td>
+								<td>
+									{p.stock_disponible ? (
+										<span class="stock-yes">● Sí</span>
+									) : (
+										<span class="stock-no">● No</span>
+									)}
+								</td>
+								<td>
+									<div class="actions-cell">
+										<a href={`/admin/editar/${p.id}`} class="btn btn-outline" style="padding:0.35rem 0.6rem;">Editar</a>
+										<form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este producto?');">
+											<input type="hidden" name="action" value="delete" />
+											<input type="hidden" name="id" value={p.id} />
+											<button type="submit" class="btn btn-danger" style="padding:0.35rem 0.6rem;">Eliminar</button>
+										</form>
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			)}
+		</div>
+	</div>
+</body>
+</html>
