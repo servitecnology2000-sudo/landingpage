@@ -9,12 +9,18 @@ import Button from '../../components/Button.astro';
 
 const { slug } = Astro.params;
 
-// Fetch product details
-const { data: product } = await supabase
-	.from('repuestos_productos')
-	.select('*')
-	.eq('slug', slug)
-	.single();
+// Fetch product details (graceful)
+let product: any = null;
+try {
+	const { data } = await supabase
+		.from('repuestos_productos')
+		.select('*')
+		.eq('slug', slug)
+		.single();
+	product = data;
+} catch (e: any) {
+	console.error('[repuesto] Supabase error:', e?.message);
+}
 
 if (!product) {
 	return Astro.redirect('/');
