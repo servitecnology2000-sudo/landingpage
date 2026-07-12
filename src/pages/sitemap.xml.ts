@@ -3,14 +3,14 @@ import { supabase } from '../lib/supabase';
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
 	// Query supabase for real-time indexing of products
 	const { data: products } = await supabase
 		.from('repuestos_productos')
 		.select('slug, created_at')
 		.order('created_at', { ascending: false });
 
-	const baseUrl = 'https://servitecnology.com';
+	const baseUrl = context.site ? context.site.origin : 'https://servitecnology.com';
 
 	const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
