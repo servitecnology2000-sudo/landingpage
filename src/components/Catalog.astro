@@ -84,7 +84,7 @@ const phone = "56948672300";
 		) : (
 			<div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 				{items.map((product) => {
-					const msg = encodeURIComponent(`Hola SERVITECH, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web. ¿Tienen disponibilidad?`);
+					const msg = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web. ¿Tienen disponibilidad?`);
 					const waLink = `https://wa.me/${phone}?text=${msg}`;
 					const images: string[] = product.imagenes ?? [];
 					const hasMultipleImages = images.length > 1;
