@@ -70,7 +70,7 @@ const services: ServiceItem[] = [
 		<!-- Bento Grid — col-span driven by data -->
 		<div class="grid grid-cols-1 md:grid-cols-6 gap-6">
 			{services.map((service) => (
-				<div class={`relative group p-6 rounded-2xl border border-white/10 bg-zinc-950/70 backdrop-blur-md transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_20px_40px_rgba(0,207,255,0.08)] min-h-[280px] overflow-visible ${service.colSpan}`}>
+				<div data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\\s+/g, '_').toLowerCase()}`} class={`relative group p-6 rounded-2xl border border-white/10 bg-zinc-950/70 backdrop-blur-md transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_20px_40px_rgba(0,207,255,0.08)] min-h-[280px] overflow-visible ${service.colSpan}`}>
 					<!-- Hover glow layer -->
 					<div class="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-brand-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
 

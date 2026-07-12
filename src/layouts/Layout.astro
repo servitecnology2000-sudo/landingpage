@@ -34,6 +34,42 @@ const {
 	</head>
 	<body class="bg-dark-bg text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-cyan/30 selection:text-brand-cyan">
 		<slot />
+		
+		<script>
+			import { supabase } from '../lib/supabase';
+			
+			// Solo trackear si no estamos en el admin
+			if (!window.location.pathname.startsWith('/admin')) {
+				const trackEvent = async (tipo: string, elemento_id: string | null = null) => {
+					try {
+						await supabase.from('metricas_eventos').insert([
+							{
+								tipo_evento: tipo,
+								elemento_id: elemento_id,
+								url_origen: window.location.pathname
+							}
+						]);
+					} catch(e) {
+						console.warn('Tracking error', e);
+					}
+				};
+
+				// 1. Registrar visita inicial
+				trackEvent('visita_pagina');
+
+				// 2. Escuchar clics delegados
+				document.addEventListener('click', (e) => {
+					const target = (e.target as HTMLElement).closest('[data-track-event]');
+					if (target) {
+						const tipo = target.getAttribute('data-track-event');
+						const elemento = target.getAttribute('data-element-id');
+						if (tipo) {
+							trackEvent(tipo, elemento);
+						}
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
 

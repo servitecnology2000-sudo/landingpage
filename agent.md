@@ -4,7 +4,8 @@
 - **Frontend:** Landing Page moderna y responsiva desplegada en Vercel (https://landingpage-opal-iota.vercel.app/).
 - **Estilos:** Tailwind CSS con diseño de tarjetas asimétricas estilo "Bento Grid" (2 tarjetas destacadas arriba, 3 medianas abajo) en la sección de servicios.
 - **Base de Datos & Storage:** Proyecto activo en Supabase conectado (ID de referencia: `mivsnmvupahgbrjfdyhl`).
-- **Tabla de Inventario:** `repuestos_productos` (Campos implementados: id, sku, titulo, slug, descripcion, categoria, compatibilidad, precio_venta, precio_costo, estado, stock_disponible, imagenes_urls, seo_title, seo_description, keywords, creado_en).
+- **Tabla de Inventario:** `repuestos_productos` (Campos implementados: id, sku, titulo, slug, descripcion, categoria, compatibilidad, precio_venta, precio_costo, estado, stock_cantidad, imagenes, seo_titulo, seo_descripcion, seo_keywords, created_at).
+- **Tabla de Analíticas:** `metricas_eventos` (Campos: id, tipo_evento, elemento_id, url_origen, creado_en).
 - **Almacenamiento de Imágenes:** Bucket público en Supabase Storage llamado `imagenes-repuestos`.
 
 ## 🛠️ Rutas y Módulos Activos
@@ -22,3 +23,4 @@
 ## 🕒 Historial de Versiones
 - **2026-07-12:** Creación inicial del archivo de memoria del agente.
 - **2026-07-12:** Actualización del número comercial de WhatsApp a +56948672300 de forma global. Adición de botones "Repuestos y Componentes" y "Escríbenos" en el Hero. Rediseño de escala en imágenes de Servicios (Bento Grid) aumentando a `w-[130%]` y reduciendo el contenedor de texto a `max-w-[45%]` para mayor impacto visual. Despliegue en Vercel.
+- **2026-07-12 (Analíticas e Inventario):** Actualización masiva de inventario y analíticas. Migración de esquema en Supabase de `stock_disponible` (booleano) a `stock_cantidad` (entero). Creación de tabla `metricas_eventos`. Inyección de script VanillaJS en frontend para tracking de `visita_pagina` y `clic_boton`. Mejora en `/admin` con panel de métricas, buscador en tiempo real, formateo de fecha y selector de categorías dinámico. Renderizado de stock numérico y desactivación automática de botón WhatsApp si el stock es 0 en catálogo. Se generó `migration.sql` para su ejecución manual.

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS repuestos_productos (
   precio_venta NUMERIC(12,0) DEFAULT 0,
   precio_costo NUMERIC(12,0) DEFAULT 0,
   compatibilidad TEXT[] DEFAULT '{}',
-  stock_disponible BOOLEAN DEFAULT TRUE,
+  stock_cantidad INTEGER DEFAULT 1,
   imagenes TEXT[] DEFAULT '{}',
   seo_titulo TEXT,
   seo_descripcion TEXT,
@@ -73,3 +73,34 @@ USING ( bucket_id = 'imagenes-repuestos' );
 CREATE POLICY "Permitir eliminacion anonima a imagenes-repuestos"
 ON storage.objects FOR DELETE TO public
 USING ( bucket_id = 'imagenes-repuestos' );
+
+-- =============================================
+-- TABLA DE MÉTRICAS Y TRACKING DE EVENTOS
+-- =============================================
+CREATE TABLE IF NOT EXISTS metricas_eventos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tipo_evento TEXT NOT NULL,
+  elemento_id TEXT,
+  url_origen TEXT,
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security
+ALTER TABLE metricas_eventos ENABLE ROW LEVEL SECURITY;
+
+-- Política: Inserción pública
+CREATE POLICY "Permitir inserción pública de eventos"
+  ON metricas_eventos
+  FOR INSERT
+  WITH CHECK (true);
+
+-- Política: Lectura pública/admin
+CREATE POLICY "Permitir lectura de eventos"
+  ON metricas_eventos
+  FOR SELECT
+  USING (true);
+
+-- Índices
+CREATE INDEX IF NOT EXISTS idx_metricas_tipo ON metricas_eventos(tipo_evento);
+CREATE INDEX IF NOT EXISTS idx_metricas_elemento ON metricas_eventos(elemento_id);
+

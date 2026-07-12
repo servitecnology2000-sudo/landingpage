@@ -35,11 +35,14 @@ if (Astro.request.method === 'POST') {
 		const titulo = formData.get('titulo')?.toString().trim() || '';
 		const slug = formData.get('slug')?.toString().trim() || '';
 		const descripcion = formData.get('descripcion')?.toString().trim() || '';
-		const categoria = formData.get('categoria')?.toString().trim() || '';
+		let categoria = formData.get('categoria')?.toString().trim() || '';
+		if (categoria === 'otra') {
+			categoria = formData.get('nueva_categoria')?.toString().trim() || '';
+		}
 		const estado = formData.get('estado')?.toString().trim() || 'Usado Verificado';
 		const precio_venta = parseFloat(formData.get('precio_venta')?.toString() || '0');
 		const precio_costo = parseFloat(formData.get('precio_costo')?.toString() || '0');
-		const stock_disponible = formData.get('stock_disponible') === 'true';
+		const stock_cantidad = parseInt(formData.get('stock_cantidad')?.toString() || '1');
 		
 		// Parse compatibility tags
 		const compatibilidadInput = formData.get('compatibilidad')?.toString() || '';
@@ -113,8 +116,8 @@ if (Astro.request.method === 'POST') {
 				precio_venta,
 				precio_costo,
 				compatibilidad,
-				stock_disponible,
-				imagenes: finalUrls,
+				stock_cantidad,
+				imagenes: finalImages,
 				seo_titulo,
 				seo_descripcion,
 				seo_keywords
@@ -131,6 +134,16 @@ if (Astro.request.method === 'POST') {
 		errorMsg = err.message || 'Ocurrió un error inesperado';
 	}
 }
+
+// Fetch categories
+let categorias: string[] = ["Pantallas", "Teclados", "Almacenamiento", "RAM", "Baterías"];
+try {
+	const { data } = await supabase.from('repuestos_productos').select('categoria');
+	if (data) {
+		const unique = [...new Set(data.map(p => p.categoria).filter(Boolean))];
+		if (unique.length > 0) categorias = unique;
+	}
+} catch(e) {}
 ---
 
 <html lang="es">
@@ -199,12 +212,16 @@ if (Astro.request.method === 'POST') {
 					<!-- Categoría -->
 					<div class="field">
 						<label for="categoria">Categoría</label>
-						<select id="categoria" name="categoria" required>
-							<option value="pantallas" selected={product.categoria === 'pantallas'}>Pantallas</option>
-							<option value="teclados" selected={product.categoria === 'teclados'}>Teclados</option>
-							<option value="almacenamiento" selected={product.categoria === 'almacenamiento'}>Almacenamiento</option>
-							<option value="ram" selected={product.categoria === 'ram'}>RAM</option>
+						<select id="categoria" name="categoria" required onchange="if(this.value === 'otra') document.getElementById('nueva_categoria_wrap').style.display='block'; else document.getElementById('nueva_categoria_wrap').style.display='none';">
+							<option value="" disabled>Selecciona una categoría...</option>
+							{categorias.map(c => (
+								<option value={c} selected={product.categoria === c}>{c}</option>
+							))}
+							<option value="otra" style="font-weight: bold; color: #00FF7F;">+ Nueva Categoría</option>
 						</select>
+						<div id="nueva_categoria_wrap" style="display:none; margin-top: 0.75rem;">
+							<input type="text" id="nueva_categoria" name="nueva_categoria" placeholder="Escribe la nueva categoría" />
+						</div>
 					</div>
 
 					<!-- Título -->
@@ -235,11 +252,10 @@ if (Astro.request.method === 'POST') {
 						</select>
 					</div>
 
-					<!-- Stock disponible -->
-					<div class="field checkbox-field">
-						<input type="checkbox" id="stock_disponible" name="stock_disponible_check" checked={product.stock_disponible} />
-						<input type="hidden" id="stock_disponible_val" name="stock_disponible" value={product.stock_disponible ? 'true' : 'false'} />
-						<label for="stock_disponible">Disponible en Stock</label>
+					<!-- Stock cantidad -->
+					<div class="field">
+						<label for="stock_cantidad">Stock Disponible (Unidades)</label>
+						<input type="number" id="stock_cantidad" name="stock_cantidad" placeholder="Ej: 5" min="0" value={product.stock_cantidad !== undefined ? product.stock_cantidad : 1} required />
 					</div>
 
 					<!-- Precio Venta -->
@@ -315,7 +331,7 @@ if (Astro.request.method === 'POST') {
 	</div>
 
 	<script>
-		// Automatically generate slug from Title (only if it changes or user wants it)
+		// Generate slug automatically
 		const tituloInput = document.getElementById('titulo') as HTMLInputElement;
 		const slugInput = document.getElementById('slug') as HTMLInputElement;
 
@@ -330,13 +346,6 @@ if (Astro.request.method === 'POST') {
 				.replace(/\s+/g, '-')
 				.replace(/-+/g, '-');
 			slugInput.value = slug;
-		});
-
-		// Sync stock checkbox to hidden input
-		const stockCheckbox = document.getElementById('stock_disponible') as HTMLInputElement;
-		const stockHidden = document.getElementById('stock_disponible_val') as HTMLInputElement;
-		stockCheckbox?.addEventListener('change', () => {
-			stockHidden.value = stockCheckbox.checked ? 'true' : 'false';
 		});
 	</script>
 </body>

@@ -34,6 +34,24 @@ try {
 	console.error('[Admin] Supabase fetch error:', e?.message);
 }
 
+// Fetch metrics
+let metrics: any[] = [];
+try {
+	const { data } = await supabase.from('metricas_eventos').select('*');
+	metrics = data ?? [];
+} catch(e) {}
+
+const totalVisitas = metrics.filter(m => m.tipo_evento === 'visita_pagina').length;
+const totalWaClicks = metrics.filter(m => m.tipo_evento === 'clic_boton' && m.elemento_id?.startsWith('btn_whatsapp')).length;
+
+const clicks = metrics.filter(m => m.tipo_evento === 'clic_boton' && m.elemento_id);
+const elementCounts = clicks.reduce((acc, curr) => {
+	acc[curr.elemento_id] = (acc[curr.elemento_id] || 0) + 1;
+	return acc;
+}, {} as Record<string, number>);
+const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - elementCounts[a])[0] || 'N/A';
+
+
 ---
 
 <html lang="es">
@@ -75,6 +93,9 @@ try {
 		.empty { text-align: center; padding: 4rem 2rem; color: #64748b; }
 		.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
 		.actions-cell { display: flex; gap: 0.4rem; align-items: center; }
+		.search-bar { width: 100%; padding: 1rem; margin-bottom: 1.5rem; background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; color: white; font-family: 'Inter', sans-serif; }
+		.search-bar:focus { outline: none; border-color: #00CFFF; }
+		.section-title { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 1rem; margin-top: 1rem; }
 		@media (max-width: 768px) {
 			.hide-mobile { display: none; }
 			td, th { padding: 0.5rem; font-size: 0.7rem; }
@@ -92,21 +113,42 @@ try {
 	</div>
 
 	<div class="container">
+		<!-- Metrics Dashboard -->
+		<h2 class="section-title">Panel de Analíticas</h2>
+		<div class="stats" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
+			<div class="stat-card">
+				<div class="stat-value text-brand-cyan">{totalVisitas}</div>
+				<div class="stat-label">Visitas Únicas / Páginas Vistas</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value text-brand-green">{totalWaClicks}</div>
+				<div class="stat-label">Clics a WhatsApp (Conversiones)</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" style="font-size: 1.5rem;">{topSection}</div>
+				<div class="stat-label">Sección Top Interactuada</div>
+			</div>
+		</div>
+
 		<!-- Stats -->
+		<h2 class="section-title">Inventario</h2>
 		<div class="stats">
 			<div class="stat-card">
 				<div class="stat-value">{items.length}</div>
 				<div class="stat-label">Productos totales</div>
 			</div>
 			<div class="stat-card">
-				<div class="stat-value" style="color: #00FF7F;">{items.filter(p => p.stock_disponible).length}</div>
+				<div class="stat-value" style="color: #00FF7F;">{items.filter(p => p.stock_cantidad > 0).length}</div>
 				<div class="stat-label">Con stock</div>
 			</div>
 			<div class="stat-card">
-				<div class="stat-value" style="color: #f87171;">{items.filter(p => !p.stock_disponible).length}</div>
+				<div class="stat-value" style="color: #f87171;">{items.filter(p => p.stock_cantidad <= 0).length}</div>
 				<div class="stat-label">Sin stock</div>
 			</div>
 		</div>
+
+		<!-- Search -->
+		<input type="text" id="searchInput" class="search-bar" placeholder="🔍 Buscar por nombre, SKU o categoría..." />
 
 		<!-- Products Table -->
 		<div class="table-wrap">
@@ -126,12 +168,13 @@ try {
 							<th class="hide-mobile">Categoría</th>
 							<th class="hide-mobile">Precio</th>
 							<th>Stock</th>
+							<th class="hide-mobile">Fecha</th>
 							<th>Acciones</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody id="tableBody">
 						{items.map(p => (
-							<tr>
+							<tr class="product-row" data-search={`${p.sku} ${p.titulo} ${p.categoria}`.toLowerCase()}>
 								<td>
 									{p.imagenes?.[0] ? (
 										<img src={p.imagenes[0]} alt="" class="thumb" />
@@ -144,12 +187,13 @@ try {
 								<td class="hide-mobile">{p.categoria}</td>
 								<td class="hide-mobile">${p.precio_venta?.toLocaleString('es-CL')}</td>
 								<td>
-									{p.stock_disponible ? (
-										<span class="stock-yes">● Sí</span>
+									{p.stock_cantidad > 0 ? (
+										<span class="stock-yes">● {p.stock_cantidad} uds</span>
 									) : (
-										<span class="stock-no">● No</span>
+										<span class="stock-no">● Agotado</span>
 									)}
 								</td>
+								<td class="hide-mobile">{new Date(p.created_at).toLocaleDateString('es-CL')}</td>
 								<td>
 									<div class="actions-cell">
 										<a href={`/admin/editar/${p.id}`} class="btn btn-outline" style="padding:0.35rem 0.6rem;">Editar</a>
@@ -167,5 +211,25 @@ try {
 			)}
 		</div>
 	</div>
+
+	<script>
+		// Real-time search filter
+		const searchInput = document.getElementById('searchInput');
+		const rows = document.querySelectorAll('.product-row');
+
+		if (searchInput) {
+			searchInput.addEventListener('input', (e) => {
+				const term = (e.target as HTMLInputElement).value.toLowerCase();
+				rows.forEach(row => {
+					const searchData = row.getAttribute('data-search') || '';
+					if (searchData.includes(term)) {
+						(row as HTMLElement).style.display = '';
+					} else {
+						(row as HTMLElement).style.display = 'none';
+					}
+				});
+			});
+		}
+	</script>
 </body>
 </html>
