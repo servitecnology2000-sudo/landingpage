@@ -30,11 +30,12 @@ if (Astro.request.method === 'POST') {
 		const inputEmail = formData.get('email')?.toString().trim();
 
 		if (password === adminSecret && inputEmail) {
-			// Trigger Supabase OTP
+			// Trigger Supabase OTP and redirect back to this login page
 			const { error: otpError } = await supabase.auth.signInWithOtp({
 				email: inputEmail,
 				options: {
-					shouldCreateUser: true
+					shouldCreateUser: true,
+					emailRedirectTo: `${Astro.url.origin}/meson-servitecnology-st/login`
 				}
 			});
 
@@ -85,6 +86,28 @@ if (Astro.request.method === 'POST') {
 		Astro.cookies.delete('admin_pending_email', { path: '/' });
 		step = 'password';
 		email = '';
+	} else if (action === 'set_session_from_client') {
+		const token = formData.get('access_token')?.toString();
+		if (token) {
+			const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+			if (!userError && user) {
+				Astro.cookies.set('admin_session', adminSecret, {
+					path: '/',
+					httpOnly: true,
+					secure: true,
+					sameSite: 'lax',
+					maxAge: 60 * 60 * 24
+				});
+				return new Response(JSON.stringify({ status: 'ok' }), {
+					status: 200,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+		}
+		return new Response(JSON.stringify({ error: 'No autorizado' }), {
+			status: 401,
+			headers: { 'Content-Type': 'application/json' }
+		});
 	}
 }
 ---
@@ -142,12 +165,12 @@ if (Astro.request.method === 'POST') {
 				<input type="hidden" name="action" value="submit_otp" />
 				
 				<div class="info-box">
-					Se ha enviado un código de acceso único (OTP) al correo: <strong>{email}</strong>.
-					Por favor, ingrésalo para verificar tu identidad.
+					Se ha enviado un correo con un enlace de confirmación a: <strong>{email}</strong>.
+					Haz clic en el enlace para iniciar sesión de forma automática.
 				</div>
 
-				<label for="otp">Código OTP (6 dígitos)</label>
-				<input type="text" id="otp" name="otp" placeholder="123456" pattern="[0-9]{6}" required autofocus />
+				<label for="otp">O ingresa el código OTP si está disponible</label>
+				<input type="text" id="otp" name="otp" placeholder="123456" pattern="[0-9]{6}" />
 				
 				<button type="submit">Verificar e Ingresar</button>
 			</form>
@@ -160,5 +183,31 @@ if (Astro.request.method === 'POST') {
 		{error && <p class="error">{error}</p>}
 		<a href="/" class="back">← Volver al sitio</a>
 	</div>
+
+	<script>
+		import { supabase } from '../../lib/supabase';
+
+		// Client-side listener to bridge Supabase authentication to Astro server cookies
+		supabase.auth.onAuthStateChange(async (event, session) => {
+			if (session) {
+				const formData = new FormData();
+				formData.append('action', 'set_session_from_client');
+				formData.append('access_token', session.access_token);
+
+				try {
+					const response = await fetch(window.location.pathname, {
+						method: 'POST',
+						body: formData
+					});
+
+					if (response.ok) {
+						window.location.href = '/meson-servitecnology-st';
+					}
+				} catch (e) {
+					console.error('Session bridge error:', e);
+				}
+			}
+		});
+	</script>
 </body>
 </html>
