@@ -57,3 +57,19 @@ CREATE INDEX IF NOT EXISTS idx_repuestos_slug ON repuestos_productos(slug);
 
 -- Índice para filtrado por categoría
 CREATE INDEX IF NOT EXISTS idx_repuestos_categoria ON repuestos_productos(categoria);
+
+-- =============================================
+-- POLÍTICAS DE ALMACENAMIENTO (STORAGE)
+-- Para permitir subir imágenes al bucket
+-- =============================================
+CREATE POLICY "Permitir subida anonima a imagenes-repuestos"
+ON storage.objects FOR INSERT TO public
+WITH CHECK ( bucket_id = 'imagenes-repuestos' );
+
+CREATE POLICY "Permitir actualizacion anonima a imagenes-repuestos"
+ON storage.objects FOR UPDATE TO public
+USING ( bucket_id = 'imagenes-repuestos' );
+
+CREATE POLICY "Permitir eliminacion anonima a imagenes-repuestos"
+ON storage.objects FOR DELETE TO public
+USING ( bucket_id = 'imagenes-repuestos' );

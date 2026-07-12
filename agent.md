@@ -21,3 +21,4 @@
 
 ## 🕒 Historial de Versiones
 - **2026-07-12:** Creación inicial del archivo de memoria del agente.
+- **2026-07-12:** Actualización del número comercial de WhatsApp a +56948672300 de forma global. Adición de botones "Repuestos y Componentes" y "Escríbenos" en el Hero. Rediseño de escala en imágenes de Servicios (Bento Grid) aumentando a `w-[130%]` y reduciendo el contenedor de texto a `max-w-[45%]` para mayor impacto visual. Despliegue en Vercel.
