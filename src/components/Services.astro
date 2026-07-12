@@ -4,7 +4,6 @@ interface ServiceItem {
 	description: string;
 	iconPath: string;
 	image: string;
-	colSpan: string; // Bento Grid column span
 }
 
 const services: ServiceItem[] = [
@@ -13,48 +12,43 @@ const services: ServiceItem[] = [
 		description: "Diagnóstico completo, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos. Devolvemos el rendimiento original a tus equipos.",
 		iconPath: "tools",
 		image: "/imagenes/soporte.jpg",
-		colSpan: "md:col-span-3"
 	},
 	{
 		title: "Armado de PCs y Modding Gaming",
 		description: "Configuración personalizada de computadoras de alto rendimiento para gaming, streaming o diseño profesional. Maximizamos tu presupuesto seleccionando componentes con la mejor relación calidad-precio.",
 		iconPath: "cpu",
 		image: "/imagenes/gaming.jpg",
-		colSpan: "md:col-span-3"
 	},
 	{
 		title: "Seguridad e Instalación de CCTV",
 		description: "Diseño y montaje de sistemas de videovigilancia de alta definición y configuración integrada para monitoreo remoto en tiempo real.",
 		iconPath: "camera",
 		image: "/imagenes/cctv.jpg",
-		colSpan: "md:col-span-2"
 	},
 	{
 		title: "Redes y Conectividad",
 		description: "Cableado estructurado, diagnóstico y optimización de señales Wi-Fi, configuración de routers avanzados y resolución definitiva de problemas de conectividad.",
 		iconPath: "network",
 		image: "/imagenes/redes.jpg",
-		colSpan: "md:col-span-2"
 	},
 	{
 		title: "Mantenimiento y Reparación de Impresoras",
 		description: "Soporte técnico integral y mantenimiento preventivo/correctivo para equipos de impresión. Especialistas en las marcas líderes del mercado: HP, Epson, Canon y Brother.",
 		iconPath: "printer",
 		image: "/imagenes/impresora.jpg",
-		colSpan: "md:col-span-2"
 	}
 ];
 ---
 
-<section id="servicios" class="relative py-24 bg-black overflow-visible">
+<section id="servicios" class="relative py-24 bg-black overflow-hidden">
 	<!-- Background decorations -->
 	<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-cyan/5 rounded-full blur-[160px] pointer-events-none"></div>
 
-	<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
+	<div class="relative z-10 mx-auto max-w-7xl px-4 md:px-8 w-full">
 		<!-- Section Header -->
-		<div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
-			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-green/20 bg-brand-green/5 text-brand-green text-xs font-semibold uppercase tracking-wider">
-				Servicios Estrella
+		<div class="text-center max-w-3xl mx-auto mb-12 md:mb-16 space-y-4">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-green/20 bg-brand-green/5 text-brand-green text-sm font-semibold uppercase tracking-wider">
+				Servicios Premium
 			</div>
 			<h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
 				Soluciones Informáticas <br class="hidden sm:inline" />
@@ -62,77 +56,133 @@ const services: ServiceItem[] = [
 					a la Medida de tus Necesidades
 				</span>
 			</h2>
-			<p class="text-slate-400 text-base md:text-lg">
+			<p class="text-slate-400 text-base md:text-lg px-4">
 				Ofrecemos soporte integral garantizado con disponibilidad flexible. Tu tranquilidad tecnológica es nuestra prioridad.
 			</p>
 		</div>
 
-		<!-- Bento Grid — col-span driven by data -->
-		<div class="grid grid-cols-1 md:grid-cols-6 gap-6">
-			{services.map((service) => (
-				<div data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\\s+/g, '_').toLowerCase()}`} class={`relative group p-6 rounded-2xl border border-white/10 bg-zinc-950/70 backdrop-blur-md transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_20px_40px_rgba(0,207,255,0.08)] min-h-[280px] overflow-visible ${service.colSpan}`}>
-					<!-- Hover glow layer -->
-					<div class="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-brand-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
+		<!-- Carousel Container -->
+		<div class="relative group/carousel">
+			
+			<!-- Navigation Arrows (Desktop mostly) -->
+			<button id="prev-service" class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-black/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex focus:opacity-100 shadow-2xl" aria-label="Anterior">
+				<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+			</button>
+			<button id="next-service" class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-black/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex focus:opacity-100 shadow-2xl" aria-label="Siguiente">
+				<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+			</button>
 
-					<!-- Inner layout: text left, image right -->
-					<div class="relative z-10 flex flex-row h-full w-full items-stretch gap-4">
+			<!-- Scrollable Area -->
+			<div id="services-carousel" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-10 pt-4 px-2">
+				{services.map((service) => (
+					<div data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\s+/g, '_').toLowerCase()}`} class="snap-center shrink-0 w-full flex flex-col md:flex-row bg-zinc-950/90 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-brand-cyan/40 hover:shadow-[0_15px_40px_rgba(0,207,255,0.15)] group h-full items-stretch">
+						
+						<!-- Top/Left Image -->
+						<div class="w-full md:w-1/2 h-72 md:h-[500px] overflow-hidden relative">
+							<!-- Gradient overlays to blend image with content nicely -->
+							<div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 to-transparent z-10 pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-zinc-950/90"></div>
+							
+							<img src={service.image} alt={service.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" loading="lazy" />
+							
+							<!-- Floating Icon -->
+							<div class="absolute bottom-4 left-6 md:top-6 md:left-6 md:bottom-auto z-20 p-3.5 rounded-2xl bg-black/50 backdrop-blur-md border border-white/20 text-brand-cyan shadow-xl">
+								{service.iconPath === "tools" && (
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+									</svg>
+								)}
+								{service.iconPath === "cpu" && (
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 9h6v6H9V9z" />
+									</svg>
+								)}
+								{service.iconPath === "camera" && (
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+									</svg>
+								)}
+								{service.iconPath === "network" && (
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+								)}
+								{service.iconPath === "printer" && (
+									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+									</svg>
+								)}
+							</div>
+						</div>
 
-						<!-- LEFT: Text content — strictly bounded to prevent overlap -->
-						<div class="flex flex-col justify-between z-10 space-y-3 w-full max-w-[45%] shrink-0">
-							<div class="space-y-3">
-								<!-- Icon -->
-								<div class="p-2.5 rounded-xl bg-white/5 text-brand-cyan group-hover:bg-brand-cyan/15 transition-all duration-300 w-fit">
-									{service.iconPath === "tools" && (
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-										</svg>
-									)}
-									{service.iconPath === "cpu" && (
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 9h6v6H9V9z" />
-										</svg>
-									)}
-									{service.iconPath === "camera" && (
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-										</svg>
-									)}
-									{service.iconPath === "network" && (
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-										</svg>
-									)}
-									{service.iconPath === "printer" && (
-										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-										</svg>
-									)}
-								</div>
-
-								<!-- Title -->
-								<h3 class="text-base font-bold text-white group-hover:text-brand-cyan transition-colors duration-300 leading-tight">
+						<!-- Content Area -->
+						<div class="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center gap-6 md:gap-8">
+							<div class="space-y-4 md:space-y-6">
+								<h3 class="text-[24px] md:text-4xl font-bold text-white group-hover:text-brand-cyan transition-colors leading-tight">
 									{service.title}
 								</h3>
-
-								<!-- Description — stays inside max-w-[55%] container, never overlaps image -->
-								<p class="text-xs text-slate-400 leading-relaxed">
+								<p class="text-[16px] md:text-xl text-slate-400 leading-relaxed">
 									{service.description}
 								</p>
 							</div>
-						</div>
-
-						<!-- RIGHT: Floating Mockup Image — absolute within overflow-visible card -->
-						<div class="relative flex-1 overflow-visible min-h-[200px]">
-							<div class="absolute bottom-[-24px] right-[-24px] w-[130%] aspect-[4/3] rounded-xl overflow-hidden border border-white/15 shadow-[0_15px_35px_rgba(0,0,0,0.8)] transition-all duration-500 ease-out group-hover:translate-y-[-8px] group-hover:scale-[1.06] group-hover:shadow-[0_25px_45px_rgba(0,207,255,0.18)] group-hover:border-brand-cyan/40">
-								<img src={service.image} alt={service.title} class="w-full h-full object-cover" loading="lazy" />
+							
+							<!-- CTA Button -->
+							<div class="pt-4 mt-auto md:mt-4">
+								<a 
+									href={`https://wa.me/56948672300?text=${encodeURIComponent(`Hola SERVITECH, requiero soporte técnico para: ${service.title}`)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="w-full inline-flex justify-center items-center gap-3 bg-brand-cyan/10 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/20 px-6 py-4 md:py-5 rounded-xl font-bold text-[16px] md:text-xl transition-all duration-300 group/btn"
+								>
+									Escríbenos
+									<svg class="w-6 h-6 md:w-7 md:h-7 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+								</a>
 							</div>
 						</div>
-
 					</div>
+				))}
+			</div>
+			
+			<!-- Mobile Swipe Indicator -->
+			<div class="flex justify-center mt-2 md:hidden">
+				<div class="inline-flex items-center gap-2 text-slate-300 text-[16px] font-medium bg-white/5 px-5 py-2.5 rounded-full backdrop-blur-sm border border-white/5">
+					<svg class="w-5 h-5 animate-bounce-x text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+					Desliza para ver más
 				</div>
-			))}
+			</div>
 		</div>
 	</div>
 </section>
+
+<script>
+	const carousel = document.getElementById('services-carousel');
+	const prev = document.getElementById('prev-service');
+	const next = document.getElementById('next-service');
+	
+	if (carousel && prev && next) {
+		prev.addEventListener('click', () => {
+			carousel.scrollBy({ left: -carousel.offsetWidth, behavior: 'smooth' });
+		});
+		next.addEventListener('click', () => {
+			carousel.scrollBy({ left: carousel.offsetWidth, behavior: 'smooth' });
+		});
+	}
+</script>
+
+<style>
+	.hide-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	.hide-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	@keyframes bounce-x {
+		0%, 100% { transform: translateX(0); }
+		50% { transform: translateX(25%); }
+	}
+	.animate-bounce-x {
+		animation: bounce-x 1.5s infinite;
+	}
+</style>
