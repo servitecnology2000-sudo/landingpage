@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Términos y Condiciones | SERVITECNOLOGY" description="Términos y condiciones de uso de la plataforma SERVITECNOLOGY. Conoce nuestras políticas de servicio y despacho.">
+	<Header />
+	
+	<main class="relative bg-black min-h-screen py-24 border-b border-white/5">
+		<!-- Background Glow -->
+		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-3xl px-6 w-full">
+			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-8">
+				Términos y Condiciones
+			</h1>
+			
+			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">1. Naturaleza de la Plataforma</h2>
+					<p>
+						Bienvenidos a SERVITECNOLOGY. Declaramos explícitamente que nuestro sitio web (https://servitecnology.com/) opera exclusivamente como una <strong>plataforma informativa y catálogo digital de inventario</strong>. Nuestra finalidad es exhibir los servicios de soporte técnico IT y los repuestos/componentes de hardware disponibles en nuestro stock.
+					</p>
+				</section>
+
+				<section class="space-y-4 p-6 bg-brand-cyan/5 border border-brand-cyan/20 rounded-xl">
+					<h2 class="text-xl font-bold text-brand-cyan">2. Cláusula Crítica de Pagos y Despachos</h2>
+					<p class="text-white">
+						Establecemos de forma taxativa que esta plataforma web <strong>NO procesa transacciones monetarias automáticas</strong>, no almacena tarjetas de crédito ni opera como un e-commerce transaccional.
+					</p>
+					<p class="text-white">
+						Toda solicitud de compra, la selección de medios de pago (transferencias electrónicas, efectivo, etc.) y las entregas o despachos se realizan <strong>exclusivamente bajo PREVIA COORDINACIÓN DIRECTA</strong> con nuestro equipo técnico, a través de nuestros canales oficiales:
+					</p>
+					<ul class="list-disc pl-5 text-white font-medium">
+						<li>WhatsApp Oficial: +56948672300</li>
+						<li>Correo Electrónico Corporativo</li>
+					</ul>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">3. Responsabilidad del Usuario</h2>
+					<p>
+						El usuario se compromete a hacer un uso adecuado y lícito del sitio web. La información contenida respecto a especificaciones de repuestos, compatibilidades y precios de referencia está sujeta a confirmación durante la coordinación de venta directa, debido al dinamismo del mercado tecnológico y de importaciones.
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">4. Jurisdicción y Ley Aplicable</h2>
+					<p>
+						Estos Términos y Condiciones se rigen por las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores (SERNAC). Cualquier controversia derivada del uso de este sitio o la contratación de servicios será sometida a los tribunales competentes de Santiago de Chile.
+					</p>
+				</section>
+
+				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
+					Última actualización: {new Date().toLocaleDateString('es-CL')}
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<Footer />
+</Layout>

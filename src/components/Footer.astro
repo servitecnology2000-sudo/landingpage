@@ -102,10 +102,19 @@ const coverageAreas = [
 		</div>
 
 		<!-- Bottom Bar -->
-		<div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+		<div class="border-t border-white/5 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-center lg:text-left">
 			<p class="text-xs text-slate-500">
 				© {currentYear} <span class="text-slate-400 font-semibold">SERVITECNOLOGY</span>. Todos los derechos reservados.
 			</p>
+			
+			<div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
+				<a href="/terminos" class="hover:text-brand-cyan transition-colors">Términos y Condiciones</a>
+				<span class="hidden sm:inline text-white/10">|</span>
+				<a href="/privacidad" class="hover:text-brand-cyan transition-colors">Política de Privacidad</a>
+				<span class="hidden sm:inline text-white/10">|</span>
+				<a href="/garantias" class="hover:text-brand-cyan transition-colors">Garantías y Devoluciones</a>
+			</div>
+
 			<p class="text-xs text-slate-600">
 				Diseñado y desarrollado con 💻 en Chile
 			</p>

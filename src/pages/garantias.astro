@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Garantías y Devoluciones | SERVITECNOLOGY" description="Política de garantías legales para repuestos y servicios técnicos informáticos de SERVITECNOLOGY, según el SERNAC.">
+	<Header />
+	
+	<main class="relative bg-black min-h-screen py-24 border-b border-white/5">
+		<!-- Background Glow -->
+		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-3xl px-6 w-full">
+			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-8">
+				Garantías y Devoluciones
+			</h1>
+			
+			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">1. Garantía Legal (Ley del Consumidor - SERNAC)</h2>
+					<p>
+						De conformidad a la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores, SERVITECNOLOGY responde a las exigencias legales brindando la <strong>Garantía Legal</strong> correspondiente (3x3 - 6 meses). Si el producto o componente nuevo adquirido presenta fallas de fábrica o no es apto para el uso al que fue destinado, el cliente tiene el derecho a elegir entre tres opciones (cambio, reparación gratuita o devolución de dinero) durante los 6 primeros meses desde su entrega.
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">2. Estado de Venta de Repuestos y Hardware</h2>
+					<p>
+						En nuestro catálogo, ofrecemos componentes en distintos estados, los cuales son informados de forma transparente al momento de la cotización:
+					</p>
+					<ul class="list-disc pl-5">
+						<li><strong>Componentes Nuevos:</strong> Cuentan con la garantía legal completa.</li>
+						<li><strong>Repuestos Usados Verificados (Reacondicionados/Segunda Mano):</strong> Tal como indica la normativa vigente de SERNAC, al comercializar productos usados o refaccionados se informa explícitamente dicha condición. En estos casos, <strong>no aplica el derecho a la triple opción de la garantía legal</strong> de la misma manera que en un producto nuevo, sin embargo, en SERVITECNOLOGY entregamos una garantía voluntaria de funcionamiento (30 días) para tu tranquilidad, certificando que el componente fue testeado y se encuentra 100% operativo antes de la entrega.</li>
+					</ul>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">3. Garantía de Servicios de Soporte Técnico</h2>
+					<p>
+						Todo servicio de reparación, mantenimiento y armado de equipos informáticos ejecutado por nuestro personal cuenta con un respaldo. Las condiciones y plazos de garantía del servicio técnico serán estipulados en la orden de trabajo correspondiente al momento de la entrega del equipo (generalmente de 30 a 90 días dependiendo del procedimiento realizado).
+					</p>
+					<p>
+						<em>La garantía de servicio queda automáticamente anulada si los sellos de seguridad son removidos, si el equipo es intervenido por terceros no autorizados por SERVITECNOLOGY, o si presenta daños atribuibles al mal uso, derrames de líquidos o alzas de voltaje posteriores a la entrega.</em>
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">4. Procedimiento de Reclamo</h2>
+					<p>
+						Para hacer efectiva cualquier revisión de garantía, el cliente debe coordinar previamente a través de nuestro canal de WhatsApp (+56948672300). Es indispensable presentar el comprobante de pago o nota de servicio emitida.
+					</p>
+				</section>
+
+				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
+					Última actualización: {new Date().toLocaleDateString('es-CL')}
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<Footer />
+</Layout>

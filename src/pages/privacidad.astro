@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Política de Privacidad | SERVITECNOLOGY" description="Política de privacidad de SERVITECNOLOGY conforme a la Ley N° 19.628 sobre Protección de la Vida Privada.">
+	<Header />
+	
+	<main class="relative bg-black min-h-screen py-24 border-b border-white/5">
+		<!-- Background Glow -->
+		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-green/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-3xl px-6 w-full">
+			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-8">
+				Política de Privacidad
+			</h1>
+			
+			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">1. Compromiso de Privacidad</h2>
+					<p>
+						En SERVITECNOLOGY estamos comprometidos con la protección de tus datos. La presente Política de Privacidad se rige estrictamente por lo dispuesto en la <strong>Ley N° 19.628 sobre Protección de la Vida Privada (Ley de Protección de Datos)</strong> de la República de Chile.
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">2. Sistema de Analíticas Interno</h2>
+					<p>
+						Informamos de manera transparente a nuestros visitantes que esta plataforma utiliza un sistema de <strong>analíticas propio y liviano</strong>. Este sistema tiene como única finalidad registrar métricas de interacción básicas (tales como visitas a la página y clics en botones).
+					</p>
+					<p>
+						La información recopilada mediante estas métricas es de carácter estadístico anónimo y se emplea de forma exclusiva para:
+					</p>
+					<ul class="list-disc pl-5">
+						<li>Mejorar la experiencia de usuario y la interfaz del sitio.</li>
+						<li>Medir el interés general en nuestros componentes y repuestos.</li>
+						<li>Garantizar el correcto funcionamiento de nuestra plataforma.</li>
+					</ul>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">3. No Comercialización de Datos Sensibles</h2>
+					<p>
+						<strong>Garantizamos que no se recopila ni se almacena información sensible personal</strong> a través de nuestra web. No requerimos el ingreso de datos personales, RUT, domicilios o números de tarjetas de crédito en nuestro portal. 
+					</p>
+					<p>
+						SERVITECNOLOGY no cede, transfiere ni comercializa ningún tipo de registro con terceros o agencias de marketing bajo ninguna circunstancia.
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">4. Coordinación vía WhatsApp</h2>
+					<p>
+						Al hacer clic en los botones de "Escríbenos" o "Consultar disponibilidad", el usuario es redirigido a la aplicación de WhatsApp. La información que el usuario decida voluntariamente compartir durante la conversación privada con nuestro equipo está amparada por la confidencialidad técnica de las comunicaciones y se utilizará exclusivamente para responder a su requerimiento de soporte o cotización.
+					</p>
+				</section>
+
+				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
+					Última actualización: {new Date().toLocaleDateString('es-CL')}
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<Footer />
+</Layout>
