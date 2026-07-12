@@ -57,32 +57,37 @@ const hasMultipleImages = images.length > 1;
 				<!-- Product Gallery (Left) -->
 				<div>
 					{images.length > 0 ? (
-						<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-white/10 shadow-2xl">
+						<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-white/10 shadow-2xl group/gallery">
 							{images.map((img, idx) => (
 								<img
 									src={img}
 									alt={`${product.titulo} - imagen ${idx + 1}`}
 									class:list={[
-										"detail-carousel-img absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
-										idx === 0 ? "opacity-100" : "opacity-0"
+										"detail-carousel-img absolute inset-0 w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in",
+										idx === 0 ? "opacity-100 z-10" : "opacity-0"
 									]}
 									data-index={idx}
+									data-lightbox-images={JSON.stringify(images)}
 									loading="eager"
 								/>
 							))}
 							{hasMultipleImages && (
-								<div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-									{images.map((_, idx) => (
-										<button
-											data-detail-dot={idx}
-											class:list={[
-												"w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer",
-												idx === 0 ? "bg-brand-cyan scale-125" : "bg-white/40 hover:bg-white/60"
-											]}
-											aria-label={`Ver imagen ${idx + 1}`}
-										/>
-									))}
-								</div>
+								<>
+									<button
+										type="button"
+										class="detail-prev absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 hover:opacity-100 focus:opacity-100 z-20 focus:outline-none"
+										aria-label="Anterior"
+									>
+										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+									</button>
+									<button
+										type="button"
+										class="detail-next absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 hover:opacity-100 focus:opacity-100 z-20 focus:outline-none"
+										aria-label="Siguiente"
+									>
+										<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+									</button>
+								</>
 							)}
 						</div>
 					) : (
@@ -179,23 +184,47 @@ const hasMultipleImages = images.length > 1;
 
 <script>
 	// Detail Image carousel logic
-	document.querySelectorAll('[data-detail-dot]').forEach(dot => {
-		dot.addEventListener('click', () => {
-			const targetIdx = dot.getAttribute('data-detail-dot')!;
-			// Hide all images
-			document.querySelectorAll('.detail-carousel-img').forEach(img => {
-				(img as HTMLElement).style.opacity = '0';
+	const prevBtn = document.querySelector('.detail-prev') as HTMLButtonElement;
+	const nextBtn = document.querySelector('.detail-next') as HTMLButtonElement;
+	const imgs = document.querySelectorAll('.detail-carousel-img');
+	
+	if (prevBtn && nextBtn && imgs.length > 1) {
+		let currentIndex = 0;
+		const showImg = (idx: number) => {
+			imgs.forEach((img, i) => {
+				if (i === idx) {
+					img.classList.replace('opacity-0', 'opacity-100');
+					img.classList.add('z-10');
+				} else {
+					img.classList.replace('opacity-100', 'opacity-0');
+					img.classList.remove('z-10');
+				}
 			});
-			// Show target image
-			const target = document.querySelector(`.detail-carousel-img[data-index="${targetIdx}"]`) as HTMLElement;
-			if (target) target.style.opacity = '1';
-			// Update dots
-			document.querySelectorAll('[data-detail-dot]').forEach(d => {
-				d.classList.remove('bg-brand-cyan', 'scale-125');
-				d.classList.add('bg-white/40');
-			});
-			dot.classList.remove('bg-white/40');
-			dot.classList.add('bg-brand-cyan', 'scale-125');
+			currentIndex = idx;
+		};
+
+		prevBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			showImg((currentIndex - 1 + imgs.length) % imgs.length);
+		});
+		nextBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			showImg((currentIndex + 1) % imgs.length);
+		});
+	}
+
+	// Lightbox trigger logic
+	imgs.forEach(img => {
+		img.addEventListener('click', () => {
+			const imagesRaw = img.getAttribute('data-lightbox-images');
+			if (!imagesRaw) return;
+			try {
+				const images = JSON.parse(imagesRaw);
+				const idx = parseInt(img.getAttribute('data-index') || '0', 10);
+				if ((window as any).openLightbox) {
+					(window as any).openLightbox(images, idx);
+				}
+			} catch(e) {}
 		});
 	});
 </script>

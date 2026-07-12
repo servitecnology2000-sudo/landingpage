@@ -1,0 +1,89 @@
+---
+---
+<div id="lightbox-modal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300">
+	<div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" id="lightbox-backdrop"></div>
+	
+	<button id="lightbox-close" class="absolute top-4 right-4 z-[60] w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-brand-cyan hover:text-black transition-colors" aria-label="Cerrar (Esc)">
+		<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+	</button>
+
+	<div class="absolute inset-0 flex items-center justify-center pointer-events-none p-4 sm:p-10">
+		<img id="lightbox-image" src="" alt="Vista ampliada" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl scale-95 transition-transform duration-300 pointer-events-auto" />
+	</div>
+
+	<button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 z-[60] w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-brand-cyan hover:text-black border border-white/10 transition-colors pointer-events-auto hidden" aria-label="Anterior">
+		<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+	</button>
+
+	<button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 z-[60] w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-brand-cyan hover:text-black border border-white/10 transition-colors pointer-events-auto hidden" aria-label="Siguiente">
+		<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+	</button>
+</div>
+
+<script>
+	let currentImages: string[] = [];
+	let currentIndex = 0;
+
+	const modal = document.getElementById('lightbox-modal');
+	const backdrop = document.getElementById('lightbox-backdrop');
+	const closeBtn = document.getElementById('lightbox-close');
+	const prevBtn = document.getElementById('lightbox-prev');
+	const nextBtn = document.getElementById('lightbox-next');
+	const imgEl = document.getElementById('lightbox-image') as HTMLImageElement;
+
+	const showImage = (index: number) => {
+		if (index < 0 || index >= currentImages.length) return;
+		currentIndex = index;
+		imgEl.src = currentImages[currentIndex];
+		
+		if (currentImages.length > 1) {
+			prevBtn?.classList.remove('hidden');
+			nextBtn?.classList.remove('hidden');
+		} else {
+			prevBtn?.classList.add('hidden');
+			nextBtn?.classList.add('hidden');
+		}
+	};
+
+	(window as any).openLightbox = (images: string[], startIndex: number = 0) => {
+		if (!images || images.length === 0) return;
+		currentImages = images;
+		showImage(startIndex);
+		
+		modal?.classList.remove('hidden');
+		// Force reflow
+		void modal?.offsetWidth;
+		modal?.classList.remove('opacity-0');
+		imgEl?.classList.remove('scale-95');
+		imgEl?.classList.add('scale-100');
+		document.body.style.overflow = 'hidden';
+	};
+
+	const closeModal = () => {
+		modal?.classList.add('opacity-0');
+		imgEl?.classList.remove('scale-100');
+		imgEl?.classList.add('scale-95');
+		setTimeout(() => {
+			modal?.classList.add('hidden');
+			document.body.style.overflow = '';
+		}, 300);
+	};
+
+	closeBtn?.addEventListener('click', closeModal);
+	backdrop?.addEventListener('click', closeModal);
+	
+	prevBtn?.addEventListener('click', () => {
+		showImage((currentIndex - 1 + currentImages.length) % currentImages.length);
+	});
+	
+	nextBtn?.addEventListener('click', () => {
+		showImage((currentIndex + 1) % currentImages.length);
+	});
+
+	document.addEventListener('keydown', (e) => {
+		if (modal?.classList.contains('hidden')) return;
+		if (e.key === 'Escape') closeModal();
+		if (e.key === 'ArrowLeft') prevBtn?.click();
+		if (e.key === 'ArrowRight') nextBtn?.click();
+	});
+</script>
