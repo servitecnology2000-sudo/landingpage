@@ -8,7 +8,7 @@ const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string
 const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
 const cookie = Astro.cookies.get('admin_session');
 if (cookie?.value !== adminSecret) {
-	return Astro.redirect('/admin/login');
+	return Astro.redirect('/meson-servitecnology-st/login');
 }
 
 // Handle DELETE
@@ -19,7 +19,7 @@ if (Astro.request.method === 'POST') {
 	if (action === 'delete' && id) {
 		await supabase.from('repuestos_productos').delete().eq('id', id);
 	}
-	return Astro.redirect('/admin');
+	return Astro.redirect('/meson-servitecnology-st');
 }
 
 // Fetch all products (graceful)
@@ -106,9 +106,9 @@ const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - e
 	<div class="topbar">
 		<span class="brand">SERVITECNOLOGY Admin</span>
 		<div class="topbar-actions">
-			<a href="/admin/nuevo" class="btn btn-primary">+ Nuevo Producto</a>
+			<a href="/meson-servitecnology-st/nuevo" class="btn btn-primary">+ Nuevo Producto</a>
 			<a href="/" class="btn btn-outline">Ver Sitio</a>
-			<a href="/admin/logout" class="btn btn-outline">Cerrar sesión</a>
+			<a href="/meson-servitecnology-st/logout" class="btn btn-outline">Cerrar sesión</a>
 		</div>
 	</div>
 
@@ -156,7 +156,7 @@ const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - e
 				<div class="empty">
 					<div class="empty-icon">📦</div>
 					<p>No hay productos registrados.</p>
-					<p style="margin-top: 0.5rem;"><a href="/admin/nuevo" class="btn btn-primary" style="display: inline-flex; margin-top: 1rem;">+ Crear primer producto</a></p>
+					<p style="margin-top: 0.5rem;"><a href="/meson-servitecnology-st/nuevo" class="btn btn-primary" style="display: inline-flex; margin-top: 1rem;">+ Crear primer producto</a></p>
 				</div>
 			) : (
 				<table>
@@ -196,7 +196,7 @@ const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - e
 								<td class="hide-mobile">{new Date(p.created_at).toLocaleDateString('es-CL')}</td>
 								<td>
 									<div class="actions-cell">
-										<a href={`/admin/editar/${p.id}`} class="btn btn-outline" style="padding:0.35rem 0.6rem;">Editar</a>
+										<a href={`/meson-servitecnology-st/editar/${p.id}`} class="btn btn-outline" style="padding:0.35rem 0.6rem;">Editar</a>
 										<form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este producto?');">
 											<input type="hidden" name="action" value="delete" />
 											<input type="hidden" name="id" value={p.id} />

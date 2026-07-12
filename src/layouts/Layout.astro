@@ -80,7 +80,7 @@ const {
 			import { supabase } from '../lib/supabase';
 			
 			// Solo trackear si no estamos en el admin
-			if (!window.location.pathname.startsWith('/admin')) {
+			if (!window.location.pathname.startsWith('/meson-servitecnology-st')) {
 				const trackEvent = async (tipo: string, elemento_id: string | null = null) => {
 					try {
 						await supabase.from('metricas_eventos').insert([

@@ -8,7 +8,7 @@ const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string
 const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
 const cookie = Astro.cookies.get('admin_session');
 if (cookie?.value !== adminSecret) {
-	return Astro.redirect('/admin/login');
+	return Astro.redirect('/meson-servitecnology-st/login');
 }
 
 let errorMsg = '';
@@ -102,7 +102,7 @@ if (Astro.request.method === 'POST') {
 		}
 
 		successMsg = 'Producto agregado exitosamente';
-		return Astro.redirect('/admin');
+		return Astro.redirect('/meson-servitecnology-st');
 	} catch (err: any) {
 		errorMsg = err.message || 'Ocurrió un error inesperado';
 	}
@@ -163,7 +163,7 @@ try {
 <body>
 	<div class="topbar">
 		<span class="brand">SERVITECNOLOGY Admin</span>
-		<a href="/admin" class="btn btn-outline">Volver al Panel</a>
+		<a href="/meson-servitecnology-st" class="btn btn-outline">Volver al Panel</a>
 	</div>
 
 	<div class="container">
@@ -277,7 +277,7 @@ try {
 				</div>
 
 				<div class="actions">
-					<a href="/admin" class="btn btn-outline">Cancelar</a>
+					<a href="/meson-servitecnology-st" class="btn btn-outline">Cancelar</a>
 					<button type="submit" class="btn btn-primary" style="padding:0.75rem 1.5rem;">Guardar Producto</button>
 				</div>
 			</form>

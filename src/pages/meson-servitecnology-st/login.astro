@@ -1,0 +1,164 @@
+---
+import { supabase } from '../../lib/supabase';
+
+export const prerender = false;
+
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
+
+const cookie = Astro.cookies.get('admin_session');
+if (cookie?.value === adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st');
+}
+
+let error = '';
+let step = 'password'; // 'password' or 'otp'
+let email = '';
+
+const pendingEmailCookie = Astro.cookies.get('admin_pending_email');
+if (pendingEmailCookie?.value) {
+	step = 'otp';
+	email = pendingEmailCookie.value;
+}
+
+if (Astro.request.method === 'POST') {
+	const formData = await Astro.request.formData();
+	const action = formData.get('action')?.toString();
+
+	if (action === 'submit_password') {
+		const password = formData.get('password')?.toString();
+		const inputEmail = formData.get('email')?.toString().trim();
+
+		if (password === adminSecret && inputEmail) {
+			// Trigger Supabase OTP
+			const { error: otpError } = await supabase.auth.signInWithOtp({
+				email: inputEmail,
+				options: {
+					shouldCreateUser: true
+				}
+			});
+
+			if (otpError) {
+				console.error('Supabase OTP Error:', otpError);
+				error = `Error al enviar OTP: ${otpError.message}`;
+			} else {
+				Astro.cookies.set('admin_pending_email', inputEmail, {
+					path: '/',
+					httpOnly: true,
+					secure: true,
+					sameSite: 'lax',
+					maxAge: 600 // 10 minutes
+				});
+				step = 'otp';
+				email = inputEmail;
+			}
+		} else {
+			error = 'Contraseña incorrecta o correo vacío';
+		}
+	} else if (action === 'submit_otp') {
+		const otp = formData.get('otp')?.toString().trim();
+		if (otp && email) {
+			const { data, error: verifyError } = await supabase.auth.verifyOtp({
+				email,
+				token: otp,
+				type: 'email'
+			});
+
+			if (verifyError) {
+				console.error('Supabase Verify OTP Error:', verifyError);
+				error = `Código incorrecto o vencido: ${verifyError.message}`;
+			} else {
+				Astro.cookies.delete('admin_pending_email', { path: '/' });
+				Astro.cookies.set('admin_session', adminSecret, {
+					path: '/',
+					httpOnly: true,
+					secure: true,
+					sameSite: 'lax',
+					maxAge: 60 * 60 * 24
+				});
+				return Astro.redirect('/meson-servitecnology-st');
+			}
+		} else {
+			error = 'Código OTP no proporcionado';
+		}
+	} else if (action === 'cancel_otp') {
+		Astro.cookies.delete('admin_pending_email', { path: '/' });
+		step = 'password';
+		email = '';
+	}
+}
+---
+
+<html lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
+	<meta name="robots" content="noindex, nofollow" />
+	<title>SERVITECNOLOGY Admin — Iniciar Sesión (2FA)</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { font-family: 'Inter', sans-serif; background: #09090b; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+		.login-card { background: rgba(24,24,27,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 2.5rem; width: 100%; max-width: 440px; backdrop-filter: blur(12px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); }
+		h1 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem; }
+		.brand { background: linear-gradient(to right, #00FF7F, #00CFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+		.subtitle { text-align: center; font-size: 0.8rem; color: #94a3b8; margin-bottom: 2rem; }
+		label { display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+		input { width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; color: white; font-size: 0.875rem; outline: none; transition: border-color 0.3s; margin-bottom: 1.25rem; }
+		input:focus { border-color: #00CFFF; }
+		button { width: 100%; margin-top: 1rem; padding: 0.75rem; background: linear-gradient(to right, #00CFFF, #00FF7F); color: black; font-weight: 700; font-size: 0.875rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: opacity 0.3s; }
+		button:hover { opacity: 0.9; }
+		.btn-secondary { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; margin-top: 0.5rem; }
+		.btn-secondary:hover { border-color: #f87171; color: #f87171; }
+		.error { color: #f87171; font-size: 0.75rem; text-align: center; margin-top: 1rem; }
+		.back { display: block; text-align: center; margin-top: 1.5rem; color: #64748b; font-size: 0.75rem; text-decoration: none; }
+		.back:hover { color: #00CFFF; }
+		.info-box { background: rgba(0, 207, 255, 0.05); border: 1px solid rgba(0, 207, 255, 0.2); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.8rem; color: #00CFFF; line-height: 1.4; }
+	</style>
+</head>
+<body>
+	<div class="login-card">
+		<h1><span class="brand">SERVITECNOLOGY</span> Admin</h1>
+		<p class="subtitle">Panel de administración privado (MFA)</p>
+
+		{step === 'password' && (
+			<form method="POST">
+				<input type="hidden" name="action" value="submit_password" />
+				
+				<label for="email">Correo Administrador</label>
+				<input type="email" id="email" name="email" placeholder="ejemplo@servitecnology.com" required autofocus />
+
+				<label for="password">Contraseña de acceso</label>
+				<input type="password" id="password" name="password" placeholder="Ingresa la contraseña" required />
+				
+				<button type="submit">Siguiente (Enviar 2FA)</button>
+			</form>
+		)}
+
+		{step === 'otp' && (
+			<form method="POST">
+				<input type="hidden" name="action" value="submit_otp" />
+				
+				<div class="info-box">
+					Se ha enviado un código de acceso único (OTP) al correo: <strong>{email}</strong>.
+					Por favor, ingrésalo para verificar tu identidad.
+				</div>
+
+				<label for="otp">Código OTP (6 dígitos)</label>
+				<input type="text" id="otp" name="otp" placeholder="123456" pattern="[0-9]{6}" required autofocus />
+				
+				<button type="submit">Verificar e Ingresar</button>
+			</form>
+			<form method="POST">
+				<input type="hidden" name="action" value="cancel_otp" />
+				<button type="submit" class="btn-secondary">Volver</button>
+			</form>
+		)}
+
+		{error && <p class="error">{error}</p>}
+		<a href="/" class="back">← Volver al sitio</a>
+	</div>
+</body>
+</html>
