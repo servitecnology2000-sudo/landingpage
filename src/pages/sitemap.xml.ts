@@ -35,6 +35,36 @@ export const GET: APIRoute = async (context) => {
 		<changefreq>monthly</changefreq>
 		<priority>0.3</priority>
 	</url>
+	<url>
+		<loc>${baseUrl}/repuestos</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>${baseUrl}/soporte</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>${baseUrl}/gaming</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>${baseUrl}/cctv</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>${baseUrl}/redes</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>${baseUrl}/impresoras</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
 
 	<!-- Dynamic Product Pages -->
 	${(products || []).map(p => {

@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+
+const serviceTitle = "Mantenimiento y Reparación de Impresoras";
+const serviceDescription = "Soporte técnico integral, limpieza de cabezales, cambio de almohadillas y rodillos, mantención preventiva y correctiva de equipos HP, Epson, Canon y Brother en Santiago.";
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte o mantención para mi impresora.`);
+const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+---
+
+<Layout 
+	title={`${serviceTitle} | SERVITECNOLOGY`} 
+	description={serviceDescription}
+	keywords="reparar impresora, epson servicio tecnico, soporte hp, mantencion impresora, cabezal tapado, almohadillas epson, servitecnology"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen pt-24 pb-20 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<!-- HERO SECTION -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full text-center py-12 md:py-20 space-y-6">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-sm font-semibold uppercase tracking-wider">
+				Soporte Multimarca
+			</div>
+			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+				Servicio Técnico <br class="hidden sm:inline" />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">
+					de Impresoras y Plotters
+				</span>
+			</h1>
+			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+				{serviceDescription}
+			</p>
+			<div class="pt-6">
+				<a 
+					href={waLink}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex justify-center items-center gap-3 bg-brand-cyan text-black hover:bg-brand-green px-8 py-4 md:py-5 rounded-xl font-bold text-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,207,255,0.2)] hover:scale-105"
+				>
+					Agendar Reparación
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+				</a>
+			</div>
+		</section>
+
+		<!-- PROCESO DE CONTRATACIÓN -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Proceso de Contratación <span class="text-brand-cyan">Sencillo</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
+					<h3 class="text-xl font-bold text-white mb-3">1. Consulta de Falla</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Nos indicas marca, modelo e indicas el error (ej: rayas en la hoja, no toma papel, luces parpadeantes o almohadillas llenas).
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
+					<h3 class="text-xl font-bold text-white mb-3">2. Ingreso y Diagnóstico</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Ingresamos la impresora al taller técnico. Realizamos desarme y diagnóstico para cotizarte la reparación exacta o repuestos requeridos.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
+					<h3 class="text-xl font-bold text-white mb-3">3. Pruebas de Calidad</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Reparamos el equipo y realizamos múltiples test de inyección de tinta o fusión de tóner para certificar impresiones nítidas antes de entregártela.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- CÓMO TRABAJAMOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Nuestra Metodología y Herramientas
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Tiempos de Respuesta</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Diagnóstico técnico formal entre 48 y 72 horas hábiles. Tiempo sujeto a disponibilidad de repuestos específicos de cada marca.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Garantía de Satisfacción</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Garantía de 3 meses para el trabajo de servicio técnico y repuestos instalados por nuestro personal.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Insumos y Limpieza por Ultrasonido</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Utilizamos solventes específicos y destapadores químicos profesionales. Limpieza de inyectores con tina de ultrasonido para recuperar la calidad de impresión.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Reseteo Electrónico</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Realizamos reseteo de contadores lógicos de almohadillas mediante software oficial y reemplazo físico del absorbedor de desecho.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- PORTAFOLIO DE PROYECTOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Trabajos Realizados <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">y Casos Reales</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/impresora.jpg" alt="Mantención de Impresora" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Epson EcoTank L3110: Destape de Cabezal</h3>
+						<p class="text-slate-400 text-xs">
+							Equipo no imprimía el color negro tras meses de inactividad. Se realizó lavado interno de mangueras, purga del sistema continuo y limpieza química del cabezal, recuperando el test de inyección al 100%.
+						</p>
+					</div>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/principal.jpg" alt="Servicio Técnico Multifuncional" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Cambio de Almohadillas y Reset L4150</h3>
+						<p class="text-slate-400 text-xs">
+							Impresora bloqueada indicando "vida útil de almohadillas terminada". Se realizó desarme, lavado de depósito físico, instalación de fieltro nuevo y desbloqueo de firmware.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por soporte de impresoras..." />
+</Layout>

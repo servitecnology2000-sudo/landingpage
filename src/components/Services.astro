@@ -4,6 +4,7 @@ interface ServiceItem {
 	description: string;
 	iconPath: string;
 	image: string;
+	link: string;
 }
 
 const services: ServiceItem[] = [
@@ -12,30 +13,35 @@ const services: ServiceItem[] = [
 		description: "Diagnóstico completo, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos. Devolvemos el rendimiento original a tus equipos.",
 		iconPath: "tools",
 		image: "/imagenes/soporte.jpg",
+		link: "/soporte",
 	},
 	{
 		title: "Armado de PCs y Modding Gaming",
 		description: "Configuración personalizada de computadoras de alto rendimiento para gaming, streaming o diseño profesional. Maximizamos tu presupuesto seleccionando componentes con la mejor relación calidad-precio.",
 		iconPath: "cpu",
 		image: "/imagenes/gaming.jpg",
+		link: "/gaming",
 	},
 	{
 		title: "Seguridad e Instalación de CCTV",
 		description: "Diseño y montaje de sistemas de videovigilancia de alta definición y configuración integrada para monitoreo remoto en tiempo real.",
 		iconPath: "camera",
 		image: "/imagenes/cctv.jpg",
+		link: "/cctv",
 	},
 	{
 		title: "Redes y Conectividad",
 		description: "Cableado estructurado, diagnóstico y optimización de señales Wi-Fi, configuración de routers avanzados y resolución definitiva de problemas de conectividad.",
 		iconPath: "network",
 		image: "/imagenes/redes.jpg",
+		link: "/redes",
 	},
 	{
 		title: "Mantenimiento y Reparación de Impresoras",
 		description: "Soporte técnico integral y mantenimiento preventivo/correctivo para equipos de impresión. Especialistas en las marcas líderes del mercado: HP, Epson, Canon y Brother.",
 		iconPath: "printer",
 		image: "/imagenes/impresora.jpg",
+		link: "/impresoras",
 	}
 ];
 ---
@@ -75,7 +81,7 @@ const services: ServiceItem[] = [
 			<!-- Scrollable Area -->
 			<div id="services-carousel" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-10 pt-4 px-2">
 				{services.map((service) => (
-					<div data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\s+/g, '_').toLowerCase()}`} class="snap-center shrink-0 w-full flex flex-col md:flex-row bg-zinc-950/90 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-brand-cyan/40 hover:shadow-[0_15px_40px_rgba(0,207,255,0.15)] group h-full items-stretch">
+					<a href={service.link} data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\s+/g, '_').toLowerCase()}`} class="snap-center shrink-0 w-full flex flex-col md:flex-row bg-zinc-950/90 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-brand-cyan/40 hover:shadow-[0_15px_40px_rgba(0,207,255,0.15)] group h-full items-stretch cursor-pointer">
 						
 						<!-- Top/Left Image -->
 						<div class="w-full md:w-1/2 h-72 md:h-[500px] overflow-hidden relative">
@@ -129,18 +135,15 @@ const services: ServiceItem[] = [
 							
 							<!-- CTA Button -->
 							<div class="pt-4 mt-auto md:mt-4">
-								<a 
-									href={`https://wa.me/56948672300?text=${encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte técnico para: ${service.title}`)}`}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="w-full inline-flex justify-center items-center gap-3 bg-brand-cyan/10 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/20 px-6 py-4 md:py-5 rounded-xl font-bold text-[16px] md:text-xl transition-all duration-300 group/btn"
+								<div 
+									class="w-full inline-flex justify-center items-center gap-3 bg-brand-cyan/10 group-hover:bg-brand-cyan text-brand-cyan group-hover:text-black border border-brand-cyan/20 px-6 py-4 md:py-5 rounded-xl font-bold text-[16px] md:text-xl transition-all duration-300 group/btn"
 								>
-									Escríbenos
+									Ver detalles
 									<svg class="w-6 h-6 md:w-7 md:h-7 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-								</a>
+								</div>
 							</div>
 						</div>
-					</div>
+					</a>
 				))}
 			</div>
 			

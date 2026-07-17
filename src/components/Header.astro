@@ -7,8 +7,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-	{ label: 'Servicios', href: '#servicios' },
-	{ label: 'Repuestos', href: '#catalogo' },
+	{ label: 'Servicios', href: '/#servicios' },
+	{ label: 'Repuestos', href: '/repuestos' },
 ];
 ---
 
@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
 					{item.label}
 				</a>
 			))}
-			<Button href="#contacto" variant="outline" class="px-5 py-2 text-xs">
+			<Button href="/#contacto" variant="outline" class="px-5 py-2 text-xs">
 				Contacto
 			</Button>
 		</nav>
@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
 				</a>
 			))}
 			<div class="pt-4">
-				<Button href="#contacto" variant="primary" class="w-full">
+				<Button href="/#contacto" variant="primary" class="w-full">
 					Contacto
 				</Button>
 			</div>

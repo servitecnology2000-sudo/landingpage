@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+
+const serviceTitle = "Redes y Conectividad";
+const serviceDescription = "Cableado estructurado Cat6/Cat6A, diagnóstico de señal Wi-Fi lenta, instalación de routers y repetidores tipo Mesh y optimizaciones definitivas de latencia en Santiago.";
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte de redes o conectividad para mi oficina o domicilio.`);
+const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+---
+
+<Layout 
+	title={`${serviceTitle} | SERVITECNOLOGY`} 
+	description={serviceDescription}
+	keywords="redes, wifi lento, cableado estructurado, mejorar wifi, router mesh, access point, servitecnology, chile"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen pt-24 pb-20 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<!-- HERO SECTION -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full text-center py-12 md:py-20 space-y-6">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-green/20 bg-brand-green/5 text-brand-green text-sm font-semibold uppercase tracking-wider">
+				Conectividad Profesional
+			</div>
+			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+				Soluciones de Redes <br class="hidden sm:inline" />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
+					y Estabilidad Wi-Fi
+				</span>
+			</h1>
+			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+				{serviceDescription}
+			</p>
+			<div class="pt-6">
+				<a 
+					href={waLink}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex justify-center items-center gap-3 bg-brand-green text-black hover:bg-brand-cyan px-8 py-4 md:py-5 rounded-xl font-bold text-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,255,127,0.2)] hover:scale-105"
+				>
+					Optimizar mi Red
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+				</a>
+			</div>
+		</section>
+
+		<!-- PROCESO DE CONTRATACIÓN -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Proceso de <span class="text-brand-green">Optimización</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
+					<h3 class="text-xl font-bold text-white mb-3">1. Diagnóstico de Señal</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Realizamos un análisis de espectro inalámbrico y saturación de canales en tu propiedad para localizar las zonas sin cobertura o con interferencia.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
+					<h3 class="text-xl font-bold text-white mb-3">2. Plan de Canalización</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Proponemos la ubicación óptima para Access Points, repetidores tipo Mesh y puntos cableados estratégicos para computadores y consolas.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
+					<h3 class="text-xl font-bold text-white mb-3">3. Certificación y Entrega</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Instalamos canalizaciones prolijas, crimpamos conectores RJ45 de alta calidad y testeamos la red para certificar que recibes el 100% de la velocidad de tu plan contratado.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- CÓMO TRABAJAMOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Garantía y Metodología en Conectividad
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Tiempos de Respuesta</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Evaluaciones presenciales programadas en 24/48 horas. Ejecuciones de cableado y montaje en terreno en el día acordado.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Garantía de Estabilidad</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								6 meses de soporte técnico de red ante cualquier desconfiguración de Access Points o daño en la estructura física instalada.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" /></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Insumos Certificados</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Utilizamos cables de red de cobre sólido blindado para exteriores (FTP Cat6) y gabinetes ordenadores para proteger tus equipos y routers principales.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Seguridad de Red</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Configuramos políticas de seguridad (WPA3), aislamiento de red de invitados y filtros para proteger tu privacidad de intrusiones.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- PORTAFOLIO DE PROYECTOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Casos de Éxito y <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">Sistemas Implementados</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/redes.jpg" alt="Instalación de Redes" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Red Mesh Inalámbrica de 3 Nodos en Casa de 2 Pisos</h3>
+						<p class="text-slate-400 text-xs">
+							Se resolvió problema de cobertura en los dormitorios de la planta superior. Instalación de nodos Mesh interconectados por cable Cat6 para mantener el 100% de la velocidad de fibra óptica.
+						</p>
+					</div>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/principal.jpg" alt="Cableado Estructurado Oficina" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Cableado Estructurado y Rack de Comunicaciones</h3>
+						<p class="text-slate-400 text-xs">
+							Ordenamiento de gabinete, re-ponchado de paneles y tendido de 12 puntos de datos Cat6 para computadores e impresoras en oficina de corretaje de propiedades.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por redes..." />
+</Layout>

@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+
+const serviceTitle = "Armado de PCs y Modding Gaming";
+const serviceDescription = "Diseño y armado de computadores de alto rendimiento a medida para gaming, streaming, renderizado y diseño profesional. Maximizamos tu rendimiento por cada peso invertido.";
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa cotizar u optimizar un PC Gaming o estación de trabajo.`);
+const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+---
+
+<Layout 
+	title={`${serviceTitle} | SERVITECNOLOGY`} 
+	description={serviceDescription}
+	keywords="armar pc gamer, computadores a medida, modding pc, pc streaming, armado de computadoras, santiago"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen pt-24 pb-20 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<!-- HERO SECTION -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full text-center py-12 md:py-20 space-y-6">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-green/20 bg-brand-green/5 text-brand-green text-sm font-semibold uppercase tracking-wider">
+				Alto Rendimiento
+			</div>
+			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+				Armado de PCs Gamer <br class="hidden sm:inline" />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
+					y Estaciones de Trabajo
+				</span>
+			</h1>
+			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+				{serviceDescription}
+			</p>
+			<div class="pt-6">
+				<a 
+					href={waLink}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex justify-center items-center gap-3 bg-brand-green text-black hover:bg-brand-cyan px-8 py-4 md:py-5 rounded-xl font-bold text-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,255,127,0.2)] hover:scale-105"
+				>
+					Cotizar mi PC Ideal
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+				</a>
+			</div>
+		</section>
+
+		<!-- PROCESO DE CONTRATACIÓN -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				El Proceso de <span class="text-brand-green">Diseño y Armado</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
+					<h3 class="text-xl font-bold text-white mb-3">1. Definición de Perfil</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Analizamos tus juegos favoritos, programas de diseño o resolución de pantalla y definimos el presupuesto idóneo.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
+					<h3 class="text-xl font-bold text-white mb-3">2. Selección y Compra</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Buscamos componentes con la mejor relación calidad-precio y compatibilidad garantizada. Nos encargamos de la gestión de adquisición de partes.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
+					<h3 class="text-xl font-bold text-white mb-3">3. Armado y Pruebas</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Realizamos ensamble premium con ordenamiento de cables impecable. Instalamos Windows optimizado y realizamos pruebas de estabilidad (stress test) de 12 horas.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- CÓMO TRABAJAMOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Metodología y Garantías
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Tiempos de Entrega</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Generalmente entre 3 a 5 días hábiles una vez recibidos todos los componentes en el taller.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Garantía Directa y de Fábrica</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Entregamos garantía de ensamble por 6 meses, y gestionamos directamente las garantías individuales con los fabricantes por 1 a 3 años.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6v6H9V9z" /></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Herramientas e Insumos</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Configuración de perfiles de memoria EXPO/XMP, undervolt optimizado para CPU y ajuste de curvas de ventiladores para máximo silencio.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Entrega de Cajas e Inventario</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Te entregamos absolutamente todas las cajas de los componentes y accesorios sobrantes para respaldar la originalidad y reventa futura.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- PORTAFOLIO DE PROYECTOS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Galería de Proyectos <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">Gaming & Workstation</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/gaming.jpg" alt="Ensamble Gaming High-End" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Proyecto Cyberpunk: Ryzen 7 + RTX 4070 Ti</h3>
+						<p class="text-slate-400 text-xs">
+							Armado gaming premium enfocado a 1440p Ultra. Cuenta con refrigeración líquida de 360mm y gestión de cableado personalizada en gabinete de doble vidrio templado.
+						</p>
+					</div>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="h-64 overflow-hidden relative">
+						<img src="/imagenes/principal.jpg" alt="Estación de Trabajo Profesional" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+					</div>
+					<div class="p-6 space-y-2">
+						<h3 class="text-lg font-bold text-white">Workstation Render 3D: Dual RTX y Ryzen Threadripper</h3>
+						<p class="text-slate-400 text-xs">
+							Estación de trabajo pesada para arquitectura y animación. Optimización extrema de flujo de aire y almacenamiento NVMe PCIe 5.0 de alta velocidad.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, me interesa armar un PC..." />
+</Layout>
