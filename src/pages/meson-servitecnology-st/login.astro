@@ -41,7 +41,13 @@ if (Astro.request.method === 'POST') {
 
 			if (otpError) {
 				console.error('Supabase OTP Error:', otpError);
-				error = `Error al enviar OTP: ${otpError.message || JSON.stringify(otpError)}`;
+				const errorObj = {
+					name: otpError.name,
+					message: otpError.message,
+					status: (otpError as any).status,
+					...otpError
+				};
+				error = `Error al enviar OTP: ${errorObj.message || JSON.stringify(errorObj)}`;
 			} else {
 				Astro.cookies.set('admin_pending_email', inputEmail, {
 					path: '/',
