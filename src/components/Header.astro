@@ -23,7 +23,17 @@ const navItems: NavItem[] = [
 		</a>
 
 		<!-- Desktop Navigation -->
-		<nav class="hidden md:flex items-center gap-8">
+		<nav class="hidden md:flex items-center gap-6">
+			<a 
+				href="mailto:contacto@servitecnology.com" 
+				class="inline-flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-brand-cyan transition-all duration-300 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 group"
+				aria-label="Enviar correo a contacto@servitecnology.com"
+			>
+				<svg class="w-3.5 h-3.5 text-brand-cyan group-hover:scale-110 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+				</svg>
+				<span class="tracking-wide">contacto@servitecnology.com</span>
+			</a>
 			{navItems.map((item) => (
 				<a 
 					href={item.href} 
@@ -58,6 +68,15 @@ const navItems: NavItem[] = [
 		class="hidden w-full border-t border-white/5 bg-black/95 px-6 py-6 md:hidden transition-all duration-300 ease-in-out"
 	>
 		<nav class="flex flex-col gap-4">
+			<a 
+				href="mailto:contacto@servitecnology.com" 
+				class="mobile-nav-link flex items-center gap-2.5 text-sm font-medium text-brand-cyan hover:underline py-2 border-b border-white/5"
+			>
+				<svg class="w-4 h-4 text-brand-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+				</svg>
+				<span>contacto@servitecnology.com</span>
+			</a>
 			{navItems.map((item) => (
 				<a 
 					href={item.href} 

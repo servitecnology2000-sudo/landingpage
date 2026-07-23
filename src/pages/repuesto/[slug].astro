@@ -55,7 +55,43 @@ const productSchema = {
 		"priceCurrency": "CLP",
 		"price": product.precio_venta,
 		"itemCondition": "https://schema.org/UsedCondition",
-		"availability": product.stock_cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+		"availability": product.stock_cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+		"hasMerchantReturnPolicy": {
+			"@type": "MerchantReturnPolicy",
+			"applicableCountry": "CL",
+			"returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+			"merchantReturnDays": 10,
+			"returnMethod": "https://schema.org/ReturnInStore",
+			"returnFees": "https://schema.org/FreeReturn",
+			"merchantReturnLink": "https://servitecnology.com/garantias"
+		},
+		"shippingDetails": {
+			"@type": "OfferShippingDetails",
+			"shippingDestination": {
+				"@type": "DefinedRegion",
+				"addressCountry": "CL"
+			},
+			"shippingRate": {
+				"@type": "MonetaryAmount",
+				"value": 0,
+				"currency": "CLP"
+			},
+			"deliveryTime": {
+				"@type": "ShippingDeliveryTime",
+				"handlingTime": {
+					"@type": "QuantitativeValue",
+					"minValue": 0,
+					"maxValue": 1,
+					"unitCode": "DAY"
+				},
+				"transitTime": {
+					"@type": "QuantitativeValue",
+					"minValue": 1,
+					"maxValue": 3,
+					"unitCode": "DAY"
+				}
+			}
+		}
 	}
 };
 ---
