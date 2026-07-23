@@ -12,7 +12,7 @@ const services: ServiceItem[] = [
 		title: "Soporte Técnico Especializado",
 		description: "Diagnóstico completo, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos. Devolvemos el rendimiento original a tus equipos.",
 		iconPath: "tools",
-		image: "/imagenes/soporte.jpg",
+		image: "/imagenes/soportepc.jpg",
 		link: "/soporte",
 	},
 	{
@@ -42,13 +42,21 @@ const services: ServiceItem[] = [
 		iconPath: "printer",
 		image: "/imagenes/impresora.jpg",
 		link: "/impresoras",
+	},
+	{
+		title: "Diseño y Desarrollo Web Profesional",
+		description: "Creación de sitios web modernos, tiendas online y landing pages optimizadas con alta velocidad, diseño UI/UX de vanguardia e integración para motores de búsqueda (SEO) y ChatGPT.",
+		iconPath: "code",
+		image: "/imagenes/disenoweb.jpg",
+		link: "/#contacto",
 	}
 ];
 ---
 
-<section id="servicios" class="relative py-24 bg-black overflow-hidden">
-	<!-- Background decorations -->
-	<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-cyan/5 rounded-full blur-[160px] pointer-events-none"></div>
+<section id="servicios" class="relative py-24 bg-black overflow-hidden select-none">
+	<!-- Background glow decorations -->
+	<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-brand-cyan/5 rounded-full blur-[180px] pointer-events-none"></div>
+	<div class="absolute bottom-0 right-1/4 w-[450px] h-[450px] bg-brand-green/5 rounded-full blur-[160px] pointer-events-none"></div>
 
 	<div class="relative z-10 mx-auto max-w-7xl px-4 md:px-8 w-full">
 		<!-- Section Header -->
@@ -67,119 +75,310 @@ const services: ServiceItem[] = [
 			</p>
 		</div>
 
-		<!-- Carousel Container -->
-		<div class="relative group/carousel">
+		<!-- 3D Coverflow Carousel Container -->
+		<div id="coverflow-wrapper" class="relative max-w-5xl mx-auto px-4 md:px-12 py-4">
 			
-			<!-- Navigation Arrows (Desktop mostly) -->
-			<button id="prev-service" class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-black/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex focus:opacity-100 shadow-2xl" aria-label="Anterior">
-				<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+			<!-- Navigation Arrows -->
+			<button 
+				id="coverflow-prev" 
+				class="absolute left-0 md:left-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-zinc-900/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,0,0,0.8)] focus:outline-none" 
+				aria-label="Servicio anterior"
+			>
+				<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+				</svg>
 			</button>
-			<button id="next-service" class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-black/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex focus:opacity-100 shadow-2xl" aria-label="Siguiente">
-				<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+			
+			<button 
+				id="coverflow-next" 
+				class="absolute right-0 md:right-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-zinc-900/90 text-white border border-white/20 hover:bg-brand-cyan hover:text-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,0,0,0.8)] focus:outline-none" 
+				aria-label="Siguiente servicio"
+			>
+				<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+				</svg>
 			</button>
 
-			<!-- Scrollable Area -->
-			<div id="services-carousel" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-10 pt-4 px-2">
-				{services.map((service) => (
-					<a href={service.link} data-track-event="clic_boton" data-element-id={`seccion_servicios_${service.title.replace(/\s+/g, '_').toLowerCase()}`} class="snap-center shrink-0 w-full flex flex-col md:flex-row bg-zinc-950/90 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-brand-cyan/40 hover:shadow-[0_15px_40px_rgba(0,207,255,0.15)] group h-full items-stretch cursor-pointer">
-						
-						<!-- Top/Left Image -->
-						<div class="w-full md:w-1/2 h-72 md:h-[500px] overflow-hidden relative">
-							<!-- Gradient overlays to blend image with content nicely -->
-							<div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 to-transparent z-10 pointer-events-none md:bg-gradient-to-r md:from-transparent md:to-zinc-950/90"></div>
-							
-							<img src={service.image} alt={service.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none" loading="lazy" />
-							
-							<!-- Floating Icon -->
-							<div class="absolute bottom-4 left-6 md:top-6 md:left-6 md:bottom-auto z-20 p-3.5 rounded-2xl bg-black/50 backdrop-blur-md border border-white/20 text-brand-cyan shadow-xl">
-								{service.iconPath === "tools" && (
-									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-									</svg>
-								)}
-								{service.iconPath === "cpu" && (
-									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 9h6v6H9V9z" />
-									</svg>
-								)}
-								{service.iconPath === "camera" && (
-									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-									</svg>
-								)}
-								{service.iconPath === "network" && (
-									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-									</svg>
-								)}
-								{service.iconPath === "printer" && (
-									<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-									</svg>
-								)}
-							</div>
-						</div>
-
-						<!-- Content Area -->
-						<div class="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center gap-6 md:gap-8">
-							<div class="space-y-4 md:space-y-6">
-								<h3 class="text-[24px] md:text-4xl font-bold text-white group-hover:text-brand-cyan transition-colors leading-tight">
-									{service.title}
-								</h3>
-								<p class="text-[16px] md:text-xl text-slate-400 leading-relaxed">
-									{service.description}
-								</p>
-							</div>
-							
-							<!-- CTA Button -->
-							<div class="pt-4 mt-auto md:mt-4">
-								<div 
-									class="w-full inline-flex justify-center items-center gap-3 bg-brand-cyan/10 group-hover:bg-brand-cyan text-brand-cyan group-hover:text-black border border-brand-cyan/20 px-6 py-4 md:py-5 rounded-xl font-bold text-[16px] md:text-xl transition-all duration-300 group/btn"
-								>
-									Ver detalles
-									<svg class="w-6 h-6 md:w-7 md:h-7 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+			<!-- 3D Stage / Stage Perspective -->
+			<div 
+				id="coverflow-stage" 
+				class="relative w-full h-[540px] md:h-[500px] flex items-center justify-center perspective-stage overflow-visible"
+			>
+				{services.map((service, index) => (
+					<div 
+						class="coverflow-card absolute w-full max-w-[340px] sm:max-w-[420px] md:max-w-[750px] h-[500px] md:h-[460px] transition-all duration-500 ease-out rounded-2xl border border-white/10 bg-zinc-950/90 backdrop-blur-xl shadow-2xl overflow-hidden cursor-pointer"
+						data-index={index}
+					>
+						<a 
+							href={service.link} 
+							data-track-event="clic_boton" 
+							data-element-id={`seccion_servicios_${service.title.replace(/\s+/g, '_').toLowerCase()}`}
+							class="flex flex-col md:flex-row h-full w-full group"
+						>
+							<!-- Image Column -->
+							<div class="w-full md:w-1/2 h-56 md:h-full relative overflow-hidden shrink-0">
+								<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-zinc-950 z-10 pointer-events-none"></div>
+								<img 
+									src={service.image} 
+									alt={service.title} 
+									class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+									loading="lazy" 
+								/>
+								
+								<!-- Floating Icon Badge -->
+								<div class="absolute top-4 left-4 z-20 p-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-brand-cyan shadow-xl">
+									{service.iconPath === "tools" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+										</svg>
+									)}
+									{service.iconPath === "cpu" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z" />
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 9h6v6H9V9z" />
+										</svg>
+									)}
+									{service.iconPath === "camera" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+										</svg>
+									)}
+									{service.iconPath === "network" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
+									)}
+									{service.iconPath === "printer" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+										</svg>
+									)}
+									{service.iconPath === "code" && (
+										<svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+										</svg>
+									)}
 								</div>
 							</div>
-						</div>
-					</a>
+
+							<!-- Content Column -->
+							<div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-between">
+								<div class="space-y-3 md:space-y-4">
+									<h3 class="text-xl md:text-3xl font-extrabold text-white group-hover:text-brand-cyan transition-colors leading-tight">
+										{service.title}
+									</h3>
+									<p class="text-xs md:text-base text-slate-300 leading-relaxed line-clamp-4 md:line-clamp-6">
+										{service.description}
+									</p>
+								</div>
+
+								<!-- Action Button -->
+								<div class="pt-4">
+									<div class="w-full inline-flex justify-center items-center gap-2.5 bg-brand-cyan/10 group-hover:bg-brand-cyan text-brand-cyan group-hover:text-black border border-brand-cyan/20 px-5 py-3 md:py-4 rounded-xl font-bold text-sm md:text-base transition-all duration-300">
+										<span>Ver detalles</span>
+										<svg class="w-5 h-5 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+										</svg>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
 				))}
 			</div>
-			
-			<!-- Mobile Swipe Indicator -->
-			<div class="flex justify-center mt-2 md:hidden">
-				<div class="inline-flex items-center gap-2 text-slate-300 text-[16px] font-medium bg-white/5 px-5 py-2.5 rounded-full backdrop-blur-sm border border-white/5">
-					<svg class="w-5 h-5 animate-bounce-x text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-					Desliza para ver más
+
+			<!-- Pagination Indicator Dots/Pills -->
+			<div id="coverflow-dots" class="flex justify-center items-center gap-2 mt-8 z-30 relative">
+				{services.map((_, index) => (
+					<button
+						class="coverflow-dot h-2.5 rounded-full transition-all duration-300 cursor-pointer border border-white/10"
+						data-dot-index={index}
+						aria-label={`Ir al servicio ${index + 1}`}
+					></button>
+				))}
+			</div>
+
+			<!-- Mobile Touch Swipe Hint -->
+			<div class="flex justify-center mt-3 md:hidden">
+				<div class="inline-flex items-center gap-2 text-slate-400 text-xs font-medium bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+					<svg class="w-4 h-4 text-brand-cyan animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+					</svg>
+					<span>Desliza lateralmente para navegar</span>
 				</div>
 			</div>
+
 		</div>
 	</div>
 </section>
 
 <script>
-	const carousel = document.getElementById('services-carousel');
-	const prev = document.getElementById('prev-service');
-	const next = document.getElementById('next-service');
-	
-	if (carousel && prev && next) {
-		prev.addEventListener('click', () => {
-			carousel.scrollBy({ left: -carousel.offsetWidth, behavior: 'smooth' });
+	const wrapper = document.getElementById('coverflow-wrapper');
+	const stage = document.getElementById('coverflow-stage');
+	const cards = document.querySelectorAll('.coverflow-card') as NodeListOf<HTMLElement>;
+	const dots = document.querySelectorAll('.coverflow-dot') as NodeListOf<HTMLElement>;
+	const prevBtn = document.getElementById('coverflow-prev');
+	const nextBtn = document.getElementById('coverflow-next');
+
+	const total = cards.length;
+	let currentIndex = 0;
+	let autoplayTimer: any = null;
+
+	function updateCoverflow() {
+		const isMobile = window.innerWidth < 768;
+
+		cards.forEach((card, index) => {
+			let offset = index - currentIndex;
+
+			// Wrap offset around -3 to 3 range for 6 items
+			if (offset > total / 2) offset -= total;
+			if (offset < -total / 2) offset += total;
+
+			if (offset === 0) {
+				// Center Active Card
+				card.style.transform = `translate3d(0, 0, 0) scale(1) rotateY(0deg)`;
+				card.style.opacity = '1';
+				card.style.zIndex = '30';
+				card.style.filter = 'none';
+				card.style.pointerEvents = 'auto';
+				card.classList.add('border-brand-cyan/40', 'shadow-[0_20px_50px_rgba(0,207,255,0.2)]');
+				card.classList.remove('border-white/10');
+			} else if (offset === 1) {
+				// Right Next Card (Secondary Transparent)
+				const translateX = isMobile ? '38%' : '52%';
+				const rotateY = isMobile ? '-10deg' : '-16deg';
+				card.style.transform = `translate3d(${translateX}, 0, -100px) scale(${isMobile ? 0.85 : 0.88}) rotateY(${rotateY})`;
+				card.style.opacity = isMobile ? '0.5' : '0.6';
+				card.style.zIndex = '20';
+				card.style.filter = 'brightness(0.7) blur(0.5px)';
+				card.style.pointerEvents = 'auto';
+				card.classList.remove('border-brand-cyan/40', 'shadow-[0_20px_50px_rgba(0,207,255,0.2)]');
+				card.classList.add('border-white/10');
+			} else if (offset === -1) {
+				// Left Prev Card (Secondary Transparent)
+				const translateX = isMobile ? '-38%' : '-52%';
+				const rotateY = isMobile ? '10deg' : '16deg';
+				card.style.transform = `translate3d(${translateX}, 0, -100px) scale(${isMobile ? 0.85 : 0.88}) rotateY(${rotateY})`;
+				card.style.opacity = isMobile ? '0.5' : '0.6';
+				card.style.zIndex = '20';
+				card.style.filter = 'brightness(0.7) blur(0.5px)';
+				card.style.pointerEvents = 'auto';
+				card.classList.remove('border-brand-cyan/40', 'shadow-[0_20px_50px_rgba(0,207,255,0.2)]');
+				card.classList.add('border-white/10');
+			} else {
+				// Farther Cards (Hidden in background depth)
+				const direction = offset > 0 ? 1 : -1;
+				card.style.transform = `translate3d(${direction * 85}%, 0, -250px) scale(0.7) rotateY(${-direction * 25}deg)`;
+				card.style.opacity = '0';
+				card.style.zIndex = '5';
+				card.style.filter = 'brightness(0.3) blur(4px)';
+				card.style.pointerEvents = 'none';
+				card.classList.remove('border-brand-cyan/40', 'shadow-[0_20px_50px_rgba(0,207,255,0.2)]');
+				card.classList.add('border-white/10');
+			}
 		});
-		next.addEventListener('click', () => {
-			carousel.scrollBy({ left: carousel.offsetWidth, behavior: 'smooth' });
+
+		// Update Dots
+		dots.forEach((dot, index) => {
+			if (index === currentIndex) {
+				dot.classList.add('w-8', 'bg-brand-cyan', 'border-brand-cyan');
+				dot.classList.remove('w-2.5', 'bg-white/20', 'border-white/10');
+			} else {
+				dot.classList.remove('w-8', 'bg-brand-cyan', 'border-brand-cyan');
+				dot.classList.add('w-2.5', 'bg-white/20', 'border-white/10');
+			}
 		});
+	}
+
+	function nextSlide() {
+		currentIndex = (currentIndex + 1) % total;
+		updateCoverflow();
+	}
+
+	function prevSlide() {
+		currentIndex = (currentIndex - 1 + total) % total;
+		updateCoverflow();
+	}
+
+	function startAutoplay() {
+		stopAutoplay();
+		autoplayTimer = setInterval(nextSlide, 4000);
+	}
+
+	function stopAutoplay() {
+		if (autoplayTimer) clearInterval(autoplayTimer);
+	}
+
+	// Initialize Controls & Listeners
+	if (stage && cards.length > 0) {
+		updateCoverflow();
+		startAutoplay();
+
+		prevBtn?.addEventListener('click', () => {
+			prevSlide();
+			startAutoplay();
+		});
+
+		nextBtn?.addEventListener('click', () => {
+			nextSlide();
+			startAutoplay();
+		});
+
+		dots.forEach((dot) => {
+			dot.addEventListener('click', () => {
+				const idx = parseInt(dot.getAttribute('data-dot-index') || '0', 10);
+				currentIndex = idx;
+				updateCoverflow();
+				startAutoplay();
+			});
+		});
+
+		// Click on secondary card to activate it
+		cards.forEach((card, idx) => {
+			card.addEventListener('click', (e) => {
+				if (idx !== currentIndex) {
+					e.preventDefault();
+					currentIndex = idx;
+					updateCoverflow();
+					startAutoplay();
+				}
+			});
+		});
+
+		// Pause autoplay on mouse hover
+		wrapper?.addEventListener('mouseenter', stopAutoplay);
+		wrapper?.addEventListener('mouseleave', startAutoplay);
+
+		// Touch swipe gestures support
+		let startX = 0;
+		let endX = 0;
+
+		stage.addEventListener('touchstart', (e) => {
+			startX = e.touches[0].clientX;
+			stopAutoplay();
+		}, { passive: true });
+
+		stage.addEventListener('touchend', (e) => {
+			endX = e.changedTouches[0].clientX;
+			const deltaX = endX - startX;
+			if (deltaX < -40) {
+				nextSlide();
+			} else if (deltaX > 40) {
+				prevSlide();
+			}
+			startAutoplay();
+		}, { passive: true });
+
+		// Handle window resize for dynamic perspective adjustments
+		window.addEventListener('resize', updateCoverflow);
 	}
 </script>
 
 <style>
-	.hide-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
-	.hide-scrollbar {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
+	.perspective-stage {
+		perspective: 1100px;
+		perspective-origin: 50% 50%;
 	}
 	@keyframes bounce-x {
 		0%, 100% { transform: translateX(0); }
