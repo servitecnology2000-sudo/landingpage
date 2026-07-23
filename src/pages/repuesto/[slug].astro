@@ -28,10 +28,10 @@ if (!product) {
 
 const compStr = product.compatibilidad && product.compatibilidad.length > 0 
 	? product.compatibilidad.slice(0, 3).join(', ') 
-	: '';
+	: 'varios modelos';
 
-const titleSEO = `${product.titulo} para ${compStr || 'varios modelos'} - SKU: ${product.sku} | SERVITECNOLOGY`;
-const descSEO = `Compra tu ${product.titulo} compatible con ${compStr || 'varios modelos'}. Repuesto original con SKU ${product.sku}. Disponible en Santiago de Chile con entrega previa coordinación.`;
+const titleSEO = `${product.titulo} para ${compStr} - SKU: ${product.sku} | SERVITECNOLOGY`;
+const descSEO = `Compra tu ${product.titulo} compatible con ${compStr}. Repuesto original con SKU ${product.sku}. Disponible en Santiago de Chile con entrega previa coordinación.`;
 const keywordsSEO = product.seo_keywords || `repuesto, ${product.titulo}, ${product.sku}, servitecnology`;
 
 const phone = "56948672300";
@@ -47,14 +47,14 @@ const productSchema = {
 	"@type": "Product",
 	"name": product.titulo,
 	"sku": product.sku,
-	"model": compStr,
+	"model": product.compatibilidad && product.compatibilidad.length > 0 ? product.compatibilidad.join(', ') : 'Varios',
 	"description": `${product.descripcion || ''} | SKU: ${product.sku} | Compatibilidad: ${product.compatibilidad ? product.compatibilidad.join(', ') : 'Varios'}`,
 	"image": images.length > 0 ? images[0] : "https://servitecnology.com/imagenes/principal.jpg",
 	"offers": {
 		"@type": "Offer",
 		"priceCurrency": "CLP",
 		"price": product.precio_venta,
-		"itemCondition": product.estado === "Nuevo" ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+		"itemCondition": "https://schema.org/UsedCondition",
 		"availability": product.stock_cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
 	}
 };
