@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabaseAdmin } from '../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export const prerender = false;
 
@@ -22,9 +22,22 @@ function sanitizeFileName(originalName: string, index: number): string {
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-	// Auth verification
-	const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
-	const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
+	// ─── Resolve env vars (process.env is the reliable source in SSR/Vercel) ─────
+	const SUPABASE_URL =
+		process.env['PUBLIC_SUPABASE_URL'] ||
+		import.meta.env.PUBLIC_SUPABASE_URL ||
+		'https://mivsnmvupahgbrjfdyhl.supabase.co';
+
+	const SERVICE_ROLE_KEY =
+		process.env['SUPABASE_SERVICE_ROLE_KEY'] ||
+		import.meta.env.SUPABASE_SERVICE_ROLE_KEY ||
+		'';
+
+	// ─── Auth ────────────────────────────────────────────────────────────────────
+	const adminSecret =
+		process.env['ADMIN_SECRET'] ||
+		import.meta.env.ADMIN_SECRET ||
+		'20181860';
 	const sessionCookie = cookies.get('admin_session');
 
 	if (sessionCookie?.value !== adminSecret) {
@@ -33,6 +46,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			{ status: 401, headers: { 'Content-Type': 'application/json' } }
 		);
 	}
+
+	// ─── Guard: SERVICE_ROLE_KEY must be present ─────────────────────────────────
+	if (!SERVICE_ROLE_KEY) {
+		console.error('[API Admin Upload] SUPABASE_SERVICE_ROLE_KEY is missing from environment variables!');
+		return new Response(
+			JSON.stringify({
+				success: false,
+				error: 'MISSING_SERVICE_KEY',
+				message:
+					'La variable SUPABASE_SERVICE_ROLE_KEY no está configurada en Vercel. ' +
+					'Ve a Vercel → Settings → Environment Variables y añádela. Luego haz un nuevo despliegue.',
+			}),
+			{ status: 500, headers: { 'Content-Type': 'application/json' } }
+		);
+	}
+
+	// ─── Build Admin client inline (100% server-side, ignores RLS) ───────────────
+	const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+		auth: { persistSession: false, autoRefreshToken: false },
+	});
 
 	try {
 		const formData = await request.formData();
@@ -48,14 +81,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			);
 		}
 
-		// Bucket Check & Auto-Creation (with public: true) using Admin Client
+		// ─── Bucket Check & Auto-Creation ────────────────────────────────────────
 		try {
-			const { data: bucketData, error: getBucketErr } = await supabaseAdmin.storage.getBucket('trabajos_galeria');
+			const { data: bucketData, error: getBucketErr } = await adminClient.storage.getBucket('trabajos_galeria');
 			if (!bucketData || getBucketErr) {
-				await supabaseAdmin.storage.createBucket('trabajos_galeria', { public: true });
+				const { error: createErr } = await adminClient.storage.createBucket('trabajos_galeria', { public: true });
+				if (createErr) {
+					console.error('[API Admin Upload] Could not create bucket:', createErr);
+				} else {
+					console.log('[API Admin Upload] Bucket "trabajos_galeria" created successfully.');
+				}
 			}
 		} catch (e) {
-			console.log('[API Admin] Bucket check/create log:', e);
+			console.log('[API Admin Upload] Bucket check/create log:', e);
 		}
 
 		let uploadedCount = 0;
@@ -70,45 +108,46 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 					const cleanName = sanitizeFileName(file.name, index);
 					const fileName = `${categoria.toLowerCase()}_${cleanName}`;
 
-					// Upload to Supabase Storage using Admin client (Service Role bypasses RLS)
-					const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+					// Upload to Supabase Storage
+					const { data: uploadData, error: uploadError } = await adminClient.storage
 						.from('trabajos_galeria')
 						.upload(fileName, buffer, {
 							contentType: file.type || 'image/jpeg',
-							upsert: true
+							upsert: true,
 						});
 
 					if (uploadError) {
-						console.error(`[Storage Error on ${file.name}]`, uploadError);
+						console.error(`[Storage Error on "${file.name}"]`, uploadError);
 						errors.push(`"${file.name}": ${uploadError.message}`);
 						return;
 					}
 
 					// Get public URL
-					const { data: publicUrlData } = supabaseAdmin.storage
+					const { data: publicUrlData } = adminClient.storage
 						.from('trabajos_galeria')
 						.getPublicUrl(fileName);
 
-					const itemTitle = files.length > 1 && titulo
-						? `${titulo} (${index + 1})`
-						: (titulo || `Trabajo realizado - ${categoria}`);
+					const itemTitle =
+						files.length > 1 && titulo
+							? `${titulo} (${index + 1})`
+							: titulo || `Trabajo realizado - ${categoria}`;
 
-					// Insert into Database using Admin client
-					const { data: insertedData, error: dbError } = await supabaseAdmin
+					// Insert into Database
+					const { data: insertedData, error: dbError } = await adminClient
 						.from('trabajos_galeria')
 						.insert({
 							titulo: itemTitle,
 							imagen_url: publicUrlData.publicUrl,
 							storage_path: fileName,
 							categoria: categoria,
-							activo: true
+							activo: true,
 						})
 						.select();
 
 					if (dbError) {
-						console.error(`[DB Insert Error on ${file.name}]`, dbError);
+						console.error(`[DB Insert Error on "${file.name}"]`, dbError);
 						// Rollback storage file
-						await supabaseAdmin.storage.from('trabajos_galeria').remove([fileName]);
+						await adminClient.storage.from('trabajos_galeria').remove([fileName]);
 						errors.push(`"${file.name}": ${dbError.message}`);
 					} else {
 						uploadedCount++;
@@ -123,14 +162,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		);
 
 		if (errors.length > 0 && uploadedCount === 0) {
-			const isRls = errors.some(e => e.toLowerCase().includes('row-level security') || e.toLowerCase().includes('rls'));
 			return new Response(
 				JSON.stringify({
 					success: false,
-					error: isRls ? 'RLS_VIOLATION' : 'UPLOAD_FAILED',
-					message: isRls
-						? 'Error RLS en Supabase: Las políticas RLS de la tabla bloquean la inserción. Solución: Ejecuta el script SQL "trabajos_galeria_schema.sql" en el SQL Editor de tu proyecto Supabase o añade SUPABASE_SERVICE_ROLE_KEY en las variables de entorno de Vercel.'
-						: `Error al subir imágenes: ${errors.join(' | ')}`
+					error: 'UPLOAD_FAILED',
+					message: `Error al procesar imágenes: ${errors.join(' | ')}`,
 				}),
 				{ status: 400, headers: { 'Content-Type': 'application/json' } }
 			);
@@ -142,7 +178,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 				uploadedCount,
 				totalFiles: files.length,
 				errors: errors.length > 0 ? errors : null,
-				records: insertedRecords
+				records: insertedRecords,
 			}),
 			{ status: 200, headers: { 'Content-Type': 'application/json' } }
 		);
