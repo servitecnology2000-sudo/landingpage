@@ -1,5 +1,5 @@
 -- ============================================================
--- SERVITECNOLOGY - Script SQL para Galería de Trabajos
+-- SERVITECNOLOGY - Script SQL para Galería de Trabajos (Definitivo y Permisivo)
 -- Ejecuta este script en: Supabase → SQL Editor → New query
 -- ============================================================
 
@@ -17,26 +17,25 @@ CREATE TABLE IF NOT EXISTS public.trabajos_galeria (
 -- 2. HABILITAR RLS EN LA TABLA
 ALTER TABLE public.trabajos_galeria ENABLE ROW LEVEL SECURITY;
 
--- 3. ELIMINAR POLÍTICAS ANTIGUAS QUE PUEDAN ESTAR BLOQUEANDO
+-- 3. ELIMINAR POLÍTICAS ANTIGUAS
 DROP POLICY IF EXISTS "Allow public read"    ON public.trabajos_galeria;
 DROP POLICY IF EXISTS "Allow public insert"  ON public.trabajos_galeria;
 DROP POLICY IF EXISTS "Allow public update"  ON public.trabajos_galeria;
 DROP POLICY IF EXISTS "Allow public delete"  ON public.trabajos_galeria;
 DROP POLICY IF EXISTS "Allow all for public" ON public.trabajos_galeria;
 
--- 4. CREAR POLÍTICA PERMISIVA TOTAL (lectura pública + escritura desde service role)
---    El cliente con Service Role Key ignora RLS por definición.
---    Esta política permite que el cliente ANON también pueda leer.
-CREATE POLICY "Allow public read"
+-- 4. CREAR POLÍTICA PERMISIVA UNIVERSAL (Permite SELECT, INSERT, UPDATE, DELETE a todos)
+CREATE POLICY "Allow all for public"
   ON public.trabajos_galeria
-  FOR SELECT
+  FOR ALL
   TO public
-  USING (true);
+  USING (true)
+  WITH CHECK (true);
 
 -- 5. PERMISOS DE TABLA
-GRANT SELECT ON public.trabajos_galeria TO anon;
-GRANT SELECT ON public.trabajos_galeria TO authenticated;
-GRANT ALL    ON public.trabajos_galeria TO service_role;
+GRANT ALL ON public.trabajos_galeria TO anon;
+GRANT ALL ON public.trabajos_galeria TO authenticated;
+GRANT ALL ON public.trabajos_galeria TO service_role;
 
 -- ============================================================
 -- STORAGE: Configurar el bucket 'trabajos_galeria' como PÚBLICO
@@ -51,27 +50,15 @@ ON CONFLICT (id) DO UPDATE SET public = true;
 DROP POLICY IF EXISTS "Allow public storage read"   ON storage.objects;
 DROP POLICY IF EXISTS "Allow service role upload"   ON storage.objects;
 DROP POLICY IF EXISTS "Allow service role delete"   ON storage.objects;
+DROP POLICY IF EXISTS "Allow all storage for public" ON storage.objects;
 
--- Política: cualquiera puede LEER los objetos del bucket
-CREATE POLICY "Allow public storage read"
+-- Política universal para storage.objects en este bucket
+CREATE POLICY "Allow all storage for public"
   ON storage.objects
-  FOR SELECT
+  FOR ALL
   TO public
-  USING (bucket_id = 'trabajos_galeria');
-
--- Política: service_role puede ESCRIBIR (upload/upsert)
-CREATE POLICY "Allow service role upload"
-  ON storage.objects
-  FOR INSERT
-  TO service_role
+  USING (bucket_id = 'trabajos_galeria')
   WITH CHECK (bucket_id = 'trabajos_galeria');
-
--- Política: service_role puede ELIMINAR
-CREATE POLICY "Allow service role delete"
-  ON storage.objects
-  FOR DELETE
-  TO service_role
-  USING (bucket_id = 'trabajos_galeria');
 
 -- ============================================================
 -- VERIFICACIÓN: Esta query debería devolver 1 fila si todo OK

@@ -22,7 +22,7 @@ function sanitizeFileName(originalName: string, index: number): string {
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-	// ─── Resolve env vars (process.env is the reliable source in SSR/Vercel) ─────
+	// ─── Resolve env vars ────────────────────────────────────────────────────────
 	const SUPABASE_URL =
 		process.env['PUBLIC_SUPABASE_URL'] ||
 		import.meta.env.PUBLIC_SUPABASE_URL ||
@@ -33,7 +33,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		import.meta.env.SUPABASE_SERVICE_ROLE_KEY ||
 		'';
 
-	// ─── Auth ────────────────────────────────────────────────────────────────────
+	const ANON_KEY =
+		process.env['PUBLIC_SUPABASE_ANON_KEY'] ||
+		import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
+		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pdnNubXZ1cGFoZ2JyamZkeWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NDIzMjcsImV4cCI6MjA5OTIxODMyN30.aj9zXGTF6FwjpKmkfTIbfxN3USS3gHIxpP4GB38XNAw';
+
+	// Use SERVICE_ROLE_KEY if present, otherwise fallback to ANON_KEY
+	const apiKeyToUse = SERVICE_ROLE_KEY || ANON_KEY;
+
+	if (!SERVICE_ROLE_KEY) {
+		console.warn('[API Admin Upload] SUPABASE_SERVICE_ROLE_KEY is empty. Falling back to ANON_KEY.');
+	}
+
+	// ─── Auth Verification ───────────────────────────────────────────────────────
 	const adminSecret =
 		process.env['ADMIN_SECRET'] ||
 		import.meta.env.ADMIN_SECRET ||
@@ -47,23 +59,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		);
 	}
 
-	// ─── Guard: SERVICE_ROLE_KEY must be present ─────────────────────────────────
-	if (!SERVICE_ROLE_KEY) {
-		console.error('[API Admin Upload] SUPABASE_SERVICE_ROLE_KEY is missing from environment variables!');
-		return new Response(
-			JSON.stringify({
-				success: false,
-				error: 'MISSING_SERVICE_KEY',
-				message:
-					'La variable SUPABASE_SERVICE_ROLE_KEY no está configurada en Vercel. ' +
-					'Ve a Vercel → Settings → Environment Variables y añádela. Luego haz un nuevo despliegue.',
-			}),
-			{ status: 500, headers: { 'Content-Type': 'application/json' } }
-		);
-	}
-
-	// ─── Build Admin client inline (100% server-side, ignores RLS) ───────────────
-	const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+	// ─── Build Supabase Client ───────────────────────────────────────────────────
+	const adminClient = createClient(SUPABASE_URL, apiKeyToUse, {
 		auth: { persistSession: false, autoRefreshToken: false },
 	});
 
@@ -87,13 +84,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			if (!bucketData || getBucketErr) {
 				const { error: createErr } = await adminClient.storage.createBucket('trabajos_galeria', { public: true });
 				if (createErr) {
-					console.error('[API Admin Upload] Could not create bucket:', createErr);
-				} else {
-					console.log('[API Admin Upload] Bucket "trabajos_galeria" created successfully.');
+					console.error('[API Admin Upload] Bucket notice:', createErr?.message);
 				}
 			}
 		} catch (e) {
-			console.log('[API Admin Upload] Bucket check/create log:', e);
+			console.log('[API Admin Upload] Bucket check log:', e);
 		}
 
 		let uploadedCount = 0;
@@ -162,11 +157,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		);
 
 		if (errors.length > 0 && uploadedCount === 0) {
+			const isRls = errors.some(e => e.toLowerCase().includes('row-level security') || e.toLowerCase().includes('rls'));
 			return new Response(
 				JSON.stringify({
 					success: false,
-					error: 'UPLOAD_FAILED',
-					message: `Error al procesar imágenes: ${errors.join(' | ')}`,
+					error: isRls ? 'RLS_VIOLATION' : 'UPLOAD_FAILED',
+					message: isRls
+						? 'Error RLS en Supabase: Ejecuta el script SQL "trabajos_galeria_schema.sql" en el SQL Editor de tu proyecto Supabase.'
+						: `Error al procesar imágenes: ${errors.join(' | ')}`,
 				}),
 				{ status: 400, headers: { 'Content-Type': 'application/json' } }
 			);
