@@ -65,6 +65,11 @@ export const GET: APIRoute = async (context) => {
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
+	<url>
+		<loc>${baseUrl}/desarrollo</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.8</priority>
+	</url>
 
 	<!-- Dynamic Product Pages -->
 	${(products || []).map(p => {

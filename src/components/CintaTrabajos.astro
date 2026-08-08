@@ -1,0 +1,217 @@
+---
+import { supabase } from '../lib/supabase';
+
+export interface Props {
+	categoria: string; // 'Redes' | 'CCTV' | 'Soporte' | 'Impresoras' | 'Gaming' | 'Desarrollo'
+	tituloSeccion?: string;
+	subtituloSeccion?: string;
+}
+
+const {
+	categoria,
+	tituloSeccion = "Clientes Satisfechos y Trabajos Realizados",
+	subtituloSeccion = "Proyectos reales entregados con la máxima calidad y garantía de satisfacción."
+} = Astro.props;
+
+// Fallback curated images for each category
+const defaultGallery: Record<string, Array<{ id: string; titulo: string; imagen_url: string }>> = {
+	Redes: [
+		{ id: 'def-red-1', titulo: 'Instalación de Rack de Comunicaciones', imagen_url: '/imagenes/redes.jpg' },
+		{ id: 'def-red-2', titulo: 'Red Mesh Inalámbrica Corporativa', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-red-3', titulo: 'Cableado Estructurado Cat6A en Oficina', imagen_url: '/imagenes/soportepc.jpg' },
+		{ id: 'def-red-4', titulo: 'Certificación de Puntos de Red y Patch Panel', imagen_url: '/imagenes/cctv.jpg' }
+	],
+	CCTV: [
+		{ id: 'def-cctv-1', titulo: 'Sistema IP 4K de Videovigilancia Comercial', imagen_url: '/imagenes/cctv.jpg' },
+		{ id: 'def-cctv-2', titulo: 'Cámaras de Alta Definición Externa', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-cctv-3', titulo: 'Centro de Monitoreo Remoto Móvil', imagen_url: '/imagenes/redes.jpg' },
+		{ id: 'def-cctv-4', titulo: 'Instalación de NVR y Protección Eléctrica', imagen_url: '/imagenes/disenoweb.jpg' }
+	],
+	Soporte: [
+		{ id: 'def-sop-1', titulo: 'Mantenimiento Preventivo Notebook Gamer', imagen_url: '/imagenes/soportepc.jpg' },
+		{ id: 'def-sop-2', titulo: 'Cambio de Pasta Térmica y Limpieza Ultrasónica', imagen_url: '/imagenes/soporte.jpg' },
+		{ id: 'def-sop-3', titulo: 'Optimización Completa y Reparación de PC', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-sop-4', titulo: 'Reemplazo de Pantalla y Teclado Laptop', imagen_url: '/imagenes/gaming.jpg' }
+	],
+	Impresoras: [
+		{ id: 'def-imp-1', titulo: 'Servicio Técnico Ecotank Epson', imagen_url: '/imagenes/impresora.jpg' },
+		{ id: 'def-imp-2', titulo: 'Limpieza de Cabezales y Reset de Almohadillas', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-imp-3', titulo: 'Mantención de Sistema Continuo HP', imagen_url: '/imagenes/soportepc.jpg' },
+		{ id: 'def-imp-4', titulo: 'Calibración de Arrastre y Engranajes Brother', imagen_url: '/imagenes/disenoweb.jpg' }
+	],
+	Gaming: [
+		{ id: 'def-gam-1', titulo: 'PC Custom Watercooling Gaming RGB', imagen_url: '/imagenes/gaming.jpg' },
+		{ id: 'def-gam-2', titulo: 'Ensamble Profesional RTX 4080 i9', imagen_url: '/imagenes/soportepc.jpg' },
+		{ id: 'def-gam-3', titulo: 'Modding de Chasis y Cable Management Premium', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-gam-4', titulo: 'Limpieza Profunda y Delid CPU Consolas/PC', imagen_url: '/imagenes/cctv.jpg' }
+	],
+	Desarrollo: [
+		{ id: 'def-dev-1', titulo: 'Plataforma Web E-commerce de Alto Rendimiento', imagen_url: '/imagenes/disenoweb.jpg' },
+		{ id: 'def-dev-2', titulo: 'Landing Page Corporativa y Optimización SEO/AEO', imagen_url: '/imagenes/principal.jpg' },
+		{ id: 'def-dev-3', titulo: 'Sistema de Catálogo Interactivo en Tiempo Real', imagen_url: '/imagenes/redes.jpg' },
+		{ id: 'def-dev-4', titulo: 'Diseño UX/UI Responsive Modo Oscuro Premium', imagen_url: '/imagenes/gaming.jpg' }
+	]
+};
+
+// Fetch real data from Supabase
+let galleryItems: Array<{ id: string; titulo: string; imagen_url: string; storage_path?: string }> = [];
+
+try {
+	const { data, error } = await supabase
+		.from('trabajos_galeria')
+		.select('*')
+		.eq('activo', true)
+		.eq('categoria', categoria)
+		.order('created_at', { ascending: false });
+
+	if (!error && data && data.length > 0) {
+		galleryItems = data;
+	}
+} catch (e) {
+	console.error('[CintaTrabajos] Error fetching galeria:', e);
+}
+
+// Fallback merge to ensure infinite continuous flow with minimum 6 cards
+const fallbacks = defaultGallery[categoria] || defaultGallery['Soporte'];
+if (galleryItems.length < 4) {
+	galleryItems = [...galleryItems, ...fallbacks];
+}
+
+// Quadruple items to guarantee seamless infinite scrolling loop without gaps
+const displayItems = [...galleryItems, ...galleryItems, ...galleryItems, ...galleryItems];
+---
+
+<section class="relative py-16 bg-gradient-to-b from-black via-zinc-950 to-black overflow-hidden select-none border-t border-white/5">
+	<!-- Ambient Backlight Glow -->
+	<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+	<div class="relative z-10 max-w-7xl mx-auto px-6 mb-10 text-center space-y-3">
+		<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-bold uppercase tracking-wider">
+			✦ Trabajo Comprobado
+		</div>
+		<h2 class="text-2xl md:text-4xl font-extrabold text-white tracking-tight">
+			{tituloSeccion}
+		</h2>
+		<p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+			{subtituloSeccion}
+		</p>
+	</div>
+
+	<!-- Infinite Horizontal Marquee Container -->
+	<div class="marquee-wrapper relative w-full overflow-hidden py-4">
+		<!-- Left and Right Gradient Fades -->
+		<div class="absolute top-0 bottom-0 left-0 w-16 md:w-32 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none"></div>
+		<div class="absolute top-0 bottom-0 right-0 w-16 md:w-32 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none"></div>
+
+		<!-- Continuous Track -->
+		<div class="marquee-track flex items-center gap-6 w-max">
+			{displayItems.map((item, index) => (
+				<div 
+					class="marquee-card group relative shrink-0 w-72 md:w-80 h-52 md:h-60 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:shadow-[0_0_25px_rgba(0,207,255,0.35)] hover:border-brand-cyan/50 transition-all duration-500 cursor-pointer"
+					data-full-img={item.imagen_url}
+					data-title={item.titulo || `Proyecto ${categoria}`}
+				>
+					<img 
+						src={item.imagen_url} 
+						alt={item.titulo || `Trabajo realizado de ${categoria}`}
+						class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+						loading="lazy"
+					/>
+					<!-- Card Overlay -->
+					<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-300"></div>
+					
+					<!-- Card Content -->
+					<div class="absolute bottom-0 left-0 right-0 p-4 transform transition-transform duration-300">
+						<span class="inline-block px-2.5 py-0.5 rounded-md bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan text-[10px] font-bold uppercase tracking-wider mb-1.5">
+							{categoria}
+						</span>
+						<h3 class="text-sm md:text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-brand-cyan transition-colors">
+							{item.titulo || `Trabajo de ${categoria}`}
+						</h3>
+						<div class="mt-2 flex items-center gap-1.5 text-xs text-slate-300 font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+							<span>Ampliar foto</span>
+							<svg class="w-3.5 h-3.5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+							</svg>
+						</div>
+					</div>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
+
+<!-- Lightbox Modal Component for Image Expansion -->
+<div id="cinta-lightbox" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity duration-300">
+	<div class="relative max-w-4xl w-full bg-zinc-950 border border-white/15 rounded-2xl overflow-hidden shadow-2xl">
+		<button id="cinta-lightbox-close" class="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/70 text-white border border-white/20 hover:bg-brand-cyan hover:text-black transition-all">
+			✕
+		</button>
+		<div class="max-h-[80vh] overflow-hidden flex items-center justify-center bg-black">
+			<img id="cinta-lightbox-img" src="" alt="Trabajo ampliado" class="max-h-[80vh] w-auto object-contain" />
+		</div>
+		<div class="p-4 bg-zinc-950 border-t border-white/10 flex items-center justify-between">
+			<span id="cinta-lightbox-title" class="text-white font-bold text-base md:text-lg"></span>
+			<span class="text-brand-cyan text-xs font-semibold px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
+				{categoria}
+			</span>
+		</div>
+	</div>
+</div>
+
+<style>
+	@keyframes marquee {
+		0% {
+			transform: translateX(0%);
+		}
+		100% {
+			transform: translateX(-50%);
+		}
+	}
+
+	.marquee-track {
+		animation: marquee 35s linear infinite;
+	}
+
+	/* Pause infinite marquee when hovering over the track */
+	.marquee-wrapper:hover .marquee-track {
+		animation-play-state: paused;
+	}
+</style>
+
+<script>
+	const cards = document.querySelectorAll('.marquee-card');
+	const modal = document.getElementById('cinta-lightbox');
+	const modalImg = document.getElementById('cinta-lightbox-img') as HTMLImageElement;
+	const modalTitle = document.getElementById('cinta-lightbox-title');
+	const closeBtn = document.getElementById('cinta-lightbox-close');
+
+	cards.forEach(card => {
+		card.addEventListener('click', () => {
+			const fullImg = card.getAttribute('data-full-img');
+			const title = card.getAttribute('data-title');
+			if (fullImg && modal && modalImg) {
+				modalImg.src = fullImg;
+				if (modalTitle) modalTitle.textContent = title || '';
+				modal.classList.remove('hidden');
+				document.body.style.overflow = 'hidden';
+			}
+		});
+	});
+
+	function closeModal() {
+		if (modal) {
+			modal.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+	}
+
+	closeBtn?.addEventListener('click', closeModal);
+	modal?.addEventListener('click', (e) => {
+		if (e.target === modal) closeModal();
+	});
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') closeModal();
+	});
+</script>

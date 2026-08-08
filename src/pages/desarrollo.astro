@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import CintaTrabajos from '../components/CintaTrabajos.astro';
+
+const serviceTitle = "Diseño y Desarrollo Web Profesional";
+const serviceDescription = "Creación de sitios web modernos, tiendas online (e-commerce), landing pages de alta conversión e integración con motores de búsqueda (SEO) y ChatGPT en Santiago.";
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero cotizar un proyecto de Desarrollo / Diseño Web.`);
+const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+---
+
+<Layout 
+	title={`${serviceTitle} | SERVITECNOLOGY`} 
+	description={serviceDescription}
+	keywords="desarrollo web, diseno web, crear pagina web, e-commerce chile, landing page, seo, ai-seo, servitecnology, santiago"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen pt-24 pb-20 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<!-- HERO SECTION -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full text-center py-12 md:py-20 space-y-6">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-sm font-semibold uppercase tracking-wider">
+				Desarrollo Web & Software
+			</div>
+			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+				Transforma tu Presencia Digital <br class="hidden sm:inline" />
+				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">
+					con Sitios Web de Alto Impacto
+				</span>
+			</h1>
+			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+				{serviceDescription}
+			</p>
+			<div class="pt-6">
+				<a 
+					href={waLink}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex justify-center items-center gap-3 bg-brand-cyan text-black hover:bg-brand-green px-8 py-4 md:py-5 rounded-xl font-bold text-lg transition-all duration-300 shadow-[0_0_25px_rgba(0,207,255,0.25)] hover:scale-105"
+				>
+					Cotizar Proyecto Web
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+				</a>
+			</div>
+		</section>
+
+		<!-- PROCESO DE DESARROLLO -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Proceso de <span class="text-brand-cyan">Desarrollo e Ingeniería</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
+					<h3 class="text-xl font-bold text-white mb-3">1. Arquitectura y UX/UI</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Diseñamos prototipos interactivos adaptados a tu marca, enfocándonos en la experiencia de usuario, llamadas a la acción eficientes y modo oscuro premium.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
+					<h3 class="text-xl font-bold text-white mb-3">2. Desarrollo e Integraciones</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Construimos la plataforma con tecnologías ultrarrápidas, integrando bases de datos, pasarelas de pago, botones directos de WhatsApp y paneles autoadministrables.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
+					<h3 class="text-xl font-bold text-white mb-3">3. Optimización SEO/AEO y Despliegue</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Optimizamos la carga rápida, inyectamos marcado estandarizado para Google y Motores de IA (ChatGPT, Claude, Perplexity) y publicamos con SSL en servidores globales.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- CÓMO TRABAJAMOS Y VENTAJAS -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Por qué Elegir <span class="text-brand-green">SERVITECNOLOGY</span> en Desarrollo Web
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Carga Ultrarrápida y Rendimiento</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Desarrollamos código limpio sin plantillas pesadas para lograr puntuaciones máximas en Google PageSpeed y retener a tus clientes.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Diseño 100% Responsivo</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Experiencia fluida y adaptable perfectamente a smartphones, tablets y monitores de alta resolución.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="space-y-6">
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-cyan/10 rounded-xl text-brand-cyan border border-brand-cyan/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">SEO & Visibilidad en Motores de IA</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Optimizamos las etiquetas meta, Schema.org y archivos llms.txt para posicionarte en los resultados de Google y asistentes como ChatGPT.
+							</p>
+						</div>
+					</div>
+					<div class="flex gap-4 items-start">
+						<div class="p-3 bg-brand-green/10 rounded-xl text-brand-green border border-brand-green/20 shrink-0">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white mb-1">Paneles Autoadministrables</h3>
+							<p class="text-slate-400 text-sm leading-relaxed">
+								Implementamos paneles de control personalizados para actualizar inventario, productos, servicios o imágenes sin depender de terceros.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- CINTA DE CLIENTES SATISFECHOS - DESARROLLO -->
+		<CintaTrabajos categoria="Desarrollo" tituloSeccion="Sitios Web y Plataformas Desarrolladas" subtituloSeccion="Explora algunos de nuestros proyectos entregados a clientes y empresas." />
+	</main>
+
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por proyectos de desarrollo web..." />
+</Layout>
