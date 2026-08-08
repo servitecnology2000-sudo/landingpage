@@ -25,46 +25,82 @@ if (Astro.request.method === 'POST') {
 	}
 
 	if (action === 'upload_galeria') {
-		const file = formData.get('imagen') as File;
+		const rawFiles = formData.getAll('imagen');
+		const files = rawFiles.filter((f): f is File => f instanceof File && f.size > 0);
 		const categoria = formData.get('categoria')?.toString() || 'Soporte';
 		const titulo = formData.get('titulo')?.toString() || '';
 
-		if (file && file.size > 0) {
+		if (files.length > 0) {
+			// Bucket Auto-Check & Creation Attempt
 			try {
-				const arrayBuffer = await file.arrayBuffer();
-				const buffer = Buffer.from(arrayBuffer);
-				const ext = file.name.split('.').pop() || 'jpg';
-				const fileName = `${categoria.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substring(2,7)}.${ext}`;
-				
-				const { data: uploadData, error: uploadError } = await supabase.storage
-					.from('trabajos_galeria')
-					.upload(fileName, buffer, {
-						contentType: file.type || 'image/jpeg',
-						upsert: true
-					});
-
-				if (uploadError) {
-					console.error('[Storage Error]', uploadError);
-					notification = 'Error en Supabase Storage: Asegúrate de crear el bucket público "trabajos_galeria". ' + uploadError.message;
-				} else {
-					const { data: publicUrlData } = supabase.storage
-						.from('trabajos_galeria')
-						.getPublicUrl(fileName);
-
-					await supabase.from('trabajos_galeria').insert({
-						titulo: titulo || `Trabajo realizado - ${categoria}`,
-						imagen_url: publicUrlData.publicUrl,
-						storage_path: fileName,
-						categoria: categoria,
-						activo: true
-					});
-					return Astro.redirect('/meson-servitecnology-st?tab=galeria');
+				const { data: bucketData, error: getBucketErr } = await supabase.storage.getBucket('trabajos_galeria');
+				if (!bucketData || getBucketErr) {
+					await supabase.storage.createBucket('trabajos_galeria', { public: true });
 				}
-			} catch(err: any) {
-				notification = 'Error procesando archivo: ' + err.message;
+			} catch (e) {
+				console.log('[Bucket Check] Log:', e);
+			}
+
+			let uploadedCount = 0;
+			let errors: string[] = [];
+
+			// Batch Processing with Promise.all
+			await Promise.all(
+				files.map(async (file, index) => {
+					try {
+						const arrayBuffer = await file.arrayBuffer();
+						const buffer = Buffer.from(arrayBuffer);
+						const ext = file.name.split('.').pop() || 'jpg';
+						const fileName = `${categoria.toLowerCase()}_${Date.now()}_${index}_${Math.random().toString(36).substring(2,7)}.${ext}`;
+						
+						const { data: uploadData, error: uploadError } = await supabase.storage
+							.from('trabajos_galeria')
+							.upload(fileName, buffer, {
+								contentType: file.type || 'image/jpeg',
+								upsert: true
+							});
+
+						if (uploadError) {
+							console.error('[Storage Error]', uploadError);
+							errors.push(`${file.name}: ${uploadError.message}`);
+						} else {
+							const { data: publicUrlData } = supabase.storage
+								.from('trabajos_galeria')
+								.getPublicUrl(fileName);
+
+							const itemTitle = files.length > 1 && titulo
+								? `${titulo} (${index + 1})`
+								: (titulo || `Trabajo realizado - ${categoria}`);
+
+							await supabase.from('trabajos_galeria').insert({
+								titulo: itemTitle,
+								imagen_url: publicUrlData.publicUrl,
+								storage_path: fileName,
+								categoria: categoria,
+								activo: true
+							});
+							uploadedCount++;
+						}
+					} catch(err: any) {
+						errors.push(`${file.name}: ${err.message}`);
+					}
+				})
+			);
+
+			if (errors.length > 0 && uploadedCount === 0) {
+				const isBucketErr = errors.some(e => e.toLowerCase().includes('bucket not found') || e.toLowerCase().includes('not found'));
+				if (isBucketErr) {
+					notification = 'Error: No se encontró el bucket "trabajos_galeria" en Supabase Storage. Para resolverlo definitivamente, ingresa al Dashboard de Supabase -> Storage -> New Bucket -> nombra "trabajos_galeria" y marca la casilla Public.';
+				} else {
+					notification = 'Error al subir imágenes: ' + errors.join(' | ');
+				}
+			} else if (errors.length > 0) {
+				notification = `Se cargaron ${uploadedCount} de ${files.length} imágenes. Ocurrieron errores en algunas: ${errors.join(', ')}`;
+			} else {
+				return Astro.redirect(`/meson-servitecnology-st?tab=galeria&success=${uploadedCount}`);
 			}
 		} else {
-			notification = 'Por favor selecciona un archivo de imagen válido.';
+			notification = 'Por favor selecciona al menos una imagen válida para subir.';
 		}
 	}
 
@@ -125,6 +161,8 @@ const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - e
 
 const urlObj = Astro.url;
 const activeTab = urlObj.searchParams.get('tab') || 'inventario';
+const successParam = urlObj.searchParams.get('success');
+const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} foto(s) a la galería!` : '';
 ---
 
 <html lang="es">
@@ -214,8 +252,14 @@ const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 
 	<div class="container">
 		{notification && (
-			<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
+			<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.4;">
 				⚠️ {notification}
+			</div>
+		)}
+
+		{successMsg && (
+			<div style="background: rgba(0,255,127,0.15); border: 1px solid rgba(0,255,127,0.3); color: #00FF7F; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; font-weight: 600;">
+				✅ {successMsg}
 			</div>
 		)}
 
@@ -334,18 +378,19 @@ const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 				<!-- Upload Box -->
 				<div class="upload-box">
 					<h3 style="font-family:'Outfit',sans-serif; font-size:1.1rem; color:white; font-weight:700;">
-						📸 Cargar Nueva Foto a la Galería
+						📸 Cargar Fotos a la Galería (Selección Múltiple)
 					</h3>
 					<p style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem;">
-						Sube fotos de trabajos entregados para mostrar en la cinta marquee dinámica de las páginas de servicios.
+						Sube una o varias fotos simultáneamente para asociarlas a la categoría elegida y exhibirlas en la cinta marquee dinámica.
 					</p>
 
-					<form method="POST" enctype="multipart/form-data">
+					<form method="POST" enctype="multipart/form-data" id="galeriaUploadForm">
 						<input type="hidden" name="action" value="upload_galeria" />
 						<div class="form-grid">
 							<div class="form-group">
-								<label for="imagen">Seleccionar Imagen (JPG, PNG, WEBP)</label>
-								<input type="file" id="imagen" name="imagen" accept="image/*" required />
+								<label for="imagen">Seleccionar Imagen(es) (JPG, PNG, WEBP)</label>
+								<input type="file" id="imagen" name="imagen" accept="image/*" multiple required />
+								<p id="fileCountText" style="font-size:0.75rem; color:#00CFFF; margin-top:0.4rem; font-weight:600; display:none;"></p>
 							</div>
 							<div class="form-group">
 								<label for="categoria">Categoría del Servicio</label>
@@ -363,16 +408,19 @@ const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 								<input type="text" id="titulo" name="titulo" placeholder="Ej: Cableado estructurado oficina 12 puntos" />
 							</div>
 						</div>
-						<div style="margin-top: 1.25rem;">
-							<button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-size:0.85rem;">
-								⬆️ Subir a Supabase Storage
+						<div style="margin-top: 1.25rem; display:flex; align-items:center; gap:1rem;">
+							<button type="submit" id="uploadBtn" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-size:0.85rem;">
+								⬆️ Subir Selección a Supabase Storage
 							</button>
+							<span id="uploadSpinner" style="display:none; font-size:0.8rem; color:#00CFFF; font-weight:600;">
+								⏳ Subiendo archivos en lote a Supabase... por favor espera.
+							</span>
 						</div>
 					</form>
 				</div>
 
 				<!-- Galería List Grid -->
-				<h3 class="section-title">Fotos Subidas por Categoría</h3>
+				<h3 class="section-title">Fotos Subidas por Categoría (Mostrando las más recientes)</h3>
 				{galeriaItems.length === 0 ? (
 					<div class="empty table-wrap">
 						<div class="empty-icon">🖼️</div>
@@ -435,6 +483,34 @@ const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 						(row as HTMLElement).style.display = 'none';
 					}
 				});
+			});
+		}
+
+		// Multi-file selection feedback & spinner
+		const fileInput = document.getElementById('imagen') as HTMLInputElement;
+		const fileCountText = document.getElementById('fileCountText');
+		const form = document.getElementById('galeriaUploadForm') as HTMLFormElement;
+		const uploadBtn = document.getElementById('uploadBtn') as HTMLButtonElement;
+		const uploadSpinner = document.getElementById('uploadSpinner');
+
+		if (fileInput) {
+			fileInput.addEventListener('change', () => {
+				if (fileInput.files && fileInput.files.length > 0) {
+					if (fileCountText) {
+						fileCountText.textContent = `📁 ${fileInput.files.length} archivo(s) seleccionado(s) listos para subir en lote.`;
+						fileCountText.style.display = 'block';
+					}
+				} else {
+					if (fileCountText) fileCountText.style.display = 'none';
+				}
+			});
+		}
+
+		if (form && uploadBtn && uploadSpinner) {
+			form.addEventListener('submit', () => {
+				uploadBtn.disabled = true;
+				uploadBtn.style.opacity = '0.6';
+				uploadSpinner.style.display = 'inline-block';
 			});
 		}
 	</script>
