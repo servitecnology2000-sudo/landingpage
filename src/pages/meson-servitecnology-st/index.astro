@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
 
 // Auth guard — runtime read
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
@@ -13,6 +13,24 @@ if (cookie?.value !== adminSecret) {
 
 let notification = '';
 
+// Helper to sanitize file names to URL-friendly format
+function sanitizeFileName(originalName: string): string {
+	const lastDot = originalName.lastIndexOf('.');
+	const ext = lastDot !== -1 ? originalName.substring(lastDot + 1).toLowerCase() : 'jpg';
+	const nameWithoutExt = lastDot !== -1 ? originalName.substring(0, lastDot) : originalName;
+
+	const cleanBase = nameWithoutExt
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+
+	const safeBase = cleanBase || 'imagen';
+	return `${safeBase}.${ext}`;
+}
+
 // Handle POST actions
 if (Astro.request.method === 'POST') {
 	const formData = await Astro.request.formData();
@@ -20,7 +38,7 @@ if (Astro.request.method === 'POST') {
 	const id = formData.get('id')?.toString();
 	
 	if (action === 'delete' && id) {
-		await supabase.from('repuestos_productos').delete().eq('id', id);
+		await supabaseAdmin.from('repuestos_productos').delete().eq('id', id);
 		return Astro.redirect('/meson-servitecnology-st');
 	}
 
@@ -31,11 +49,11 @@ if (Astro.request.method === 'POST') {
 		const titulo = formData.get('titulo')?.toString() || '';
 
 		if (files.length > 0) {
-			// Bucket Auto-Check & Creation Attempt
+			// Bucket Auto-Check & Creation Attempt via Admin client
 			try {
-				const { data: bucketData, error: getBucketErr } = await supabase.storage.getBucket('trabajos_galeria');
+				const { data: bucketData, error: getBucketErr } = await supabaseAdmin.storage.getBucket('trabajos_galeria');
 				if (!bucketData || getBucketErr) {
-					await supabase.storage.createBucket('trabajos_galeria', { public: true });
+					await supabaseAdmin.storage.createBucket('trabajos_galeria', { public: true });
 				}
 			} catch (e) {
 				console.log('[Bucket Check] Log:', e);
@@ -44,16 +62,17 @@ if (Astro.request.method === 'POST') {
 			let uploadedCount = 0;
 			let errors: string[] = [];
 
-			// Batch Processing with Promise.all
+			// Batch Processing with per-file error handling (Promise.all)
 			await Promise.all(
 				files.map(async (file, index) => {
 					try {
 						const arrayBuffer = await file.arrayBuffer();
 						const buffer = Buffer.from(arrayBuffer);
-						const ext = file.name.split('.').pop() || 'jpg';
-						const fileName = `${categoria.toLowerCase()}_${Date.now()}_${index}_${Math.random().toString(36).substring(2,7)}.${ext}`;
+						const cleanName = sanitizeFileName(file.name);
+						const fileName = `${categoria.toLowerCase()}_${Date.now()}_${index}_${cleanName}`;
 						
-						const { data: uploadData, error: uploadError } = await supabase.storage
+						// Upload file to Supabase Storage using Admin Client (Bypasses RLS if service_role is configured)
+						const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
 							.from('trabajos_galeria')
 							.upload(fileName, buffer, {
 								contentType: file.type || 'image/jpeg',
@@ -61,41 +80,54 @@ if (Astro.request.method === 'POST') {
 							});
 
 						if (uploadError) {
-							console.error('[Storage Error]', uploadError);
-							errors.push(`${file.name}: ${uploadError.message}`);
-						} else {
-							const { data: publicUrlData } = supabase.storage
-								.from('trabajos_galeria')
-								.getPublicUrl(fileName);
+							console.error(`[Storage Error on ${file.name}]`, uploadError);
+							errors.push(`"${file.name}": ${uploadError.message}`);
+							return;
+						}
 
-							const itemTitle = files.length > 1 && titulo
-								? `${titulo} (${index + 1})`
-								: (titulo || `Trabajo realizado - ${categoria}`);
+						const { data: publicUrlData } = supabaseAdmin.storage
+							.from('trabajos_galeria')
+							.getPublicUrl(fileName);
 
-							await supabase.from('trabajos_galeria').insert({
+						const itemTitle = files.length > 1 && titulo
+							? `${titulo} (${index + 1})`
+							: (titulo || `Trabajo realizado - ${categoria}`);
+
+						// Insert record into Database using Admin Client
+						const { error: dbError } = await supabaseAdmin
+							.from('trabajos_galeria')
+							.insert({
 								titulo: itemTitle,
 								imagen_url: publicUrlData.publicUrl,
 								storage_path: fileName,
 								categoria: categoria,
 								activo: true
 							});
+
+						if (dbError) {
+							console.error(`[DB Insert Error on ${file.name}]`, dbError);
+							// Rollback uploaded storage file if DB insert fails
+							await supabaseAdmin.storage.from('trabajos_galeria').remove([fileName]);
+							errors.push(`"${file.name}": Error RLS/BD (${dbError.message})`);
+						} else {
 							uploadedCount++;
 						}
 					} catch(err: any) {
-						errors.push(`${file.name}: ${err.message}`);
+						errors.push(`"${file.name}": ${err?.message || 'Error inesperado'}`);
 					}
 				})
 			);
 
 			if (errors.length > 0 && uploadedCount === 0) {
-				const isBucketErr = errors.some(e => e.toLowerCase().includes('bucket not found') || e.toLowerCase().includes('not found'));
-				if (isBucketErr) {
-					notification = 'Error: No se encontró el bucket "trabajos_galeria" en Supabase Storage. Para resolverlo definitivamente, ingresa al Dashboard de Supabase -> Storage -> New Bucket -> nombra "trabajos_galeria" y marca la casilla Public.';
+				const isRlsError = errors.some(e => e.toLowerCase().includes('row-level security') || e.toLowerCase().includes('violates row-level security'));
+				if (isRlsError) {
+					notification = 'Error RLS en Supabase: La tabla o bucket tiene políticas restrictivas. Solución: Ejecuta el script SQL "trabajos_galeria_schema.sql" en el SQL Editor de tu proyecto Supabase o agrega SUPABASE_SERVICE_ROLE_KEY a tus variables de entorno.';
 				} else {
-					notification = 'Error al subir imágenes: ' + errors.join(' | ');
+					notification = 'Error al cargar las imágenes: ' + errors.join(' | ');
 				}
 			} else if (errors.length > 0) {
-				notification = `Se cargaron ${uploadedCount} de ${files.length} imágenes. Ocurrieron errores en algunas: ${errors.join(', ')}`;
+				const encodedErrors = encodeURIComponent(errors.join(' | '));
+				return Astro.redirect(`/meson-servitecnology-st?tab=galeria&success=${uploadedCount}&errors=${encodedErrors}`);
 			} else {
 				return Astro.redirect(`/meson-servitecnology-st?tab=galeria&success=${uploadedCount}`);
 			}
@@ -106,16 +138,16 @@ if (Astro.request.method === 'POST') {
 
 	if (action === 'toggle_galeria' && id) {
 		const currentActivo = formData.get('activo')?.toString() === 'true';
-		await supabase.from('trabajos_galeria').update({ activo: !currentActivo }).eq('id', id);
+		await supabaseAdmin.from('trabajos_galeria').update({ activo: !currentActivo }).eq('id', id);
 		return Astro.redirect('/meson-servitecnology-st?tab=galeria');
 	}
 
 	if (action === 'delete_galeria' && id) {
 		const storagePath = formData.get('storage_path')?.toString();
 		if (storagePath) {
-			await supabase.storage.from('trabajos_galeria').remove([storagePath]);
+			await supabaseAdmin.storage.from('trabajos_galeria').remove([storagePath]);
 		}
-		await supabase.from('trabajos_galeria').delete().eq('id', id);
+		await supabaseAdmin.from('trabajos_galeria').delete().eq('id', id);
 		return Astro.redirect('/meson-servitecnology-st?tab=galeria');
 	}
 }
@@ -123,7 +155,7 @@ if (Astro.request.method === 'POST') {
 // Fetch all products
 let items: any[] = [];
 try {
-	const { data: products } = await supabase
+	const { data: products } = await supabaseAdmin
 		.from('repuestos_productos')
 		.select('*')
 		.order('created_at', { ascending: false });
@@ -135,7 +167,7 @@ try {
 // Fetch galeria items
 let galeriaItems: any[] = [];
 try {
-	const { data: galeria } = await supabase
+	const { data: galeria } = await supabaseAdmin
 		.from('trabajos_galeria')
 		.select('*')
 		.order('created_at', { ascending: false });
@@ -145,7 +177,7 @@ try {
 // Fetch metrics
 let metrics: any[] = [];
 try {
-	const { data } = await supabase.from('metricas_eventos').select('*');
+	const { data } = await supabaseAdmin.from('metricas_eventos').select('*');
 	metrics = data ?? [];
 } catch(e) {}
 
@@ -162,7 +194,10 @@ const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - e
 const urlObj = Astro.url;
 const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 const successParam = urlObj.searchParams.get('success');
+const errorsParam = urlObj.searchParams.get('errors');
+
 const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} foto(s) a la galería!` : '';
+const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 ---
 
 <html lang="es">
@@ -252,7 +287,7 @@ const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} fo
 
 	<div class="container">
 		{notification && (
-			<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.4;">
+			<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.5;">
 				⚠️ {notification}
 			</div>
 		)}
@@ -260,6 +295,12 @@ const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} fo
 		{successMsg && (
 			<div style="background: rgba(0,255,127,0.15); border: 1px solid rgba(0,255,127,0.3); color: #00FF7F; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; font-weight: 600;">
 				✅ {successMsg}
+			</div>
+		)}
+
+		{partialErrorsMsg && (
+			<div style="background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: #facc15; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
+				⚠️ Advertencia en algunas fotos: {partialErrorsMsg}
 			</div>
 		)}
 
@@ -378,10 +419,10 @@ const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} fo
 				<!-- Upload Box -->
 				<div class="upload-box">
 					<h3 style="font-family:'Outfit',sans-serif; font-size:1.1rem; color:white; font-weight:700;">
-						📸 Cargar Fotos a la Galería (Selección Múltiple)
+						📸 Cargar Fotos a la Galería (Subida Múltiple en Lote)
 					</h3>
 					<p style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem;">
-						Sube una o varias fotos simultáneamente para asociarlas a la categoría elegida y exhibirlas en la cinta marquee dinámica.
+						Sube una o varias fotos simultáneamente. Los nombres de archivo son sanitizados automáticamente para evitar errores de URLs y RLS.
 					</p>
 
 					<form method="POST" enctype="multipart/form-data" id="galeriaUploadForm">
@@ -413,14 +454,14 @@ const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} fo
 								⬆️ Subir Selección a Supabase Storage
 							</button>
 							<span id="uploadSpinner" style="display:none; font-size:0.8rem; color:#00CFFF; font-weight:600;">
-								⏳ Subiendo archivos en lote a Supabase... por favor espera.
+								⏳ Procesando y sanitizando archivos... por favor espera.
 							</span>
 						</div>
 					</form>
 				</div>
 
 				<!-- Galería List Grid -->
-				<h3 class="section-title">Fotos Subidas por Categoría (Mostrando las más recientes)</h3>
+				<h3 class="section-title">Fotos Subidas por Categoría (Mostrando las 10 más recientes por sección)</h3>
 				{galeriaItems.length === 0 ? (
 					<div class="empty table-wrap">
 						<div class="empty-icon">🖼️</div>

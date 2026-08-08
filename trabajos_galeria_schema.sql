@@ -1,7 +1,6 @@
 -- =============================================
--- SERVITECH / SERVITECNOLOGY — Schema para trabajos_galeria
--- Ejecutar en el SQL Editor de Supabase
--- Proyecto: mivsnmvupahgbrjfdyhl
+-- SERVITECH / SERVITECNOLOGY — Schema & Políticas RLS para trabajos_galeria
+-- Ejecutar en el SQL Editor de Supabase (Proyecto: mivsnmvupahgbrjfdyhl)
 -- =============================================
 
 -- 1. Tabla de Galería de Trabajos y Clientes Satisfechos
@@ -15,32 +14,23 @@ CREATE TABLE IF NOT EXISTS trabajos_galeria (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Row Level Security
+-- Habilitar Row Level Security en la tabla
 ALTER TABLE trabajos_galeria ENABLE ROW LEVEL SECURITY;
 
--- Política: Lectura pública (para mostrar en la cinta marquee)
-CREATE POLICY "Lectura pública de galeria"
-  ON trabajos_galeria
-  FOR SELECT
-  USING (true);
+-- Limpieza de políticas existentes en la tabla
+DROP POLICY IF EXISTS "Lectura pública de galeria" ON trabajos_galeria;
+DROP POLICY IF EXISTS "Inserción anon galeria" ON trabajos_galeria;
+DROP POLICY IF EXISTS "Actualización anon galeria" ON trabajos_galeria;
+DROP POLICY IF EXISTS "Eliminación anon galeria" ON trabajos_galeria;
+DROP POLICY IF EXISTS "Permitir todo en galeria" ON trabajos_galeria;
 
--- Política: Inserción anon / pública (gestión desde admin)
-CREATE POLICY "Inserción anon galeria"
+-- Política Permisiva Global para la Tabla (Evita violaciones RLS al insertar/actualizar/eliminar)
+CREATE POLICY "Permitir todo en galeria"
   ON trabajos_galeria
-  FOR INSERT
+  FOR ALL
+  TO public
+  USING (true)
   WITH CHECK (true);
-
--- Política: Actualización anon
-CREATE POLICY "Actualización anon galeria"
-  ON trabajos_galeria
-  FOR UPDATE
-  USING (true);
-
--- Política: Eliminación anon
-CREATE POLICY "Eliminación anon galeria"
-  ON trabajos_galeria
-  FOR DELETE
-  USING (true);
 
 -- Índice para acelerar la consulta por categoría y estado activo
 CREATE INDEX IF NOT EXISTS idx_trabajos_cat_activo ON trabajos_galeria(categoria, activo);
@@ -50,20 +40,17 @@ CREATE INDEX IF NOT EXISTS idx_trabajos_cat_activo ON trabajos_galeria(categoria
 -- Para el bucket público 'trabajos_galeria'
 -- =============================================
 
--- NOTA: Primero crea el Bucket 'trabajos_galeria' marcado como PUBLIC en la sección Storage de Supabase.
+-- Limpieza de políticas existentes en storage.objects
+DROP POLICY IF EXISTS "Permitir subida anonima a trabajos_galeria" ON storage.objects;
+DROP POLICY IF EXISTS "Permitir lectura publica de trabajos_galeria" ON storage.objects;
+DROP POLICY IF EXISTS "Permitir actualizacion anonima a trabajos_galeria" ON storage.objects;
+DROP POLICY IF EXISTS "Permitir eliminacion anonima a trabajos_galeria" ON storage.objects;
+DROP POLICY IF EXISTS "Permitir todo en storage trabajos_galeria" ON storage.objects;
 
-CREATE POLICY "Permitir subida anonima a trabajos_galeria"
-ON storage.objects FOR INSERT TO public
-WITH CHECK ( bucket_id = 'trabajos_galeria' );
-
-CREATE POLICY "Permitir lectura publica de trabajos_galeria"
-ON storage.objects FOR SELECT TO public
-USING ( bucket_id = 'trabajos_galeria' );
-
-CREATE POLICY "Permitir actualizacion anonima a trabajos_galeria"
-ON storage.objects FOR UPDATE TO public
-USING ( bucket_id = 'trabajos_galeria' );
-
-CREATE POLICY "Permitir eliminacion anonima a trabajos_galeria"
-ON storage.objects FOR DELETE TO public
-USING ( bucket_id = 'trabajos_galeria' );
+-- Política Permisiva Global para el Bucket Storage
+CREATE POLICY "Permitir todo en storage trabajos_galeria"
+  ON storage.objects
+  FOR ALL
+  TO public
+  USING ( bucket_id = 'trabajos_galeria' )
+  WITH CHECK ( bucket_id = 'trabajos_galeria' );
