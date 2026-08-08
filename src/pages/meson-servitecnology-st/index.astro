@@ -14,7 +14,7 @@ if (cookie?.value !== adminSecret) {
 let notification = '';
 
 // Helper to sanitize file names to URL-friendly format
-function sanitizeFileName(originalName: string): string {
+function sanitizeFileName(originalName: string, index: number): string {
 	const lastDot = originalName.lastIndexOf('.');
 	const ext = lastDot !== -1 ? originalName.substring(lastDot + 1).toLowerCase() : 'jpg';
 	const nameWithoutExt = lastDot !== -1 ? originalName.substring(0, lastDot) : originalName;
@@ -23,15 +23,16 @@ function sanitizeFileName(originalName: string): string {
 		.normalize('NFD')
 		.replace(/[\u0300-\u036f]/g, '')
 		.toLowerCase()
-		.replace(/[^a-z0-9]/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '');
+		.replace(/[^a-z0-9]/g, '_')
+		.replace(/_+/g, '_')
+		.replace(/^_+|_+$/g, '');
 
 	const safeBase = cleanBase || 'imagen';
-	return `${safeBase}.${ext}`;
+	const timeStamp = Date.now().toString().slice(-6);
+	return `${safeBase}_${timeStamp}_${index + 1}.${ext}`;
 }
 
-// Handle POST actions
+// Handle POST actions for SSR fallbacks
 if (Astro.request.method === 'POST') {
 	const formData = await Astro.request.formData();
 	const action = formData.get('action')?.toString();
@@ -49,7 +50,6 @@ if (Astro.request.method === 'POST') {
 		const titulo = formData.get('titulo')?.toString() || '';
 
 		if (files.length > 0) {
-			// Bucket Auto-Check & Creation Attempt via Admin client
 			try {
 				const { data: bucketData, error: getBucketErr } = await supabaseAdmin.storage.getBucket('trabajos_galeria');
 				if (!bucketData || getBucketErr) {
@@ -62,16 +62,14 @@ if (Astro.request.method === 'POST') {
 			let uploadedCount = 0;
 			let errors: string[] = [];
 
-			// Batch Processing with per-file error handling (Promise.all)
 			await Promise.all(
 				files.map(async (file, index) => {
 					try {
 						const arrayBuffer = await file.arrayBuffer();
 						const buffer = Buffer.from(arrayBuffer);
-						const cleanName = sanitizeFileName(file.name);
-						const fileName = `${categoria.toLowerCase()}_${Date.now()}_${index}_${cleanName}`;
+						const cleanName = sanitizeFileName(file.name, index);
+						const fileName = `${categoria.toLowerCase()}_${cleanName}`;
 						
-						// Upload file to Supabase Storage using Admin Client (Bypasses RLS if service_role is configured)
 						const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
 							.from('trabajos_galeria')
 							.upload(fileName, buffer, {
@@ -93,7 +91,6 @@ if (Astro.request.method === 'POST') {
 							? `${titulo} (${index + 1})`
 							: (titulo || `Trabajo realizado - ${categoria}`);
 
-						// Insert record into Database using Admin Client
 						const { error: dbError } = await supabaseAdmin
 							.from('trabajos_galeria')
 							.insert({
@@ -106,7 +103,6 @@ if (Astro.request.method === 'POST') {
 
 						if (dbError) {
 							console.error(`[DB Insert Error on ${file.name}]`, dbError);
-							// Rollback uploaded storage file if DB insert fails
 							await supabaseAdmin.storage.from('trabajos_galeria').remove([fileName]);
 							errors.push(`"${file.name}": Error RLS/BD (${dbError.message})`);
 						} else {
@@ -121,7 +117,7 @@ if (Astro.request.method === 'POST') {
 			if (errors.length > 0 && uploadedCount === 0) {
 				const isRlsError = errors.some(e => e.toLowerCase().includes('row-level security') || e.toLowerCase().includes('violates row-level security'));
 				if (isRlsError) {
-					notification = 'Error RLS en Supabase: La tabla o bucket tiene políticas restrictivas. Solución: Ejecuta el script SQL "trabajos_galeria_schema.sql" en el SQL Editor de tu proyecto Supabase o agrega SUPABASE_SERVICE_ROLE_KEY a tus variables de entorno.';
+					notification = 'Error RLS en Supabase: Las políticas RLS de la tabla bloquean la inserción. Solución: Ejecuta el script SQL "trabajos_galeria_schema.sql" en el SQL Editor de tu proyecto Supabase o añade SUPABASE_SERVICE_ROLE_KEY en las variables de entorno de Vercel.';
 				} else {
 					notification = 'Error al cargar las imágenes: ' + errors.join(' | ');
 				}
@@ -286,6 +282,8 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 	</div>
 
 	<div class="container">
+		<div id="clientNoticeBox" style="display:none; padding:1rem; border-radius:0.75rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.5;"></div>
+
 		{notification && (
 			<div style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.5;">
 				⚠️ {notification}
@@ -419,10 +417,10 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 				<!-- Upload Box -->
 				<div class="upload-box">
 					<h3 style="font-family:'Outfit',sans-serif; font-size:1.1rem; color:white; font-weight:700;">
-						📸 Cargar Fotos a la Galería (Subida Múltiple en Lote)
+						📸 Cargar Fotos a la Galería (Server Action / API Route Upload)
 					</h3>
 					<p style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem;">
-						Sube una o varias fotos simultáneamente. Los nombres de archivo son sanitizados automáticamente para evitar errores de URLs y RLS.
+						Las imágenes son enviadas al servidor en lote y procesadas con el cliente Admin (Service Role) omitiendo políticas RLS.
 					</p>
 
 					<form method="POST" enctype="multipart/form-data" id="galeriaUploadForm">
@@ -451,10 +449,10 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 						</div>
 						<div style="margin-top: 1.25rem; display:flex; align-items:center; gap:1rem;">
 							<button type="submit" id="uploadBtn" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-size:0.85rem;">
-								⬆️ Subir Selección a Supabase Storage
+								⬆️ Enviar al Servidor / Subir Fotos
 							</button>
 							<span id="uploadSpinner" style="display:none; font-size:0.8rem; color:#00CFFF; font-weight:600;">
-								⏳ Procesando y sanitizando archivos... por favor espera.
+								⏳ Enviando archivos al Servidor Admin API... por favor espera.
 							</span>
 						</div>
 					</form>
@@ -527,18 +525,19 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 			});
 		}
 
-		// Multi-file selection feedback & spinner
+		// Multi-file selection feedback & AJAX Server Endpoint Submission
 		const fileInput = document.getElementById('imagen') as HTMLInputElement;
 		const fileCountText = document.getElementById('fileCountText');
 		const form = document.getElementById('galeriaUploadForm') as HTMLFormElement;
 		const uploadBtn = document.getElementById('uploadBtn') as HTMLButtonElement;
 		const uploadSpinner = document.getElementById('uploadSpinner');
+		const clientNoticeBox = document.getElementById('clientNoticeBox');
 
 		if (fileInput) {
 			fileInput.addEventListener('change', () => {
 				if (fileInput.files && fileInput.files.length > 0) {
 					if (fileCountText) {
-						fileCountText.textContent = `📁 ${fileInput.files.length} archivo(s) seleccionado(s) listos para subir en lote.`;
+						fileCountText.textContent = `📁 ${fileInput.files.length} archivo(s) seleccionado(s) listos para enviar al servidor.`;
 						fileCountText.style.display = 'block';
 					}
 				} else {
@@ -548,10 +547,47 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 		}
 
 		if (form && uploadBtn && uploadSpinner) {
-			form.addEventListener('submit', () => {
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
 				uploadBtn.disabled = true;
 				uploadBtn.style.opacity = '0.6';
 				uploadSpinner.style.display = 'inline-block';
+				if (clientNoticeBox) clientNoticeBox.style.display = 'none';
+
+				try {
+					const formData = new FormData(form);
+					const response = await fetch('/api/admin/galeria/upload', {
+						method: 'POST',
+						body: formData
+					});
+					const result = await response.json();
+
+					if (result.success) {
+						window.location.href = `/meson-servitecnology-st?tab=galeria&success=${result.uploadedCount}`;
+					} else {
+						if (clientNoticeBox) {
+							clientNoticeBox.style.display = 'block';
+							clientNoticeBox.style.background = 'rgba(239,68,68,0.15)';
+							clientNoticeBox.style.border = '1px solid rgba(239,68,68,0.3)';
+							clientNoticeBox.style.color = '#f87171';
+							clientNoticeBox.innerHTML = `⚠️ ${result.message || 'Error procesando la subida.'}`;
+						}
+						uploadBtn.disabled = false;
+						uploadBtn.style.opacity = '1';
+						uploadSpinner.style.display = 'none';
+					}
+				} catch (err: any) {
+					if (clientNoticeBox) {
+						clientNoticeBox.style.display = 'block';
+						clientNoticeBox.style.background = 'rgba(239,68,68,0.15)';
+						clientNoticeBox.style.border = '1px solid rgba(239,68,68,0.3)';
+						clientNoticeBox.style.color = '#f87171';
+						clientNoticeBox.innerHTML = `⚠️ Error de conexión con el servidor: ${err?.message || 'Error de red'}`;
+					}
+					uploadBtn.disabled = false;
+					uploadBtn.style.opacity = '1';
+					uploadSpinner.style.display = 'none';
+				}
 			});
 		}
 	</script>
