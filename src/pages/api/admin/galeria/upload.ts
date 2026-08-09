@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const rawFiles = formData.getAll('imagen');
 		const files = rawFiles.filter((f): f is File => f instanceof File && f.size > 0);
-		const categoria = formData.get('categoria')?.toString() || 'Soporte';
+		const categoria = formData.get('categoria')?.toString() || 'soporte-tecnico';
 		const titulo = formData.get('titulo')?.toString() || '';
 
 		if (files.length === 0) {
