@@ -13,6 +13,8 @@ const {
 	description = "Soluciones informáticas profesionales, consultoría de sistemas y soporte IT para empresas y particulares. Optimiza tu infraestructura tecnológica con SERVITECNOLOGY.",
 	keywords = "soporte tecnico, reparacion computadores, informatica, CCTV, redes, santiago"
 } = Astro.props;
+const rawPath = Astro.url.pathname.replace(/\/+$/, '');
+const canonicalUrl = `https://servitecnology.com${rawPath}`;
 ---
 
 <!DOCTYPE html>
@@ -25,19 +27,22 @@ const {
 		<link rel="icon" href="/imagenes/favico.png" type="image/png" />
 		<meta name="generator" content={Astro.generator} />
 		
+		<!-- Canonical Tag -->
+		<link rel="canonical" href={canonicalUrl} />
+
 		<!-- SEO Tags -->
 		<title>{title}</title>
 		
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://servitecnology.com/" />
+		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content="https://servitecnology.com/imagenes/principal.jpg" />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content="https://servitecnology.com/" />
+		<meta property="twitter:url" content={canonicalUrl} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content="https://servitecnology.com/imagenes/principal.jpg" />
@@ -49,7 +54,7 @@ const {
 				"@type": ["LocalBusiness", "Organization"],
 				"name": "SERVITECNOLOGY",
 				"image": "https://servitecnology.com/imagenes/principal.jpg",
-				"url": "https://servitecnology.com/",
+				"url": "https://servitecnology.com",
 				"telephone": "+56948672300",
 				"email": "contacto@servitecnology.com",
 				"priceRange": "$$",
