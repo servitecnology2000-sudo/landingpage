@@ -139,39 +139,12 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 			</div>
 		</section>
 
-		<!-- PORTAFOLIO DE PROYECTOS -->
-		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
-			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
-				Casos de Éxito en <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">Terreno</span>
-			</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
-					<div class="h-64 overflow-hidden relative">
-						<img src="/imagenes/cctv.jpg" alt="Instalación de Cámaras de Seguridad" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-					</div>
-					<div class="p-6 space-y-2">
-						<h3 class="text-lg font-bold text-white">Sistema CCTV IP Hikvision de 4MP</h3>
-						<p class="text-slate-400 text-xs">
-							Instalación de seguridad integral en local comercial en Santiago Centro. Incluye 6 cámaras bullet con analítica de cruce de línea y grabador NVR con visualización remota de baja latencia.
-						</p>
-					</div>
-				</div>
-				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-green/20 transition-all duration-300">
-					<div class="h-64 overflow-hidden relative">
-						<img src="/imagenes/principal.jpg" alt="Instalación en Condominio" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-					</div>
-					<div class="p-6 space-y-2">
-						<h3 class="text-lg font-bold text-white">Monitoreo Perimetral en Condominio Residencial</h3>
-						<p class="text-slate-400 text-xs">
-							Instalación de cámaras tipo domo antivandálico IK10 en accesos y perímetros del recinto. Sistema centralizado en sala de conserjería con respaldo de 30 días de grabaciones ininterrumpidas.
-						</p>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- CINTA DE CLIENTES SATISFECHOS - CCTV -->
-		<CintaTrabajos categoria="cctv" />
+		<!-- CINTA UNIFICADA DE CLIENTES SATISFECHOS - CCTV -->
+		<CintaTrabajos 
+			categoria="cctv" 
+			tituloSeccion="Casos de Éxito en Terreno"
+			subtituloSeccion="Instalaciones reales de sistemas de videovigilancia y seguridad en residencias y empresas."
+		/>
 	</main>
 
 	<Footer />

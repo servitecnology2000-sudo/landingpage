@@ -139,39 +139,12 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 			</div>
 		</section>
 
-		<!-- PORTAFOLIO DE PROYECTOS -->
-		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
-			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
-				Trabajos Realizados <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">y Casos Reales</span>
-			</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
-					<div class="h-64 overflow-hidden relative">
-						<img src="/imagenes/impresora.jpg" alt="Mantención de Impresora" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-					</div>
-					<div class="p-6 space-y-2">
-						<h3 class="text-lg font-bold text-white">Epson EcoTank L3110: Destape de Cabezal</h3>
-						<p class="text-slate-400 text-xs">
-							Equipo no imprimía el color negro tras meses de inactividad. Se realizó lavado interno de mangueras, purga del sistema continuo y limpieza química del cabezal, recuperando el test de inyección al 100%.
-						</p>
-					</div>
-				</div>
-				<div class="bg-zinc-950/50 border border-white/5 rounded-2xl overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
-					<div class="h-64 overflow-hidden relative">
-						<img src="/imagenes/principal.jpg" alt="Servicio Técnico Multifuncional" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-					</div>
-					<div class="p-6 space-y-2">
-						<h3 class="text-lg font-bold text-white">Cambio de Almohadillas y Reset L4150</h3>
-						<p class="text-slate-400 text-xs">
-							Impresora bloqueada indicando "vida útil de almohadillas terminada". Se realizó desarme, lavado de depósito físico, instalación de fieltro nuevo y desbloqueo de firmware.
-						</p>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- CINTA DE CLIENTES SATISFECHOS - IMPRESORAS -->
-		<CintaTrabajos categoria="impresoras" />
+		<!-- CINTA UNIFICADA DE CLIENTES SATISFECHOS - IMPRESORAS -->
+		<CintaTrabajos 
+			categoria="impresoras" 
+			tituloSeccion="Trabajos Realizados y Casos Reales"
+			subtituloSeccion="Reparaciones, mantenciones y soluciones en impresoras de todas las marcas."
+		/>
 	</main>
 
 	<Footer />
