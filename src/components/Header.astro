@@ -3,12 +3,28 @@ import Button from './Button.astro';
 
 interface NavItem {
 	label: string;
-	href: string;
+	href?: string;
+	children?: { label: string; href: string }[];
 }
 
 const navItems: NavItem[] = [
-	{ label: 'Servicios', href: '/#servicios' },
-	{ label: 'Repuestos', href: '/repuestos' },
+	{
+		label: 'Software SaaS',
+		children: [
+			{ label: 'Whagil IA (Automatización)', href: '/whagil' },
+			{ label: 'Whalinkbot (Campañas)', href: '/whalinkbot' },
+			{ label: 'Infra Manager Pro (ERP)', href: '/inframanagerpro' },
+		]
+	},
+	{
+		label: 'Servicios TI',
+		children: [
+			{ label: 'Soporte Técnico', href: '/soporte' },
+			{ label: 'Desarrollo de Software', href: '/desarrollo' },
+			{ label: 'CCTV y Redes', href: '/cctv' },
+			{ label: 'Repuestos', href: '/repuestos' },
+		]
+	},
 ];
 ---
 
@@ -35,12 +51,32 @@ const navItems: NavItem[] = [
 				<span class="tracking-wide">contacto@servitecnology.com</span>
 			</a>
 			{navItems.map((item) => (
-				<a 
-					href={item.href} 
-					class="text-sm font-medium text-slate-300 hover:text-brand-cyan transition-colors duration-300 relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
-				>
-					{item.label}
-				</a>
+				item.children ? (
+					<div class="relative group">
+						<button class="text-sm font-medium text-slate-300 hover:text-brand-cyan transition-colors duration-300 py-1 flex items-center gap-1">
+							{item.label}
+							<svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+							</svg>
+						</button>
+						<div class="absolute left-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+							<div class="bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl py-2">
+								{item.children.map(child => (
+									<a href={child.href} class="block px-4 py-2 text-sm text-slate-300 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-colors">
+										{child.label}
+									</a>
+								))}
+							</div>
+						</div>
+					</div>
+				) : (
+					<a 
+						href={item.href} 
+						class="text-sm font-medium text-slate-300 hover:text-brand-cyan transition-colors duration-300 relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
+					>
+						{item.label}
+					</a>
+				)
 			))}
 			<Button href="/#contacto" variant="outline" class="px-5 py-2 text-xs">
 				Contacto
@@ -78,12 +114,25 @@ const navItems: NavItem[] = [
 				<span>contacto@servitecnology.com</span>
 			</a>
 			{navItems.map((item) => (
-				<a 
-					href={item.href} 
-					class="mobile-nav-link text-base font-medium text-slate-300 hover:text-brand-cyan transition-colors py-2 border-b border-white/5"
-				>
-					{item.label}
-				</a>
+				item.children ? (
+					<div class="py-2 border-b border-white/5">
+						<div class="text-base font-semibold text-slate-100 mb-2">{item.label}</div>
+						<div class="flex flex-col gap-2 pl-4">
+							{item.children.map(child => (
+								<a href={child.href} class="mobile-nav-link text-sm text-slate-400 hover:text-brand-cyan transition-colors">
+									- {child.label}
+								</a>
+							))}
+						</div>
+					</div>
+				) : (
+					<a 
+						href={item.href} 
+						class="mobile-nav-link text-base font-medium text-slate-300 hover:text-brand-cyan transition-colors py-2 border-b border-white/5"
+					>
+						{item.label}
+					</a>
+				)
 			))}
 			<div class="pt-4">
 				<Button href="/#contacto" variant="primary" class="w-full">

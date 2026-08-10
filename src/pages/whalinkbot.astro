@@ -1,0 +1,103 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import Button from '../components/Button.astro';
+---
+
+<Layout title="Whalinkbot | Prospección Masiva por WhatsApp - SERVITECNOLOGY">
+	<Header />
+	
+	<main class="bg-black min-h-screen pt-20">
+		<div class="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+			<!-- Text Content -->
+			<div class="space-y-8">
+				<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+					Prospección B2B Automatizada
+				</div>
+				
+				<h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">
+					Transforma tu WhatsApp en una <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Máquina de Prospección</span>
+				</h1>
+				
+				<p class="text-lg text-slate-300 leading-relaxed">
+					Diseñado para agencias y equipos comerciales que buscan escalar su contacto con clientes corporativos de forma ágil, organizada y sin depender de hardware encendido.
+				</p>
+				
+				<ul class="space-y-4">
+					<li class="flex items-start gap-3 text-slate-300">
+						<svg class="w-6 h-6 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+						</svg>
+						<span><strong>100% Cloud:</strong> El envío masivo no se detiene aunque apagues tu equipo. Olvídate de los obsoletos programas locales y límites de RAM.</span>
+					</li>
+					<li class="flex items-start gap-3 text-slate-300">
+						<svg class="w-6 h-6 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+						</svg>
+						<span><strong>Extracción de Leads:</strong> Genera bases de clientes potenciales desde Google Maps o grupos de WhatsApp al instante.</span>
+					</li>
+					<li class="flex items-start gap-3 text-slate-300">
+						<svg class="w-6 h-6 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+						</svg>
+						<span><strong>Loops Automáticos & Anti-Ban:</strong> Programa campañas recurrentes (ej. enviar cada 2 horas) con retrasos aleatorios (humanizados) de forma segura.</span>
+					</li>
+				</ul>
+				
+				<div class="pt-6 flex flex-wrap gap-4">
+					<Button href="https://whalinkbot.com" variant="primary" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]" target="_blank">
+						Descubrir Whalinkbot y Probar Gratis
+					</Button>
+				</div>
+			</div>
+			
+			<!-- Visual Mockup -->
+			<div class="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
+				<div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-transparent pointer-events-none"></div>
+				<div class="aspect-square md:aspect-[4/3] flex items-center justify-center p-8">
+					<div class="w-full max-w-lg bg-[#0F172A] rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+						<div class="h-10 border-b border-slate-800 flex items-center px-4 gap-2">
+							<div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+							<div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+							<div class="w-3 h-3 rounded-full bg-emerald-500/50"></div>
+							<span class="ml-4 text-xs text-slate-500 font-mono">Whalinkbot Cloud Dashboard</span>
+						</div>
+						<div class="p-6 space-y-4">
+							<div class="flex justify-between items-center pb-2 border-b border-slate-800">
+								<span class="text-sm font-semibold text-white">Campaña Activa: B2B Ventas</span>
+								<span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">Procesando</span>
+							</div>
+							
+							<div class="grid grid-cols-2 gap-4">
+								<div class="bg-slate-800/50 p-4 rounded-lg text-center border border-slate-700/50">
+									<div class="text-2xl font-bold text-white">1,452</div>
+									<div class="text-xs text-slate-400 uppercase tracking-wide mt-1">Leads Extraídos</div>
+								</div>
+								<div class="bg-slate-800/50 p-4 rounded-lg text-center border border-slate-700/50">
+									<div class="text-2xl font-bold text-emerald-400">834</div>
+									<div class="text-xs text-slate-400 uppercase tracking-wide mt-1">Mensajes Enviados</div>
+								</div>
+							</div>
+							
+							<div class="space-y-2 mt-4">
+								<div class="text-xs text-slate-400 mb-1">Progreso (Loop Automático)</div>
+								<div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+									<div class="w-[65%] h-full bg-emerald-500"></div>
+								</div>
+								<div class="text-[10px] text-slate-500 flex justify-between">
+									<span>Simulando comportamiento humano...</span>
+									<span>Siguiente envío en: 3s</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+	
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola, me interesa probar el motor de prospección Whalinkbot." />
+</Layout>
