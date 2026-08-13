@@ -7,15 +7,15 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const serviceTitle = "Seguridad e Instalación de CCTV";
-const serviceDescription = "Diseño, montaje e integración de sistemas de videovigilancia IP y análoga de alta definición. Configuración integrada para monitoreo en vivo desde tu smartphone o tablet en Santiago.";
+const pageTitle = "Instalación de Cámaras de Seguridad y CCTV en Santiago | Servitecnology";
+const pageDescription = "Servicio profesional de instalación, configuración y mantención de sistemas de videovigilancia CCTV y cámaras de seguridad para casas y empresas.";
 const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa cotizar una instalación de cámaras de seguridad CCTV.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 ---
 
 <Layout 
-	title={`${serviceTitle} | SERVITECNOLOGY`} 
-	description={serviceDescription}
+	title={pageTitle} 
+	description={pageDescription}
 	keywords="cctv, camaras de seguridad, instalar camaras, videovigilancia, grabador dvr, camara ip, domotica, santiago"
 >
 	<Header />
@@ -31,13 +31,13 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 				Monitoreo & Seguridad
 			</div>
 			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-				Sistemas de CCTV <br class="hidden sm:inline" />
+				Instalación y Mantención de <br class="hidden sm:inline" />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">
-					y Seguridad Inteligente
+					Cámaras de Seguridad (CCTV)
 				</span>
 			</h1>
 			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-				{serviceDescription}
+				{pageDescription}
 			</p>
 			<div class="pt-6">
 				<a 

@@ -14,12 +14,11 @@ export const GET: APIRoute = async () => {
 
 	const staticPages = [
 		{ path: '', priority: '1.0', changefreq: 'daily' },
-		{ path: '/soporte', priority: '0.9', changefreq: 'weekly' },
-		{ path: '/soporte-tecnico', priority: '0.8', changefreq: 'weekly' },
-		{ path: '/repuestos', priority: '0.9', changefreq: 'weekly' },
-		{ path: '/redes', priority: '0.8', changefreq: 'weekly' },
-		{ path: '/cctv', priority: '0.8', changefreq: 'weekly' },
+		{ path: '/soporte', priority: '0.9', changefreq: 'daily' },
+		{ path: '/cctv', priority: '0.9', changefreq: 'daily' },
+		{ path: '/repuestos', priority: '0.9', changefreq: 'daily' },
 		{ path: '/impresoras', priority: '0.8', changefreq: 'weekly' },
+		{ path: '/redes', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/gaming', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/desarrollo', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/garantias', priority: '0.3', changefreq: 'monthly' },
