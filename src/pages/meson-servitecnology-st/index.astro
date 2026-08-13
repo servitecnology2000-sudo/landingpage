@@ -219,6 +219,21 @@ const errorsParam = urlObj.searchParams.get('errors');
 
 const successMsg = successParam ? `¡Se cargaron exitosamente ${successParam} foto(s) a la galería!` : '';
 const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
+
+// Derive dynamic categories for Repuestos filter
+const rawCategories = items.map(p => p.categoria).filter(Boolean);
+const repuestosCategories = ['todos', ...Array.from(new Set(rawCategories))];
+
+// Preset categories for Galería filter
+const galeriaCategories = [
+	{ id: 'todos', label: 'Todos' },
+	{ id: 'soporte-tecnico', label: 'Reparación / Soporte' },
+	{ id: 'cctv', label: 'CCTV / Cámaras' },
+	{ id: 'gaming', label: 'PC Gaming' },
+	{ id: 'redes', label: 'Redes y Conectividad' },
+	{ id: 'impresoras', label: 'Impresoras' },
+	{ id: 'desarrollo', label: 'Diseño / Desarrollo Web' },
+];
 ---
 
 <html lang="es">
@@ -289,6 +304,12 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 		.status-hidden { background: rgba(248,113,113,0.2); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
 		.galeria-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; }
 		.galeria-title { font-size: 0.85rem; font-weight: 600; color: white; }
+
+		/* Category Filter Buttons (matching /repuestos) */
+		.cat-filter-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+		.cat-filter-btn { padding: 0.45rem 0.9rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+		.cat-filter-btn:hover { color: #ffffff; border-color: rgba(0, 207, 255, 0.4); background: rgba(255, 255, 255, 0.1); }
+		.cat-filter-btn.active { background: #00CFFF; color: #000000; border-color: #00CFFF; box-shadow: 0 0 15px rgba(0, 207, 255, 0.35); font-weight: 700; }
 
 		@media (max-width: 768px) {
 			.hide-mobile { display: none; }
@@ -374,6 +395,21 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 
 				<input type="text" id="searchInput" class="search-bar" placeholder="🔍 Buscar por nombre, SKU o categoría..." />
 
+				<!-- Categorías de Repuestos -->
+				{repuestosCategories.length > 1 && (
+					<div class="cat-filter-wrap">
+						{repuestosCategories.map(cat => (
+							<button
+								type="button"
+								class={`cat-filter-btn repuestos-filter-btn ${cat === 'todos' ? 'active' : ''}`}
+								data-cat={cat}
+							>
+								{cat === 'todos' ? 'Todos los Repuestos' : cat}
+							</button>
+						))}
+					</div>
+				)}
+
 				<div class="table-wrap">
 					{items.length === 0 ? (
 						<div class="empty">
@@ -397,7 +433,7 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 							</thead>
 							<tbody id="tableBody">
 								{items.map(p => (
-									<tr class="product-row" data-search={`${p.sku} ${p.titulo} ${p.categoria}`.toLowerCase()}>
+									<tr class="product-row" data-category={p.categoria || ''} data-search={`${p.sku} ${p.titulo} ${p.categoria}`.toLowerCase()}>
 										<td>
 											{p.imagenes?.[0] ? (
 												<img src={p.imagenes[0]} alt="" class="thumb" />
@@ -484,7 +520,23 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 				</div>
 
 				<!-- Galería List Grid -->
-				<h3 class="section-title">Fotos Subidas por Categoría (Mostrando las 10 más recientes por sección)</h3>
+				<h3 class="section-title">Fotos Subidas por Categoría</h3>
+
+				<!-- Categorías de Galería -->
+				{galeriaItems.length > 0 && (
+					<div class="cat-filter-wrap">
+						{galeriaCategories.map(cat => (
+							<button
+								type="button"
+								class={`cat-filter-btn galeria-filter-btn ${cat.id === 'todos' ? 'active' : ''}`}
+								data-cat={cat.id}
+							>
+								{cat.label}
+							</button>
+						))}
+					</div>
+				)}
+
 				{galeriaItems.length === 0 ? (
 					<div class="empty table-wrap">
 						<div class="empty-icon">🖼️</div>
@@ -494,7 +546,7 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 				) : (
 					<div class="galeria-grid">
 						{galeriaItems.map(item => (
-							<div class="galeria-card">
+							<div class="galeria-card" data-category={item.categoria || ''}>
 								<div class="galeria-img-wrap">
 									<img src={item.imagen_url} alt={item.titulo} class="galeria-img" />
 									<span class="galeria-badge">{item.categoria}</span>
@@ -546,23 +598,62 @@ const partialErrorsMsg = errorsParam ? decodeURIComponent(errorsParam) : '';
 	</div>
 
 	<script>
-		// Real-time search filter for Inventory
-		const searchInput = document.getElementById('searchInput');
-		const rows = document.querySelectorAll('.product-row');
+		// Real-time Search + Category Filter for Inventory
+		const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+		const productRows = document.querySelectorAll('.product-row');
+		const repuestosFilterBtns = document.querySelectorAll('.repuestos-filter-btn');
+		let activeRepuestosCat = 'todos';
+
+		function filterProducts() {
+			const term = searchInput ? searchInput.value.toLowerCase() : '';
+			productRows.forEach(row => {
+				const searchData = row.getAttribute('data-search') || '';
+				const catData = row.getAttribute('data-category') || '';
+				
+				const matchesSearch = !term || searchData.includes(term);
+				const matchesCat = activeRepuestosCat === 'todos' || catData === activeRepuestosCat;
+
+				if (matchesSearch && matchesCat) {
+					(row as HTMLElement).style.display = '';
+				} else {
+					(row as HTMLElement).style.display = 'none';
+				}
+			});
+		}
 
 		if (searchInput) {
-			searchInput.addEventListener('input', (e) => {
-				const term = (e.target as HTMLInputElement).value.toLowerCase();
-				rows.forEach(row => {
-					const searchData = row.getAttribute('data-search') || '';
-					if (searchData.includes(term)) {
-						(row as HTMLElement).style.display = '';
+			searchInput.addEventListener('input', filterProducts);
+		}
+
+		repuestosFilterBtns.forEach(btn => {
+			btn.addEventListener('click', () => {
+				repuestosFilterBtns.forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				activeRepuestosCat = btn.getAttribute('data-cat') || 'todos';
+				filterProducts();
+			});
+		});
+
+		// Real-time Category Filter for Galería
+		const galeriaCards = document.querySelectorAll('.galeria-card');
+		const galeriaFilterBtns = document.querySelectorAll('.galeria-filter-btn');
+
+		galeriaFilterBtns.forEach(btn => {
+			btn.addEventListener('click', () => {
+				galeriaFilterBtns.forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				const filterCat = btn.getAttribute('data-cat') || 'todos';
+
+				galeriaCards.forEach(card => {
+					const cardCat = card.getAttribute('data-category') || '';
+					if (filterCat === 'todos' || cardCat === filterCat) {
+						(card as HTMLElement).style.display = '';
 					} else {
-						(row as HTMLElement).style.display = 'none';
+						(card as HTMLElement).style.display = 'none';
 					}
 				});
 			});
-		}
+		});
 
 		// Multi-file selection feedback & AJAX Server Endpoint Submission
 		const fileInput = document.getElementById('imagen') as HTMLInputElement;
