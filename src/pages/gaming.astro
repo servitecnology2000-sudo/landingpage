@@ -7,15 +7,15 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const serviceTitle = "Armado de PCs y Modding Gaming";
-const serviceDescription = "Diseño y armado de computadores de alto rendimiento a medida para gaming, streaming, renderizado y diseño profesional. Maximizamos tu rendimiento por cada peso invertido.";
+const pageTitle = "Armado de PC Gaming y Estaciones de Trabajo | Servitecnology";
+const pageDescription = "Cotización, ensamble y armado de PC Gamer a medida en Santiago. Asesoría en componentes, refrigeración, gestión de cables y pruebas de rendimiento.";
 const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa cotizar u optimizar un PC Gaming o estación de trabajo.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 ---
 
 <Layout 
-	title={`${serviceTitle} | SERVITECNOLOGY`} 
-	description={serviceDescription}
+	title={pageTitle} 
+	description={pageDescription}
 	keywords="armar pc gamer, computadores a medida, modding pc, pc streaming, armado de computadoras, santiago"
 >
 	<Header />
@@ -31,13 +31,13 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 				Alto Rendimiento
 			</div>
 			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-				Armado de PCs Gamer <br class="hidden sm:inline" />
+				Armado y Configuración <br class="hidden sm:inline" />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
-					y Estaciones de Trabajo
+					de PC Gamer
 				</span>
 			</h1>
 			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-				{serviceDescription}
+				{pageDescription}
 			</p>
 			<div class="pt-6">
 				<a 

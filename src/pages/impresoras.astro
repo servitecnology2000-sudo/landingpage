@@ -7,15 +7,15 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const serviceTitle = "Mantenimiento y Reparación de Impresoras";
-const serviceDescription = "Soporte técnico integral, limpieza de cabezales, cambio de almohadillas y rodillos, mantención preventiva y correctiva de equipos HP, Epson, Canon y Brother en Santiago.";
+const pageTitle = "Servicio Técnico y Reparación de Impresoras | Servitecnology";
+const pageDescription = "Mantenimiento y reparación de impresoras térmicas, de tinta y láser en Santiago. Limpieza de cabezales, cambio de almohadillas y repuestos.";
 const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte o mantención para mi impresora.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 ---
 
 <Layout 
-	title={`${serviceTitle} | SERVITECNOLOGY`} 
-	description={serviceDescription}
+	title={pageTitle} 
+	description={pageDescription}
 	keywords="reparar impresora, epson servicio tecnico, soporte hp, mantencion impresora, cabezal tapado, almohadillas epson, servitecnology"
 >
 	<Header />
@@ -31,13 +31,13 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 				Soporte Multimarca
 			</div>
 			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-				Servicio Técnico <br class="hidden sm:inline" />
+				Reparación y Mantenimiento <br class="hidden sm:inline" />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">
-					de Impresoras y Plotters
+					de Impresoras
 				</span>
 			</h1>
 			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-				{serviceDescription}
+				{pageDescription}
 			</p>
 			<div class="pt-6">
 				<a 

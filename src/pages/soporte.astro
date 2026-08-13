@@ -7,15 +7,15 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const serviceTitle = "Soporte Técnico Especializado";
-const serviceDescription = "Diagnóstico integral, mantenimiento preventivo/correctivo y optimización avanzada de laptops, computadores y consolas de videojuegos. Devolvemos el rendimiento original a tus equipos en Santiago.";
+const pageTitle = "Reparación de Computadoras, Notebooks y Laptops | Servitecnology";
+const pageDescription = "Servicio técnico de reparación de computadores y notebooks en Independencia, Santiago. Formateo, cambio de pantalla, limpieza y optimización de hardware.";
 const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte técnico especializado para mis equipos.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 ---
 
 <Layout 
-	title={`${serviceTitle} | SERVITECNOLOGY`} 
-	description={serviceDescription}
+	title={pageTitle} 
+	description={pageDescription}
 	keywords="soporte tecnico, reparacion de computadores, reparar notebook, limpiar consola, mantencion pc, santiago"
 >
 	<Header />
@@ -31,13 +31,13 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 				Servicio Técnico
 			</div>
 			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-				Soporte Técnico <br class="hidden sm:inline" />
+				Reparación Profesional de <br class="hidden sm:inline" />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">
-					Especializado y Garantizado
+					Computadoras y Notebooks
 				</span>
 			</h1>
 			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-				{serviceDescription}
+				{pageDescription}
 			</p>
 			<div class="pt-6">
 				<a 

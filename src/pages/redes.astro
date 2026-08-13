@@ -7,15 +7,15 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const serviceTitle = "Redes y Conectividad";
-const serviceDescription = "Cableado estructurado Cat6/Cat6A, diagnóstico de señal Wi-Fi lenta, instalación de routers y repetidores tipo Mesh y optimizaciones definitivas de latencia en Santiago.";
+const pageTitle = "Instalación de Redes, Cableado Estructurado y WiFi | Servitecnology";
+const pageDescription = "Soluciones de conectividad y redes para hogares y empresas. Cableado estructurado, ampliación de señal WiFi, routers y configuración de red.";
 const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero soporte de redes o conectividad para mi oficina o domicilio.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 ---
 
 <Layout 
-	title={`${serviceTitle} | SERVITECNOLOGY`} 
-	description={serviceDescription}
+	title={pageTitle} 
+	description={pageDescription}
 	keywords="redes, wifi lento, cableado estructurado, mejorar wifi, router mesh, access point, servitecnology, chile"
 >
 	<Header />
@@ -31,13 +31,13 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 				Conectividad Profesional
 			</div>
 			<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-				Soluciones de Redes <br class="hidden sm:inline" />
+				Instalación de Redes y <br class="hidden sm:inline" />
 				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
-					y Estabilidad Wi-Fi
+					Conectividad Empresarial
 				</span>
 			</h1>
 			<p class="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-				{serviceDescription}
+				{pageDescription}
 			</p>
 			<div class="pt-6">
 				<a 
