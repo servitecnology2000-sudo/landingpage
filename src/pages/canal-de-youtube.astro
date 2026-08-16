@@ -10,7 +10,7 @@ import { fetchYouTubeVideos, SUBSCRIBE_URL, CHANNEL_URL, CHANNEL_ID } from '../l
 
 const pageTitle = "Canal de YouTube Oficial | Casos de Éxito y Reparaciones en Vivo | SERVITECNOLOGY";
 const pageDescription = "Transparencia técnica en cada trabajo. Mira nuestras reparaciones en vivo, diagnósticos de microelectrónica y encuentra los repuestos exactos para tu equipo en Santiago.";
-const pageKeywords = "youtube servitecnology, reparaciones en vivo, cambiar ram ssd hp pavilion, arreglo placa madre santiago, microelectronica laptops, repuestos computadores chile";
+const pageKeywords = "youtube servitecnology, reparaciones en vivo, cambiar ram ssd hp pavilion, arreglo placa madre santiago, microelectronica laptops, repuestos computadores chile, reparacion impresoras epson santiago";
 
 const videos = await fetchYouTubeVideos();
 
@@ -47,21 +47,28 @@ const videoSchema = {
 	<Header />
 
 	<main class="relative bg-black min-h-screen pb-20 overflow-hidden text-slate-100">
-		<!-- HERO SECTION BANNER (ESTILO NATIVO SERVITECNOLOGY) -->
+		<!-- HERO SECTION BANNER (ESTILO NATIVO SERVITECNOLOGY CON OVERLAY YOUTUBE) -->
 		<section class="relative min-h-[55vh] md:min-h-[65vh] flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 bg-black border-b border-white/10 mb-12">
-			<!-- Background Image with Overlay & Visual Relief -->
+			<!-- Background Image with Texture & Relief Overlays -->
 			<div class="absolute inset-0 z-0 pointer-events-none">
 				<img 
 					src="/imagenes/youtube_hero.jpg" 
 					alt="Estudio y Taller Técnico SERVITECNOLOGY en YouTube" 
-					class="w-full h-full object-cover object-center scale-105 filter brightness-90 opacity-60" 
+					class="w-full h-full object-cover object-center scale-105 filter brightness-90 opacity-40" 
 				/>
-				<div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60 z-10"></div>
-				<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_60%,#000000_100%)] z-10"></div>
+				<div class="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/70 z-10"></div>
+				<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.7)_60%,#000000_100%)] z-10"></div>
 			</div>
 
-			<!-- Decorative Glows & Cyberpunk Grid Pattern -->
-			<div class="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-brand-cyan/15 rounded-full blur-[150px] pointer-events-none z-10"></div>
+			<!-- Stylized YouTube Watermark/Logo Overlay in Dark Low-Opacity Relief -->
+			<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden select-none">
+				<svg class="w-[500px] sm:w-[750px] lg:w-[1000px] h-auto text-white/[0.035] filter drop-shadow-[0_0_80px_rgba(255,0,0,0.18)] -rotate-3 scale-110 transition-transform duration-1000" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+				</svg>
+			</div>
+
+			<!-- Decorative Ambient Glows & Cyberpunk Grid Pattern -->
+			<div class="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-[#00F0FF]/15 rounded-full blur-[150px] pointer-events-none z-10"></div>
 			<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-red-600/15 rounded-full blur-[150px] pointer-events-none z-10"></div>
 			<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-10"></div>
 
@@ -76,11 +83,10 @@ const videoSchema = {
 					<span>Canal Oficial de YouTube</span>
 				</div>
 
-				<!-- Main Title with Corporate Typography and Cyan/Red Glow -->
+				<!-- Main Title with Custom Linear Gradient: Verde Turquesa (#00F0FF) -> Azul Eléctrico (#0088FF) -> Rojo Vibrante (#FF0000) -->
 				<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-					Casos de Éxito y <br class="hidden sm:inline" />
-					<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-white to-red-500 drop-shadow-[0_2px_14px_rgba(0,207,255,0.4)]">
-						Reparaciones en Vivo
+					<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#0088FF] to-[#FF0000] drop-shadow-[0_2px_14px_rgba(0,240,255,0.35)]">
+						Casos de Éxito y Reparaciones en Vivo
 					</span>
 				</h1>
 
@@ -136,34 +142,39 @@ const videoSchema = {
 
 		<!-- PARRILLA DE VIDEOS AUTOMATIZADA (HUD CYBERPUNK) -->
 		<section class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 w-full py-8">
-			<!-- Section Header & Filter Controls -->
+			<!-- Section Header & Filter Controls (Debug text cleaned, Text gradient applied) -->
 			<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-white/10">
 				<div>
-					<div class="inline-flex items-center gap-2 text-brand-cyan text-xs font-mono uppercase tracking-widest mb-2">
-						<span class="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
-						FEED_API_V3 // LIVE_STREAM_RECORDINGS
-					</div>
-					<h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-						Contenido Técnico y <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-green">Guías de Taller</span>
+					<!-- Custom Text Gradient: Verde Turquesa (#00F0FF) -> Azul Eléctrico (#0088FF) -->
+					<h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+						<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] to-[#0088FF] drop-shadow-[0_2px_10px_rgba(0,240,255,0.3)]">
+							Contenido técnico y guías de taller
+						</span>
 					</h2>
 					<p class="text-slate-400 text-sm mt-1 max-w-2xl">
 						Aprende a reparar, potenciar tus equipos y descubre cómo realizamos cada trabajo con estándar de laboratorio.
 					</p>
 				</div>
 
-				<!-- Quick Filter Bar -->
+				<!-- Category Filter Pills Exact: Todos, Reparación, Shorts, Impresoras, Upgrades, Microelectrónica -->
 				<div class="flex flex-wrap items-center gap-2" id="video-filter-bar">
-					<button class="filter-btn active-filter px-4 py-2 rounded-lg text-xs font-semibold bg-brand-cyan text-black transition-all duration-200" data-filter="all">
-						Todos ({videos.length})
+					<button class="filter-btn active-filter px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#00F0FF] text-black transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(0,240,255,0.3)]" data-filter="all">
+						Todos
 					</button>
-					<button class="filter-btn px-4 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-brand-cyan border border-white/10 hover:border-brand-cyan/40 transition-all duration-200" data-filter="upgrade">
-						Upgrades & RAM
+					<button class="filter-btn px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 transition-all duration-200 cursor-pointer" data-filter="reparacion">
+						Reparación
 					</button>
-					<button class="filter-btn px-4 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-brand-cyan border border-white/10 hover:border-brand-cyan/40 transition-all duration-200" data-filter="micro">
+					<button class="filter-btn px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 transition-all duration-200 cursor-pointer" data-filter="shorts">
+						Shorts
+					</button>
+					<button class="filter-btn px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 transition-all duration-200 cursor-pointer" data-filter="impresoras">
+						Impresoras
+					</button>
+					<button class="filter-btn px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 transition-all duration-200 cursor-pointer" data-filter="upgrades">
+						Upgrades
+					</button>
+					<button class="filter-btn px-3.5 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-[#00F0FF] border border-white/10 hover:border-[#00F0FF]/40 transition-all duration-200 cursor-pointer" data-filter="microelectronica">
 						Microelectrónica
-					</button>
-					<button class="filter-btn px-4 py-2 rounded-lg text-xs font-semibold bg-zinc-900 text-slate-300 hover:text-brand-cyan border border-white/10 hover:border-brand-cyan/40 transition-all duration-200" data-filter="displays">
-						Pantallas & Displays
 					</button>
 				</div>
 			</div>
@@ -177,13 +188,15 @@ const videoSchema = {
 						day: 'numeric'
 					});
 
-					const categoryAttr = (video.category || '').toLowerCase();
+					const categoryAttr = (video.category || 'reparacion').toLowerCase();
 
 					return (
 						<article 
 							class="video-card group flex flex-col justify-between rounded-2xl bg-gradient-to-b from-[#0A1118] to-[#121E2B] border border-brand-cyan/20 hover:border-brand-cyan/80 p-4 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(0,240,255,0.2)] backdrop-blur-xl relative overflow-hidden"
 							data-category={categoryAttr}
 							data-title={video.title.toLowerCase()}
+							data-desc={(video.description || '').toLowerCase()}
+							data-is-short={video.isShort ? "true" : "false"}
 						>
 							<!-- Cyberpunk Corner HUD Accents -->
 							<div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-brand-cyan/40 group-hover:border-brand-cyan transition-colors pointer-events-none rounded-tr-xl"></div>
@@ -218,7 +231,7 @@ const videoSchema = {
 									<!-- Category & Time Badges -->
 									<div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
 										<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded bg-black/80 text-brand-cyan border border-brand-cyan/30 backdrop-blur-sm">
-											{video.category || 'Taller ST'}
+											{video.category}
 										</span>
 										<span class="text-[11px] font-mono px-2 py-0.5 rounded bg-black/80 text-slate-300 backdrop-blur-sm">
 											{formattedDate}
@@ -373,7 +386,7 @@ const videoSchema = {
 
 				<button 
 					id="close-video-modal" 
-					class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors focus:outline-none"
+					class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors focus:outline-none cursor-pointer"
 					aria-label="Cerrar reproductor"
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,33 +487,45 @@ const videoSchema = {
 		}
 	});
 
-	// Quick Filter Logic
+	// Updated Category Filter Tabs: Todos, Reparación, Shorts, Impresoras, Upgrades, Microelectrónica
 	const filterBtns = document.querySelectorAll('.filter-btn');
 	const videoCards = document.querySelectorAll<HTMLElement>('.video-card');
 
 	filterBtns.forEach(btn => {
 		btn.addEventListener('click', () => {
 			filterBtns.forEach(b => {
-				b.classList.remove('active-filter', 'bg-brand-cyan', 'text-black');
+				b.classList.remove('active-filter', 'bg-[#00F0FF]', 'text-black', 'shadow-[0_0_15px_rgba(0,240,255,0.3)]');
 				b.classList.add('bg-zinc-900', 'text-slate-300');
 			});
 
-			btn.classList.add('active-filter', 'bg-brand-cyan', 'text-black');
+			btn.classList.add('active-filter', 'bg-[#00F0FF]', 'text-black', 'shadow-[0_0_15px_rgba(0,240,255,0.3)]');
 			btn.classList.remove('bg-zinc-900', 'text-slate-300');
 
 			const filter = btn.getAttribute('data-filter');
 
 			videoCards.forEach(card => {
-				const cat = card.getAttribute('data-category') || '';
-				const title = card.getAttribute('data-title') || '';
+				const cat = (card.getAttribute('data-category') || '').toLowerCase();
+				const title = (card.getAttribute('data-title') || '').toLowerCase();
+				const desc = (card.getAttribute('data-desc') || '').toLowerCase();
+				const isShort = card.getAttribute('data-is-short') === 'true';
+
+				let matches = false;
 
 				if (filter === 'all') {
-					card.style.display = 'flex';
-				} else if (filter === 'upgrade' && (cat.includes('upgrade') || cat.includes('hardware') || title.includes('ram') || title.includes('ssd'))) {
-					card.style.display = 'flex';
-				} else if (filter === 'micro' && (cat.includes('micro') || cat.includes('placa') || title.includes('placa') || title.includes('corto'))) {
-					card.style.display = 'flex';
-				} else if (filter === 'displays' && (cat.includes('pantalla') || cat.includes('display') || title.includes('pantalla'))) {
+					matches = true;
+				} else if (filter === 'reparacion') {
+					matches = cat.includes('repara') || (!isShort && !cat.includes('impresora') && !cat.includes('micro') && !cat.includes('upgrade'));
+				} else if (filter === 'shorts') {
+					matches = isShort || cat.includes('short') || title.includes('#short') || desc.includes('#short') || title.includes('shorts');
+				} else if (filter === 'impresoras') {
+					matches = cat.includes('impresora') || title.includes('impresora') || title.includes('epson') || title.includes('canon') || title.includes('cabezal') || title.includes('almohadilla') || title.includes('toner');
+				} else if (filter === 'upgrades') {
+					matches = cat.includes('upgrade') || title.includes('ram') || title.includes('ssd') || title.includes('upgrade') || title.includes('disco') || title.includes('memoria') || title.includes('aumentar');
+				} else if (filter === 'microelectronica') {
+					matches = cat.includes('micro') || title.includes('placa') || title.includes('corto') || title.includes('mosfet') || title.includes('soldadura') || title.includes('bios') || title.includes('condensador') || title.includes('19v');
+				}
+
+				if (matches) {
 					card.style.display = 'flex';
 				} else {
 					card.style.display = 'none';

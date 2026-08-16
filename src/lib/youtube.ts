@@ -6,9 +6,10 @@ export interface YouTubeVideo {
 	publishedAt: string;
 	url: string;
 	embedUrl: string;
-	category?: string;
+	category: 'Reparación' | 'Shorts' | 'Impresoras' | 'Upgrades' | 'Microelectrónica';
 	views?: string;
 	repuestoQuery?: string;
+	isShort?: boolean;
 }
 
 export const CHANNEL_ID = 'UC1wIi9Lltm36kFu_x227nlA';
@@ -16,7 +17,7 @@ export const CHANNEL_URL = `https://www.youtube.com/channel/${CHANNEL_ID}`;
 export const SUBSCRIBE_URL = `https://www.youtube.com/channel/${CHANNEL_ID}?sub_confirmation=1`;
 export const UPLOADS_PLAYLIST_ID = 'UU1wIi9Lltm36kFu_x227nlA';
 
-// Fallback catalog of Servitecnology technical cases and repairs
+// Fallback catalog of Servitecnology technical cases, repairs, shorts, upgrades and printers
 export const FALLBACK_VIDEOS: YouTubeVideo[] = [
 	{
 		id: 'qXKGkmTja6M',
@@ -26,8 +27,9 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
 		publishedAt: '2026-08-16T18:15:56Z',
 		url: 'https://www.youtube.com/watch?v=qXKGkmTja6M',
 		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
-		category: 'Upgrade & Hardware',
-		repuestoQuery: 'SSD Memoria RAM'
+		category: 'Upgrades',
+		repuestoQuery: 'SSD NVMe / Memoria RAM DDR4',
+		isShort: false
 	},
 	{
 		id: '0hX98L5gC0A',
@@ -38,7 +40,8 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
 		url: 'https://www.youtube.com/channel/UC1wIi9Lltm36kFu_x227nlA',
 		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
 		category: 'Microelectrónica',
-		repuestoQuery: 'Componentes Placa Madre'
+		repuestoQuery: 'Mosfet / Condensador Placa Madre',
+		isShort: false
 	},
 	{
 		id: '3kL9mR8vP1X',
@@ -48,19 +51,45 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
 		publishedAt: '2026-07-28T20:10:00Z',
 		url: 'https://www.youtube.com/channel/UC1wIi9Lltm36kFu_x227nlA',
 		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
-		category: 'Pantallas y Displays',
-		repuestoQuery: 'Pantalla Lenovo 30 pines'
+		category: 'Reparación',
+		repuestoQuery: 'Pantalla Lenovo 30 pines',
+		isShort: false
+	},
+	{
+		id: '7nP2kL9vW4Z',
+		title: 'Destape de Cabezal y Reseteo de Almohadillas Epson EcoTank L3150 / L3250 | Servitecnology Impresoras',
+		description: 'Servicio técnico especializado en impresoras de tinta continua. Limpieza profunda ultrasónica de inyectores tapados y mantenimiento al sistema de desecho.',
+		thumbnail: 'https://i.ytimg.com/vi/qXKGkmTja6M/hqdefault.jpg',
+		publishedAt: '2026-07-20T14:20:00Z',
+		url: 'https://www.youtube.com/channel/UC1wIi9Lltm36kFu_x227nlA',
+		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
+		category: 'Impresoras',
+		repuestoQuery: 'Cabezal / Almohadillas Epson',
+		isShort: false
+	},
+	{
+		id: '5sH8xM1qT9Y',
+		title: '¿Por qué tu laptop se calienta y se apaga sola? Solución en 60s #shorts | Taller Servitecnology',
+		description: 'Micro-guía en formato corto: la importancia del cambio periódico de pasta térmica de alto rendimiento y limpieza de turbinas de disipación #shorts.',
+		thumbnail: 'https://i.ytimg.com/vi/qXKGkmTja6M/hqdefault.jpg',
+		publishedAt: '2026-07-10T12:00:00Z',
+		url: 'https://www.youtube.com/channel/UC1wIi9Lltm36kFu_x227nlA',
+		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
+		category: 'Shorts',
+		repuestoQuery: 'Pasta Térmica / Ventilador Disipador',
+		isShort: true
 	},
 	{
 		id: '8vN4pL2wQ9Z',
-		title: 'Mantenimiento Térmico Crítico en PC Gamer y Laptops de Alto Rendimiento | Cambio de Metal Líquido / PTM7950',
-		description: 'Limpieza por ultrasonido de disipadores, reemplazo de pasta térmica de alto rendimiento y thermal pads para bajar 25°C en CPU y GPU bajo carga.',
+		title: 'Reparación de Bisagras Raras y Carcasa Partida en Notebook HP y Dell | Refuerzo Estructural',
+		description: 'Reconstrucción artesanal con resina epóxica de anclajes de bisagras rotas en carcasas plásticas sin necesidad de reemplazar la tapa completa.',
 		thumbnail: 'https://i.ytimg.com/vi/qXKGkmTja6M/hqdefault.jpg',
-		publishedAt: '2026-07-15T16:45:00Z',
+		publishedAt: '2026-07-02T16:45:00Z',
 		url: 'https://www.youtube.com/channel/UC1wIi9Lltm36kFu_x227nlA',
 		embedUrl: 'https://www.youtube.com/embed/qXKGkmTja6M',
-		category: 'Mantenimiento & Gaming',
-		repuestoQuery: 'Ventilador Disipador'
+		category: 'Reparación',
+		repuestoQuery: 'Bisagras y Carcasas Laptop',
+		isShort: false
 	}
 ];
 
@@ -70,7 +99,7 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
 	// 1. If API Key is provided, use YouTube Data API v3 PlaylistItems (uploads)
 	if (apiKey && apiKey !== 'undefined' && apiKey.trim() !== '') {
 		try {
-			const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=12&key=${apiKey}`;
+			const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=18&key=${apiKey}`;
 			const res = await fetch(playlistUrl, {
 				headers: { 'Accept': 'application/json' },
 				signal: AbortSignal.timeout(4000)
@@ -84,17 +113,21 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
 						const snippet = item.snippet || {};
 						const thumbnails = snippet.thumbnails || {};
 						const bestThumb = thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-						
+						const title = snippet.title || 'Video de Servitecnology';
+						const description = snippet.description || '';
+						const isShort = title.toLowerCase().includes('#short') || description.toLowerCase().includes('#short');
+
 						return {
 							id: videoId,
-							title: snippet.title || 'Video de Servitecnology',
-							description: snippet.description || '',
+							title,
+							description,
 							thumbnail: bestThumb,
 							publishedAt: snippet.publishedAt || new Date().toISOString(),
 							url: `https://www.youtube.com/watch?v=${videoId}`,
 							embedUrl: `https://www.youtube.com/embed/${videoId}`,
-							category: inferCategory(snippet.title, snippet.description),
-							repuestoQuery: inferRepuesto(snippet.title)
+							category: inferCategory(title, description, isShort),
+							repuestoQuery: inferRepuesto(title),
+							isShort
 						};
 					});
 					if (apiVideos.length > 0) return apiVideos;
@@ -126,6 +159,7 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
 					const title = titleMatch ? decodeXml(titleMatch[1]) : 'Reparación en Vivo Servitecnology';
 					const published = publishedMatch ? publishedMatch[1] : new Date().toISOString();
 					const description = descMatch ? decodeXml(descMatch[1]) : '';
+					const isShort = title.toLowerCase().includes('#short') || description.toLowerCase().includes('#short');
 
 					return {
 						id,
@@ -135,8 +169,9 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
 						publishedAt: published,
 						url: `https://www.youtube.com/watch?v=${id}`,
 						embedUrl: `https://www.youtube.com/embed/${id}`,
-						category: inferCategory(title, description),
-						repuestoQuery: inferRepuesto(title)
+						category: inferCategory(title, description, isShort),
+						repuestoQuery: inferRepuesto(title),
+						isShort
 					};
 				}).filter(v => Boolean(v.id));
 
@@ -169,21 +204,30 @@ function decodeXml(str: string): string {
 		.replace(/&#39;/g, "'");
 }
 
-function inferCategory(title: string, desc: string = ''): string {
+export function inferCategory(title: string, desc: string = '', isShort: boolean = false): 'Reparación' | 'Shorts' | 'Impresoras' | 'Upgrades' | 'Microelectrónica' {
 	const text = `${title} ${desc}`.toLowerCase();
-	if (text.includes('ram') || text.includes('ssd') || text.includes('upgrade') || text.includes('disco')) return 'Upgrade & Hardware';
-	if (text.includes('placa') || text.includes('corto') || text.includes('mosfet') || text.includes('microelectronica')) return 'Microelectrónica';
-	if (text.includes('pantalla') || text.includes('display') || text.includes('flex')) return 'Pantallas & Displays';
-	if (text.includes('gamer') || text.includes('gaming') || text.includes('pasta') || text.includes('mantenimiento')) return 'Mantenimiento & Gaming';
-	if (text.includes('cctv') || text.includes('camara')) return 'CCTV & Redes';
-	return 'Reparación en Taller';
+	if (isShort || text.includes('#shorts') || text.includes('#short') || text.includes('60s') || text.includes('shorts')) {
+		return 'Shorts';
+	}
+	if (text.includes('impresora') || text.includes('epson') || text.includes('canon') || text.includes('cabezal') || text.includes('almohadilla') || text.includes('toner') || text.includes('ecotank') || text.includes('tinta')) {
+		return 'Impresoras';
+	}
+	if (text.includes('ram') || text.includes('ssd') || text.includes('upgrade') || text.includes('disco') || text.includes('aumentar') || text.includes('potenciar') || text.includes('nvme')) {
+		return 'Upgrades';
+	}
+	if (text.includes('placa') || text.includes('corto') || text.includes('mosfet') || text.includes('microelectronica') || text.includes('soldadura') || text.includes('bios') || text.includes('condensador') || text.includes('19v') || text.includes('reballing')) {
+		return 'Microelectrónica';
+	}
+	return 'Reparación';
 }
 
 function inferRepuesto(title: string): string {
 	const t = title.toLowerCase();
-	if (t.includes('ram') || t.includes('ssd')) return 'SSD / Memoria RAM';
-	if (t.includes('pantalla')) return 'Pantallas Lenovo / ASUS';
-	if (t.includes('placa') || t.includes('fuente')) return 'Placas y Fuentes';
+	if (t.includes('ram') || t.includes('ssd')) return 'SSD NVMe / Memoria RAM';
+	if (t.includes('impresora') || t.includes('epson')) return 'Cabezal / Sistema de Tinta';
+	if (t.includes('pantalla')) return 'Pantallas Lenovo / ASUS / HP';
+	if (t.includes('placa') || t.includes('fuente')) return 'Componentes de Placa Madre';
 	if (t.includes('teclado')) return 'Teclados Originales';
+	if (t.includes('bisagra') || t.includes('carcasa')) return 'Bisagras y Carcasas';
 	return 'Repuestos y Componentes';
 }
