@@ -13,8 +13,8 @@ const {
 	description = "Soluciones informáticas profesionales, consultoría de sistemas y soporte IT para empresas y particulares. Optimiza tu infraestructura tecnológica con SERVITECNOLOGY.",
 	keywords = "soporte tecnico, reparacion computadores, informatica, CCTV, redes, santiago"
 } = Astro.props;
-const rawPath = Astro.url.pathname.replace(/\/+$/, '');
-const canonicalUrl = `https://servitecnology.com${rawPath}`;
+const cleanPathname = (Astro.url.pathname || '/').toLowerCase().replace(/\/+$/, '');
+const canonicalUrl = `https://servitecnology.com${cleanPathname}`;
 ---
 
 <!DOCTYPE html>

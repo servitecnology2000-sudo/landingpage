@@ -12,20 +12,21 @@ export const GET: APIRoute = async () => {
 
 	const baseUrl = 'https://servitecnology.com';
 
+	// Static Pages: Only 100% canonical, non-redirecting final URLs
 	const staticPages = [
 		{ path: '', priority: '1.0', changefreq: 'daily' },
 		{ path: '/nosotros', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/canal-de-youtube', priority: '0.9', changefreq: 'daily' },
 		{ path: '/soporte', priority: '0.9', changefreq: 'daily' },
-		{ path: '/reparacion', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/gaming', priority: '0.9', changefreq: 'daily' },
-		{ path: '/pc-gaming', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/cctv', priority: '0.9', changefreq: 'daily' },
 		{ path: '/repuestos', priority: '0.9', changefreq: 'daily' },
 		{ path: '/impresoras', priority: '0.9', changefreq: 'daily' },
 		{ path: '/redes', priority: '0.9', changefreq: 'daily' },
 		{ path: '/desarrollo', priority: '0.9', changefreq: 'daily' },
-		{ path: '/diseno-web', priority: '0.8', changefreq: 'weekly' },
+		{ path: '/whagil', priority: '0.8', changefreq: 'weekly' },
+		{ path: '/whalinkbot', priority: '0.8', changefreq: 'weekly' },
+		{ path: '/inframanagerpro', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/garantias', priority: '0.3', changefreq: 'monthly' },
 		{ path: '/privacidad', priority: '0.3', changefreq: 'monthly' },
 		{ path: '/terminos', priority: '0.3', changefreq: 'monthly' },
@@ -33,20 +34,24 @@ export const GET: APIRoute = async () => {
 
 	const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-	<!-- Static Pages -->
-	${staticPages.map(page => `
+	<!-- Static Canonical Pages -->
+	${staticPages.map(page => {
+		const cleanPath = page.path.toLowerCase().replace(/\/+$/, '');
+		return `
 	<url>
-		<loc>${baseUrl}${page.path}</loc>
+		<loc>${baseUrl}${cleanPath}</loc>
 		<changefreq>${page.changefreq}</changefreq>
 		<priority>${page.priority}</priority>
-	</url>`).join('')}
+	</url>`;
+	}).join('')}
 
 	<!-- Dynamic Product Pages -->
 	${(products || []).map(p => {
+		const cleanSlug = encodeURIComponent((p.slug || '').toLowerCase().trim().replace(/\/+$/, ''));
 		const date = p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
 		return `
 	<url>
-		<loc>${baseUrl}/repuesto/${p.slug}</loc>
+		<loc>${baseUrl}/repuesto/${cleanSlug}</loc>
 		<lastmod>${date}</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
