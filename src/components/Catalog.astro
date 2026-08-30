@@ -33,12 +33,58 @@ const categories = [
 const phone = "56948672300";
 ---
 
-<section id="catalogo" class="relative py-24 bg-black overflow-hidden border-t border-white/5">
+<section id="catalogo" class="relative py-20 md:py-24 bg-black overflow-hidden border-t border-white/5">
 	<!-- Background glows -->
 	<div class="absolute top-0 left-1/3 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[160px] pointer-events-none"></div>
 	<div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
 
 	<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
+		
+		<!-- UNIVERSAL ADVANCED SEARCH BAR (Directly above section header and title) -->
+		<div class="max-w-3xl mx-auto mb-10 w-full">
+			<div class="relative group">
+				<!-- Outer glow effect on focus / hover -->
+				<div class="absolute -inset-0.5 bg-gradient-to-r from-brand-cyan via-brand-green to-brand-cyan rounded-2xl blur opacity-30 group-hover:opacity-60 group-focus-within:opacity-85 transition duration-500"></div>
+				
+				<!-- Search Container -->
+				<div class="relative flex items-center bg-zinc-950/90 border border-white/15 focus-within:border-brand-cyan rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300">
+					<svg class="w-5 h-5 sm:w-6 sm:h-6 text-brand-cyan shrink-0 mr-3.5 transition-transform duration-300 group-focus-within:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+					</svg>
+					
+					<input 
+						id="catalog-search-input"
+						type="text" 
+						placeholder="Buscar repuesto por SKU, modelo, marca o palabra clave (ej: ThinkPad, cargador, Dell, pantalla 15.6)..."
+						class="w-full bg-transparent text-white placeholder-slate-400 text-sm sm:text-base font-medium focus:outline-none pr-10"
+						autocomplete="off"
+						spellcheck="false"
+					/>
+					
+					<button 
+						id="catalog-search-clear" 
+						type="button" 
+						class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all text-xs focus:outline-none"
+						title="Limpiar búsqueda"
+						aria-label="Limpiar búsqueda"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+					</button>
+				</div>
+			</div>
+
+			<!-- Dynamic Feedback Bar -->
+			<div id="search-feedback" class="flex items-center justify-between mt-2.5 px-2 text-xs text-slate-400">
+				<div class="flex items-center gap-2">
+					<span id="search-status-dot" class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+					<span id="search-counter-text" class="font-medium text-slate-300">Explorando catálogo completo</span>
+				</div>
+				<span class="hidden sm:inline text-slate-500 font-normal">
+					Atajo rápido: pulsa <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-brand-cyan font-mono text-[10px] border border-white/10">/</kbd> para buscar
+				</span>
+			</div>
+		</div>
+
 		<!-- Section Header -->
 		<div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
 			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-semibold uppercase tracking-wider">
@@ -82,166 +128,254 @@ const phone = "56948672300";
 				<p class="text-slate-500 text-sm">Los productos se agregarán desde el panel de administración.</p>
 			</div>
 		) : (
-			<div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{items.map((product) => {
-					const msg = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web. ¿Tienen disponibilidad?`);
-					const waLink = `https://wa.me/${phone}?text=${msg}`;
-					const images: string[] = product.imagenes ?? [];
-					const hasMultipleImages = images.length > 1;
-					const cardId = `card-${product.id}`;
-
-					return (
-						<div
-							data-category={product.categoria}
-							class="catalog-card group flex flex-col justify-between p-6 rounded-2xl border border-white/5 bg-zinc-950/50 backdrop-blur-sm transition-all duration-300 hover:border-brand-green/25 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,255,127,0.04)] overflow-hidden"
+			<>
+				<!-- No Results State -->
+				<div id="no-search-results" class="hidden text-center py-16 px-4 space-y-4 bg-zinc-950/40 rounded-3xl border border-white/5 max-w-xl mx-auto my-8">
+					<div class="w-16 h-16 mx-auto rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan">
+						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+						</svg>
+					</div>
+					<h3 class="text-xl font-bold text-white">No encontramos repuestos coincidentes</h3>
+					<p class="text-slate-400 text-sm leading-relaxed max-w-md mx-auto">
+						No hay resultados para los términos ingresados. Prueba buscando con palabras clave más generales (ej: <span class="text-brand-cyan font-semibold">Lenovo</span>, <span class="text-brand-green font-semibold">Batería</span>, <span class="text-brand-cyan font-semibold">Pantalla</span> o el código SKU).
+					</p>
+					<div class="pt-2">
+						<button 
+							id="btn-reset-search" 
+							type="button"
+							class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-cyan text-black font-bold text-xs uppercase tracking-wider hover:bg-brand-green transition-all duration-300 shadow-[0_0_20px_rgba(0,207,255,0.25)]"
 						>
-							<div>
-								{/* Image gallery / carousel */}
-								{images.length > 0 && (
-									<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-zinc-900 group/gallery">
-										{images.map((img, idx) => (
-											<img
-												src={img}
-												alt={`${product.titulo} - imagen ${idx + 1}`}
-												class:list={[
-													"carousel-img absolute inset-0 w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in",
-													idx === 0 ? "opacity-100 z-10" : "opacity-0"
-												]}
-												data-index={idx}
-												data-lightbox-images={JSON.stringify(images)}
-												loading="lazy"
-											/>
-										))}
-										{hasMultipleImages && (
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+							Restablecer Búsqueda
+						</button>
+					</div>
+				</div>
+
+				<div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+					{items.map((product) => {
+						const msg = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web. ¿Tienen disponibilidad?`);
+						const waLink = `https://wa.me/${phone}?text=${msg}`;
+						const images: string[] = product.imagenes ?? [];
+						const hasMultipleImages = images.length > 1;
+
+						// Build exhaustive search payload for flexible multi-criteria matching
+						const searchPayload = [
+							product.sku,
+							product.titulo,
+							product.categoria,
+							product.estado,
+							product.descripcion,
+							...(product.compatibilidad ?? []),
+							product.seo_keywords,
+							product.seo_titulo,
+							product.seo_descripcion
+						].filter(Boolean).join(' ').toLowerCase();
+
+						return (
+							<div
+								data-category={product.categoria}
+								data-search-terms={searchPayload}
+								class="catalog-card group flex flex-col justify-between p-6 rounded-2xl border border-white/5 bg-zinc-950/50 backdrop-blur-sm transition-all duration-300 hover:border-brand-green/25 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,255,127,0.04)] overflow-hidden"
+							>
+								<div>
+									{/* Image gallery / carousel */}
+									{images.length > 0 && (
+										<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-zinc-900 group/gallery">
+											{images.map((img, idx) => (
+												<img
+													src={img}
+													alt={`${product.titulo} - imagen ${idx + 1}`}
+													class:list={[
+														"carousel-img absolute inset-0 w-full h-full object-cover transition-opacity duration-500 cursor-zoom-in",
+														idx === 0 ? "opacity-100 z-10" : "opacity-0"
+													]}
+													data-index={idx}
+													data-lightbox-images={JSON.stringify(images)}
+													loading="lazy"
+												/>
+											))}
+											{hasMultipleImages && (
+												<>
+													<button
+														type="button"
+														class="carousel-prev absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 z-20 focus:outline-none"
+														aria-label="Anterior"
+													>
+														<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+													</button>
+													<button
+														type="button"
+														class="carousel-next absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 z-20 focus:outline-none"
+														aria-label="Siguiente"
+													>
+														<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+													</button>
+												</>
+											)}
+										</div>
+									)}
+
+									{/* Type badge + Category */}
+									<div class="flex items-center justify-between gap-2 mb-3">
+										<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20">
+											{product.estado || 'Usado Verificado'}
+										</span>
+										<span class="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+											{product.categoria}
+										</span>
+									</div>
+
+									{/* Title */}
+									<h3 class="text-sm font-bold text-white leading-snug mb-2 min-h-[2.5rem] group-hover:text-brand-green transition-colors duration-300">
+										<a href={`/repuesto/${product.slug}`} class="hover:underline">
+											{product.titulo}
+										</a>
+									</h3>
+
+									{/* Description */}
+									{product.descripcion && (
+										<p class="text-xs text-slate-400 leading-relaxed mb-3 line-clamp-2">
+											{product.descripcion}
+										</p>
+									)}
+
+									{/* Compatibility */}
+									{product.compatibilidad && product.compatibilidad.length > 0 && (
+										<div class="flex flex-wrap gap-1 mb-3">
+											{product.compatibilidad.slice(0, 3).map((comp: string) => (
+												<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">
+													{comp}
+												</span>
+											))}
+											{product.compatibilidad.length > 3 && (
+												<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500">
+													+{product.compatibilidad.length - 3} más
+												</span>
+											)}
+										</div>
+									)}
+
+									{/* Stock badge */}
+									<div class="flex items-center gap-2 mb-4">
+										{product.stock_cantidad > 0 ? (
 											<>
-												<button
-													type="button"
-													class="carousel-prev absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 z-20 focus:outline-none"
-													aria-label="Anterior"
-												>
-													<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-												</button>
-												<button
-													type="button"
-													class="carousel-next absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-brand-cyan hover:text-black transition-all opacity-0 group-hover/gallery:opacity-100 z-20 focus:outline-none"
-													aria-label="Siguiente"
-												>
-													<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-												</button>
+												<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse shrink-0"></span>
+												<span class="text-xs font-semibold text-brand-green">Disponibles: {product.stock_cantidad} unidades</span>
+											</>
+										) : (
+											<>
+												<span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+												<span class="text-xs font-semibold text-red-500">Agotado</span>
 											</>
 										)}
 									</div>
-								)}
 
-								{/* Type badge + Category */}
-								<div class="flex items-center justify-between gap-2 mb-3">
-									<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20">
-										{product.estado || 'Usado Verificado'}
-									</span>
-									<span class="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
-										{product.categoria}
-									</span>
-								</div>
-
-								{/* Title */}
-								<h3 class="text-sm font-bold text-white leading-snug mb-2 min-h-[2.5rem] group-hover:text-brand-green transition-colors duration-300">
-									<a href={`/repuesto/${product.slug}`} class="hover:underline">
-										{product.titulo}
-									</a>
-								</h3>
-
-								{/* Description */}
-								{product.descripcion && (
-									<p class="text-xs text-slate-400 leading-relaxed mb-3 line-clamp-2">
-										{product.descripcion}
-									</p>
-								)}
-
-								{/* Compatibility */}
-								{product.compatibilidad && product.compatibilidad.length > 0 && (
-									<div class="flex flex-wrap gap-1 mb-3">
-										{product.compatibilidad.slice(0, 3).map((comp: string) => (
-											<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 border border-white/5">
-												{comp}
-											</span>
-										))}
+									{/* Price */}
+									<div class="flex items-baseline gap-1.5 mb-6">
+										<span class="text-2xl font-extrabold text-white tracking-tight">
+											${product.precio_venta?.toLocaleString('es-CL') ?? '---'}
+										</span>
+										<span class="text-[10px] text-slate-500 uppercase font-semibold">CLP</span>
 									</div>
-								)}
-
-								{/* Stock badge */}
-								<div class="flex items-center gap-2 mb-4">
-									{product.stock_cantidad > 0 ? (
-										<>
-											<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse shrink-0"></span>
-											<span class="text-xs font-semibold text-brand-green">Disponibles: {product.stock_cantidad} unidades</span>
-										</>
-									) : (
-										<>
-											<span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
-											<span class="text-xs font-semibold text-red-500">Agotado</span>
-										</>
-									)}
 								</div>
 
-								{/* Price */}
-								<div class="flex items-baseline gap-1.5 mb-6">
-									<span class="text-2xl font-extrabold text-white tracking-tight">
-										${product.precio_venta?.toLocaleString('es-CL') ?? '---'}
-									</span>
-									<span class="text-[10px] text-slate-500 uppercase font-semibold">CLP</span>
+								{/* CTA */}
+								<div class="flex gap-2">
+									<a
+										href={product.stock_cantidad > 0 ? waLink : "#"}
+										target={product.stock_cantidad > 0 ? "_blank" : "_self"}
+										rel="noopener noreferrer"
+										data-track-event="clic_boton"
+										data-element-id={`btn_whatsapp_producto_${product.sku}`}
+										class={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-semibold tracking-wide transition-all duration-300 ${product.stock_cantidad > 0 ? 'bg-brand-green/10 border border-brand-green/20 text-brand-green hover:bg-brand-green hover:text-black active:scale-95' : 'bg-red-500/10 border border-red-500/20 text-red-500/50 cursor-not-allowed pointer-events-none'}`}
+									>
+										<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+										Consultar
+									</a>
+									<a
+										href={`/repuesto/${product.slug}`}
+										class="flex-1 flex items-center justify-center gap-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[11px] font-semibold tracking-wide hover:border-brand-cyan/30 hover:text-brand-cyan transition-all duration-300 active:scale-95"
+									>
+										Detalles
+									</a>
 								</div>
 							</div>
-
-							{/* CTA */}
-							<div class="flex gap-2">
-								<a
-									href={product.stock_cantidad > 0 ? waLink : "#"}
-									target={product.stock_cantidad > 0 ? "_blank" : "_self"}
-									rel="noopener noreferrer"
-									data-track-event="clic_boton"
-									data-element-id={`btn_whatsapp_producto_${product.sku}`}
-									class={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-semibold tracking-wide transition-all duration-300 ${product.stock_cantidad > 0 ? 'bg-brand-green/10 border border-brand-green/20 text-brand-green hover:bg-brand-green hover:text-black active:scale-95' : 'bg-red-500/10 border border-red-500/20 text-red-500/50 cursor-not-allowed pointer-events-none'}`}
-								>
-									<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-									Consultar
-								</a>
-								<a
-									href={`/repuesto/${product.slug}`}
-									class="flex-1 flex items-center justify-center gap-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[11px] font-semibold tracking-wide hover:border-brand-cyan/30 hover:text-brand-cyan transition-all duration-300 active:scale-95"
-								>
-									Detalles
-								</a>
-							</div>
-						</div>
-					);
-				})}
-			</div>
+						);
+					})}
+				</div>
+			</>
 		)}
 	</div>
 </section>
 
 <script>
-	// Category filter logic
+	// Universal Search and Category Filter Engine
+	const searchInput = document.getElementById('catalog-search-input') as HTMLInputElement | null;
+	const clearBtn = document.getElementById('catalog-search-clear') as HTMLButtonElement | null;
+	const resetBtn = document.getElementById('btn-reset-search') as HTMLButtonElement | null;
+	const counterText = document.getElementById('search-counter-text');
+	const noResultsContainer = document.getElementById('no-search-results');
+	const catalogGrid = document.getElementById('catalog-grid');
 	const filterButtons = document.querySelectorAll('.catalog-filter');
 	const cards = document.querySelectorAll('.catalog-card');
 
-	function setActiveFilter(activeBtn: Element) {
-		filterButtons.forEach(btn => {
-			btn.classList.remove('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
-			btn.classList.add('bg-white/5', 'text-slate-400', 'border-white/10');
-		});
-		activeBtn.classList.remove('bg-white/5', 'text-slate-400', 'border-white/10');
-		activeBtn.classList.add('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
+	let activeCategory = 'todos';
+	const totalItems = cards.length;
+
+	// Normalize helper: lowercase and strip diacritics / accents
+	function normalizeText(text: string | null | undefined): string {
+		if (!text) return '';
+		return text
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase()
+			.trim();
 	}
 
-	filterButtons.forEach(btn => {
-		btn.addEventListener('click', () => {
-			const filter = btn.getAttribute('data-filter');
-			setActiveFilter(btn);
-			cards.forEach(card => {
-				const category = card.getAttribute('data-category');
-				const el = card as HTMLElement;
-				if (filter === 'todos' || category === filter) {
+	function updateFilterUI(category: string) {
+		filterButtons.forEach(btn => {
+			const btnCat = btn.getAttribute('data-filter');
+			if (btnCat === category) {
+				btn.classList.remove('bg-white/5', 'text-slate-400', 'border-white/10');
+				btn.classList.add('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
+			} else {
+				btn.classList.remove('bg-brand-cyan', 'text-black', 'border-brand-cyan', 'shadow-[0_0_15px_rgba(0,207,255,0.3)]');
+				btn.classList.add('bg-white/5', 'text-slate-400', 'border-white/10');
+			}
+		});
+	}
+
+	function applyFilterAndSearch() {
+		const rawQuery = searchInput?.value || '';
+		const normalizedQuery = normalizeText(rawQuery);
+		const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
+		// Toggle clear button
+		if (clearBtn) {
+			if (rawQuery.length > 0) {
+				clearBtn.classList.remove('hidden');
+			} else {
+				clearBtn.classList.add('hidden');
+			}
+		}
+
+		let visibleCount = 0;
+
+		cards.forEach(card => {
+			const el = card as HTMLElement;
+			const category = el.getAttribute('data-category') || '';
+			const searchTerms = normalizeText(el.getAttribute('data-search-terms') || '');
+
+			// Check category match
+			const matchesCategory = (activeCategory === 'todos' || category === activeCategory);
+
+			// Check multicriteria tokens match (all tokens must exist in searchTerms)
+			const matchesSearch = queryTokens.length === 0 || queryTokens.every(token => searchTerms.includes(token));
+
+			if (matchesCategory && matchesSearch) {
+				visibleCount++;
+				if (el.style.display === 'none') {
 					el.style.display = '';
 					el.style.opacity = '0';
 					el.style.transform = 'translateY(8px)';
@@ -250,11 +384,93 @@ const phone = "56948672300";
 						el.style.opacity = '1';
 						el.style.transform = 'translateY(0)';
 					});
-				} else {
-					el.style.display = 'none';
 				}
-			});
+			} else {
+				el.style.display = 'none';
+			}
 		});
+
+		// Update feedback counter
+		if (counterText) {
+			if (queryTokens.length > 0) {
+				if (visibleCount === 1) {
+					counterText.textContent = `1 repuesto encontrado para "${rawQuery}"`;
+				} else if (visibleCount > 1) {
+					counterText.textContent = `${visibleCount} repuestos encontrados para "${rawQuery}"`;
+				} else {
+					counterText.textContent = `Sin resultados para "${rawQuery}"`;
+				}
+			} else {
+				if (activeCategory === 'todos') {
+					counterText.textContent = `Explorando catálogo completo (${totalItems} disponibles)`;
+				} else {
+					counterText.textContent = `Mostrando ${visibleCount} repuesto(s) en categoría "${activeCategory}"`;
+				}
+			}
+		}
+
+		// Handle empty state visibility
+		if (visibleCount === 0 && totalItems > 0) {
+			if (noResultsContainer) noResultsContainer.classList.remove('hidden');
+		} else {
+			if (noResultsContainer) noResultsContainer.classList.add('hidden');
+		}
+	}
+
+	// Search input event
+	if (searchInput) {
+		searchInput.addEventListener('input', () => {
+			applyFilterAndSearch();
+		});
+
+		searchInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				searchInput.value = '';
+				applyFilterAndSearch();
+				searchInput.blur();
+			}
+		});
+	}
+
+	// Clear button
+	if (clearBtn && searchInput) {
+		clearBtn.addEventListener('click', () => {
+			searchInput.value = '';
+			applyFilterAndSearch();
+			searchInput.focus();
+		});
+	}
+
+	// Reset button from empty state
+	if (resetBtn && searchInput) {
+		resetBtn.addEventListener('click', () => {
+			searchInput.value = '';
+			activeCategory = 'todos';
+			updateFilterUI('todos');
+			applyFilterAndSearch();
+		});
+	}
+
+	// Category filter clicks
+	filterButtons.forEach(btn => {
+		btn.addEventListener('click', () => {
+			const filter = btn.getAttribute('data-filter') || 'todos';
+			activeCategory = filter;
+			updateFilterUI(filter);
+			applyFilterAndSearch();
+		});
+	});
+
+	// Global keyboard shortcut ('/' to focus search)
+	window.addEventListener('keydown', (e) => {
+		if (e.key === '/' && searchInput) {
+			const activeTag = document.activeElement?.tagName.toLowerCase();
+			if (activeTag !== 'input' && activeTag !== 'textarea') {
+				e.preventDefault();
+				searchInput.focus();
+				searchInput.select();
+			}
+		}
 	});
 
 	// Image carousel arrows logic
