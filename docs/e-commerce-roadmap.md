@@ -14,8 +14,10 @@ Para garantizar estabilidad operativa, seguridad tributaria y velocidad de despl
    - La validación del correo se realiza mediante **confirmación visual obligatoria por Pop-up Amarillo (Yellow Warning Box)** antes de registrar el pedido.
 3. **NO pedir el RUT en el registro de cuenta simple:**
    - El RUT se solicita **única y exclusivamente en el Checkout** para la emisión obligatoria de Factura Electrónica conforme a las directrices del Servicio de Impuestos Internos (SII).
-4. **NO alterar el buscador multicriterio existente en el catálogo:**
-   - El motor de búsqueda inteligente multicriterio (Vanilla JS) en `/ecommerce` (`/repuestos`) permanece intacto para mantener el rendimiento y experiencia de filtrado instantáneo.
+4. **Preservar la URL física '/repuestos' y el buscador multicriterio por Estrategia SEO:**
+   - La URL física y canónica se preserva en `/repuestos` (`servitecnology.com/repuestos`) como Single Source of Truth para salvaguardar el posicionamiento orgánico consolidado en Google que genera llamadas directas de clientes.
+   - Cualquier intento de acceso a `/ecommerce` se redirige de forma permanente con código HTTP 301 hacia `/repuestos`.
+   - El motor de búsqueda inteligente multicriterio (Vanilla JS) permanece intacto en `/repuestos` para mantener la alta velocidad de respuesta y experiencia de filtrado instantáneo.
 
 ---
 
@@ -24,9 +26,11 @@ Para garantizar estabilidad operativa, seguridad tributaria y velocidad de despl
 ### FASE 1: Transferencia Bancaria + Cobertura Región Metropolitana (ESTADO: PAUSA TEMPORAL EN CONSTRUCCIÓN ⚠️)
 > **AVISO DE ESTADO:** La venta directa automatizada en línea se encuentra en pausa temporal mientras se completan las labores de desarrollo y optimización. El catálogo y buscador multicriterio permanecen 100% operativos para consulta, canalizando todas las compras e información de repuestos exclusivamente vía coordinación por WhatsApp oficial (+56948672300).
 
-* **Navegación & UI Global:**
-  - Renombramiento de la ruta y menú de `/repuestos` a **"Ecommerce"** en toda la plataforma.
-  - Posicionamiento del botón directo **"Ecommerce"** en la barra principal del Header, ubicado al lado del botón de YouTube.
+* **Navegación & UI Global (Estrategia SEO):**
+  - **Preservación Canónica:** La URL física de la tienda se mantiene en `/repuestos` para proteger el posicionamiento orgánico adquirido.
+  - **Redirección 301:** Implementación de redirección permanente 301 desde `/ecommerce` hacia `/repuestos`.
+  - **Header & Navbar:** El botón destacado en el Header exhibe el texto visible **"Ecommerce"**, posicionado al lado de "Canal de YouTube", con su propiedad `href` apuntando directamente a `/repuestos`.
+  - **Meta Etiquetas y Schema.org:** El `<title>` se define como *"Ecommerce de Repuestos de Computación e Impresoras | Servitecnology Chile"* incorporando datos estructurados Schema.org (`CollectionPage`, `ItemList`, `Product`).
 * **Base de Datos & Seguridad Supabase:**
   - Creación de tabla `customers` (id, full_name, email, phone, rut, created_at).
   - Creación de tabla `orders` con identificadores human-readable formato `ST-2026-XXXX`, `items` (JSONB), `delivery_type` ('retiro' / 'delivery_rm'), `commune`, `shipping_cost`, `total_amount`, `payment_status` ('pendiente', 'en_revision', 'aprobado'), `order_status` ('preparacion', 'completado', 'cancelado').

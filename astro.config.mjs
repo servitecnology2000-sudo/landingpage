@@ -7,6 +7,12 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   site: 'https://servitecnology.com',
   adapter: vercel(),
+  redirects: {
+    '/ecommerce': {
+      status: 301,
+      destination: '/repuestos'
+    }
+  },
   vite: {
     plugins: [tailwindcss()]
   }

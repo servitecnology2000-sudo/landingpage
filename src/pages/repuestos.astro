@@ -1,4 +1,84 @@
 ---
 export const prerender = false;
-return Astro.redirect('/ecommerce', 301);
+
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Catalog from '../components/Catalog.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { supabase } from '../lib/supabase';
+
+// Fetch products to build Schema.org ItemList structured data
+let products: any[] = [];
+try {
+	const { data } = await supabase
+		.from('repuestos_productos')
+		.select('id, slug, nombre, descripcion, precio, categoria, imagen_url, stock')
+		.order('created_at', { ascending: false })
+		.limit(50);
+	products = data ?? [];
+} catch (e) {
+	console.error('Error fetching products for schema:', e);
+}
+
+const catalogSchema = {
+	"@context": "https://schema.org",
+	"@type": "CollectionPage",
+	"name": "Ecommerce de Repuestos de Computación e Impresoras | Servitecnology Chile",
+	"description": "Tienda online y catálogo de repuestos para computadores, notebooks e impresoras en Santiago de Chile. Pantallas, teclados, baterías, cargadores y componentes originales con garantía.",
+	"url": "https://servitecnology.com/repuestos",
+	"mainEntity": {
+		"@type": "ItemList",
+		"name": "Catálogo de Repuestos y Componentes de Computación e Impresoras",
+		"numberOfItems": products.length,
+		"itemListElement": products.map((p, index) => ({
+			"@type": "ListItem",
+			"position": index + 1,
+			"item": {
+				"@type": "Product",
+				"name": p.nombre,
+				"description": p.descripcion || `Repuesto original garantizado - ${p.nombre}`,
+				"image": p.imagen_url ? (p.imagen_url.startsWith('http') ? p.imagen_url : `https://servitecnology.com${p.imagen_url}`) : "https://servitecnology.com/imagenes/principal.jpg",
+				"url": `https://servitecnology.com/repuesto/${p.slug || p.id}`,
+				"category": p.categoria || "Repuestos",
+				"offers": {
+					"@type": "Offer",
+					"priceCurrency": "CLP",
+					"price": p.precio || 0,
+					"priceValidUntil": "2027-12-31",
+					"availability": (p.stock && p.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/LimitedAvailability",
+					"itemCondition": "https://schema.org/NewCondition",
+					"seller": {
+						"@type": "Organization",
+						"name": "SERVITECNOLOGY",
+						"url": "https://servitecnology.com"
+					}
+				}
+			}
+		}))
+	}
+};
 ---
+
+<Layout 
+	title="Ecommerce de Repuestos de Computación e Impresoras | Servitecnology Chile" 
+	description="Catálogo y tienda ecommerce de repuestos para computadores, notebooks e impresoras en Santiago de Chile. Pantallas, teclados, baterías, cargadores, discos SSD y memorias RAM con garantía."
+	keywords="ecommerce repuestos, repuestos computacion santiago, repuestos impresoras chile, repuestos notebook, pantallas laptop, baterias, teclados, ssd, memoria ram, servitecnology chile"
+>
+	<!-- Structured Data JSON-LD Catalog Schema -->
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(catalogSchema)} />
+
+	<!-- Fixed Header -->
+	<Header />
+	
+	<main class="relative bg-black min-h-screen">
+		<!-- Parts & Components Catalog with multi-criteria search and checkout links -->
+		<Catalog />
+	</main>
+
+	<!-- Footer -->
+	<Footer />
+
+	<!-- Floating WhatsApp CTA -->
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por repuestos en la tienda Ecommerce..." />
+</Layout>
