@@ -18,42 +18,58 @@ import Footer from '../components/Footer.astro';
 			
 			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
 				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">1. Naturaleza de la Plataforma</h2>
+					<h2 class="text-2xl font-bold text-white">1. Plataforma y Módulo E-commerce</h2>
 					<p>
-						Bienvenidos a SERVITECNOLOGY. Declaramos explícitamente que nuestro sitio web (https://servitecnology.com/) opera exclusivamente como una <strong>plataforma informativa y catálogo digital de inventario</strong>. Nuestra finalidad es exhibir los servicios de soporte técnico IT y los repuestos/componentes de hardware disponibles en nuestro stock.
+						Bienvenidos a SERVITECNOLOGY (https://servitecnology.com/). Nuestra plataforma opera como catálogo de servicios IT y tienda de comercio electrónico para componentes, repuestos y hardware computacional e informático.
 					</p>
 				</section>
 
 				<section class="space-y-4 p-6 bg-brand-cyan/5 border border-brand-cyan/20 rounded-xl">
-					<h2 class="text-xl font-bold text-brand-cyan">2. Cláusula Crítica de Pagos y Despachos</h2>
+					<h2 class="text-xl font-bold text-brand-cyan">2. Modalidad de Pago: Transferencia Bancaria (Fase 1)</h2>
 					<p class="text-white">
-						Establecemos de forma taxativa que esta plataforma web <strong>NO procesa transacciones monetarias automáticas</strong>, no almacena tarjetas de crédito ni opera como un e-commerce transaccional.
+						En conformidad con la Fase 1 de nuestra Hoja de Ruta, los pagos de compras electrónicas se procesan <strong>exclusivamente mediante Transferencia Bancaria Directa</strong> a la cuenta corriente corporativa oficial de SERVITECNOLOGY SpA.
 					</p>
+					<ul class="list-disc pl-5 text-white font-medium space-y-1">
+						<li>Cada pedido genera un identificador único con formato <strong>ST-2026-XXXX</strong>.</li>
+						<li>El comprador debe ingresar dicho código en el asunto/glosa de su transferencia para la conciliación administrativa.</li>
+						<li>La acreditación se confirma vía correo electrónico y soporte oficial por WhatsApp (+56948672300).</li>
+					</ul>
+				</section>
+
+				<section class="space-y-4 p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+					<h2 class="text-xl font-bold text-yellow-400">3. Reserva Temporal de Stock por 2 Horas</h2>
 					<p class="text-white">
-						Toda solicitud de compra, la selección de medios de pago (transferencias electrónicas, efectivo, etc.) y las entregas o despachos se realizan <strong>exclusivamente bajo PREVIA COORDINACIÓN DIRECTA</strong> con nuestro equipo técnico, a través de nuestros canales oficiales:
+						Al generar una orden en nuestro Checkout, el stock de los productos seleccionados queda <strong>reservado automáticamente por un plazo improrrogable de 2 horas</strong>. Si transcurrido dicho período no se ha notificado ni comprobado la transferencia, la reserva caduca y los productos se reintegran al inventario público para otros clientes.
 					</p>
-					<ul class="list-disc pl-5 text-white font-medium">
-						<li>WhatsApp Oficial: +56948672300</li>
-						<li>Correo Electrónico Corporativo</li>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">4. Facturación Electrónica Obligatoria (Normativa SII)</h2>
+					<p>
+						Todas las compras realizadas en SERVITECNOLOGY incluyen <strong>Factura Electrónica legal</strong> conforme a las disposiciones del Servicio de Impuestos Internos (SII) de la República de Chile. Por exigencia tributaria, el ingreso del RUT (persona natural o jurídica) es obligatorio durante el checkout para emitir válidamente el documento y remitirlo al correo electrónico registrado.
+					</p>
+				</section>
+
+				<section class="space-y-4">
+					<h2 class="text-2xl font-bold text-white">5. Entrega: Retiro en Oficina y Despacho en Región Metropolitana</h2>
+					<p>
+						Disponemos de dos modalidades de entrega:
+					</p>
+					<ul class="list-disc pl-5 space-y-1">
+						<li><strong>Retiro en Oficina Técnica ($0):</strong> Previa validación de la transferencia y coordinación de horario en nuestra sede en Santiago.</li>
+						<li><strong>Despacho a Domicilio RM:</strong> Entrega directa en comunas de la Región Metropolitana con tarifa fija calculada automáticamente según la comuna seleccionada.</li>
 					</ul>
 				</section>
 
 				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">3. Responsabilidad del Usuario</h2>
+					<h2 class="text-2xl font-bold text-white">6. Jurisdicción y Ley Aplicable</h2>
 					<p>
-						El usuario se compromete a hacer un uso adecuado y lícito del sitio web. La información contenida respecto a especificaciones de repuestos, compatibilidades y precios de referencia está sujeta a confirmación durante la coordinación de venta directa, debido al dinamismo del mercado tecnológico y de importaciones.
-					</p>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">4. Jurisdicción y Ley Aplicable</h2>
-					<p>
-						Estos Términos y Condiciones se rigen por las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores (SERNAC). Cualquier controversia derivada del uso de este sitio o la contratación de servicios será sometida a los tribunales competentes de Santiago de Chile.
+						Estos Términos y Condiciones se rigen por las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores (SERNAC) y la normativa tributaria del SII. Cualquier controversia será sometida a los tribunales ordinarios de justicia de Santiago de Chile.
 					</p>
 				</section>
 
 				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
-					Última actualización: {new Date().toLocaleDateString('es-CL')}
+					Última actualización: {new Date().toLocaleDateString('es-CL')} — Versión E-commerce Fase 1
 				</div>
 			</div>
 		</div>

@@ -1,0 +1,663 @@
+---
+export const prerender = false;
+
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { supabase } from '../lib/supabase';
+
+// Si se recibe ?sku=... o ?id=... se busca el producto en Supabase para compra directa
+const skuParam = Astro.url.searchParams.get('sku');
+const idParam = Astro.url.searchParams.get('id');
+
+let initialProduct: any = null;
+
+if (skuParam || idParam) {
+	try {
+		let query = supabase.from('repuestos_productos').select('*');
+		if (skuParam) {
+			query = query.eq('sku', skuParam);
+		} else if (idParam) {
+			query = query.eq('id', idParam);
+		}
+		const { data } = await query.single();
+		if (data) {
+			initialProduct = data;
+		}
+	} catch (e) {
+		console.error('Error cargando producto en checkout:', e);
+	}
+}
+
+// Lista oficial de comunas de la Región Metropolitana con tarifas fijas de despacho
+const COMUNAS_RM = [
+	{ name: "Santiago Centro", price: 3990 },
+	{ name: "Providencia", price: 3990 },
+	{ name: "Las Condes", price: 3990 },
+	{ name: "Ñuñoa", price: 3990 },
+	{ name: "Vitacura", price: 3990 },
+	{ name: "Lo Barnechea", price: 4990 },
+	{ name: "La Reina", price: 3990 },
+	{ name: "Macul", price: 3990 },
+	{ name: "Peñalolén", price: 3990 },
+	{ name: "San Joaquín", price: 3990 },
+	{ name: "San Miguel", price: 3990 },
+	{ name: "La Florida", price: 3990 },
+	{ name: "La Cisterna", price: 3990 },
+	{ name: "La Granja", price: 3990 },
+	{ name: "San Ramón", price: 3990 },
+	{ name: "El Bosque", price: 3990 },
+	{ name: "Lo Espejo", price: 3990 },
+	{ name: "Pedro Aguirre Cerda", price: 3990 },
+	{ name: "Cerrillos", price: 3990 },
+	{ name: "Maipú", price: 3990 },
+	{ name: "Estación Central", price: 3990 },
+	{ name: "Pudahuel", price: 3990 },
+	{ name: "Lo Prado", price: 3990 },
+	{ name: "Quinta Normal", price: 3990 },
+	{ name: "Cerro Navia", price: 3990 },
+	{ name: "Renca", price: 3990 },
+	{ name: "Conchalí", price: 3990 },
+	{ name: "Independencia", price: 3990 },
+	{ name: "Recoleta", price: 3990 },
+	{ name: "Huechuraba", price: 3990 },
+	{ name: "Quilicura", price: 3990 },
+	{ name: "Puente Alto", price: 4490 },
+	{ name: "San Bernardo", price: 4490 },
+	{ name: "Colina", price: 5990 },
+	{ name: "Lampa", price: 5990 },
+	{ name: "Buin", price: 5990 },
+	{ name: "Paine", price: 5990 },
+	{ name: "Talagante", price: 5990 },
+	{ name: "Peñaflor", price: 5990 },
+	{ name: "Padre Hurtado", price: 5490 },
+	{ name: "Melipilla", price: 6990 },
+	{ name: "Curacaví", price: 6990 }
+];
+---
+
+<Layout 
+	title="Checkout Seguro | SERVITECNOLOGY E-commerce" 
+	description="Finaliza tu compra de repuestos y hardware con transferencia bancaria directa. Retiro en oficina o despacho a domicilio en la Región Metropolitana."
+	keywords="checkout servitecnology, comprar repuestos st, transferencia bancaria, despacho santiago"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen py-16 border-b border-white/5">
+		<!-- Background Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-5xl px-6 w-full">
+			<!-- Breadcrumb / Back Link -->
+			<div class="mb-8">
+				<a href="/ecommerce" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-brand-cyan transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+					Volver a la Tienda Ecommerce
+				</a>
+			</div>
+
+			<div class="flex items-center justify-between flex-wrap gap-4 mb-10 pb-6 border-b border-white/10">
+				<div>
+					<span class="text-xs font-bold uppercase tracking-widest text-brand-green bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full">
+						Fase 1: Transferencia Bancaria
+					</span>
+					<h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3">
+						Checkout & Finalización de Pedido
+					</h1>
+				</div>
+				<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-medium">
+					<span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+					<span>Reserva temporal de stock por 2 horas</span>
+				</div>
+			</div>
+
+			<!-- Checkout Form Grid -->
+			<form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+				
+				<!-- Left Column: Customer & Delivery Details (7 Cols) -->
+				<div class="lg:col-span-7 space-y-8">
+					
+					<!-- Section 1: Delivery Mode -->
+					<div class="p-6 rounded-2xl bg-zinc-950/60 border border-white/10 backdrop-blur-md space-y-6">
+						<div class="flex items-center gap-3">
+							<span class="w-7 h-7 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan text-xs font-bold flex items-center justify-center">1</span>
+							<h2 class="text-lg font-bold text-white">Método de Entrega</h2>
+						</div>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<!-- Option A: Retiro en Oficina -->
+							<label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all delivery-option border-brand-green/50 bg-brand-green/5" data-delivery="retiro">
+								<input type="radio" name="delivery_type" value="retiro" checked class="hidden" />
+								<div class="flex items-center justify-between mb-2">
+									<span class="font-bold text-sm text-white flex items-center gap-2">
+										<svg class="w-4 h-4 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+										Retiro en Oficina
+									</span>
+									<span class="text-xs font-extrabold text-brand-green bg-brand-green/20 px-2 py-0.5 rounded">GRATIS ($0)</span>
+								</div>
+								<p class="text-xs text-slate-400 leading-relaxed">
+									Retira en nuestra oficina técnica en Santiago Centro previa confirmación de transferencia.
+								</p>
+							</label>
+
+							<!-- Option B: Despacho a Domicilio RM -->
+							<label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all delivery-option border-white/10 hover:border-white/20 bg-white/5" data-delivery="delivery_rm">
+								<input type="radio" name="delivery_type" value="delivery_rm" class="hidden" />
+								<div class="flex items-center justify-between mb-2">
+									<span class="font-bold text-sm text-white flex items-center gap-2">
+										<svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+										Despacho a Domicilio RM
+									</span>
+									<span class="text-xs font-bold text-brand-cyan bg-brand-cyan/20 px-2 py-0.5 rounded">Fijo por comuna</span>
+								</div>
+								<p class="text-xs text-slate-400 leading-relaxed">
+									Entrega directa en cualquier comuna de la Región Metropolitana con tarifa estándar.
+								</p>
+							</label>
+						</div>
+
+						<!-- Despacho Fields (shown only when delivery_rm is active) -->
+						<div id="despacho-fields" class="hidden space-y-4 pt-4 border-t border-white/10">
+							<div>
+								<label for="commune-select" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Comuna de Destino (Región Metropolitana) *
+								</label>
+								<select id="commune-select" name="commune" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors">
+									<option value="" disabled selected>Selecciona tu comuna...</option>
+									{COMUNAS_RM.map(c => (
+										<option value={c.name} data-price={c.price}>
+											{c.name} — ${c.price.toLocaleString('es-CL')} CLP
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div>
+								<label for="address-input" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Dirección Completa (Calle, Número, Depto / Oficina) *
+								</label>
+								<input 
+									type="text" 
+									id="address-input" 
+									name="address" 
+									placeholder="Ej: Av. Providencia 1234, Depto 502"
+									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<!-- Section 2: Customer Data & SII Tax Invoicing -->
+					<div class="p-6 rounded-2xl bg-zinc-950/60 border border-white/10 backdrop-blur-md space-y-6">
+						<div class="flex items-center gap-3">
+							<span class="w-7 h-7 rounded-full bg-brand-green/20 border border-brand-green/40 text-brand-green text-xs font-bold flex items-center justify-center">2</span>
+							<div>
+								<h2 class="text-lg font-bold text-white">Datos del Comprador & Facturación SII</h2>
+								<p class="text-xs text-slate-400">Emisión formal con respaldo tributario chileno</p>
+							</div>
+						</div>
+
+						<!-- SII Invoicing Notice Banner -->
+						<div class="p-4 rounded-xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-start gap-3">
+							<svg class="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+							<div>
+								<p class="text-xs font-semibold text-white leading-relaxed">
+									Todas las compras incluyen <strong class="text-brand-cyan">Factura Electrónica</strong> de acuerdo a la normativa del Servicio de Impuestos Internos (SII).
+								</p>
+								<p class="text-[11px] text-slate-400 mt-1">
+									Por disposición legal, el RUT es obligatorio para emitir y registrar el documento tributario.
+								</p>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div>
+								<label for="full_name" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Nombre y Apellido / Razón Social *
+								</label>
+								<input 
+									type="text" 
+									id="full_name" 
+									name="full_name" 
+									required
+									placeholder="Ej: Andrés Muñoz Silva"
+									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors"
+								/>
+							</div>
+
+							<div>
+								<label for="rut" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									RUT (Persona o Empresa) *
+								</label>
+								<input 
+									type="text" 
+									id="rut" 
+									name="rut" 
+									required
+									placeholder="Ej: 12.345.678-9"
+									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+								/>
+							</div>
+
+							<div>
+								<label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Correo Electrónico (Para Factura y Pedido) *
+								</label>
+								<input 
+									type="email" 
+									id="email" 
+									name="email" 
+									required
+									placeholder="ejemplo@correo.cl"
+									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+								/>
+							</div>
+
+							<div>
+								<label for="phone" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Teléfono / WhatsApp Móvil *
+								</label>
+								<input 
+									type="tel" 
+									id="phone" 
+									name="phone" 
+									required
+									placeholder="Ej: +56 9 1234 5678"
+									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+								/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+				<!-- Right Column: Order Summary & Confirmation CTA (5 Cols) -->
+				<div class="lg:col-span-5 space-y-6">
+					
+					<div class="p-6 rounded-2xl bg-zinc-950/80 border border-white/10 backdrop-blur-md sticky top-28 space-y-6 shadow-2xl">
+						<h3 class="text-base font-bold text-white uppercase tracking-wider border-b border-white/10 pb-3 flex items-center justify-between">
+							<span>Resumen del Pedido</span>
+							<span id="items-count-badge" class="text-xs bg-white/10 text-slate-300 px-2 py-0.5 rounded-full font-mono">1 item</span>
+						</h3>
+
+						<!-- Items Container -->
+						<div id="checkout-items-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+							{initialProduct ? (
+								<div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5" data-sku={initialProduct.sku} data-price={initialProduct.precio_venta} data-title={initialProduct.titulo} data-image={initialProduct.imagenes?.[0] || ''}>
+									<img src={initialProduct.imagenes?.[0] || '/imagenes/logost.png'} alt="" class="w-14 h-14 rounded-lg object-cover bg-zinc-900 border border-white/10 shrink-0" />
+									<div class="flex-1 min-w-0">
+										<h4 class="text-xs font-bold text-white truncate">{initialProduct.titulo}</h4>
+										<p class="text-[10px] text-slate-400 font-mono">SKU: {initialProduct.sku}</p>
+										<div class="flex items-center justify-between mt-1">
+											<span class="text-xs font-extrabold text-brand-green">${initialProduct.precio_venta?.toLocaleString('es-CL')} CLP</span>
+											<span class="text-[11px] text-slate-400">Cant: 1</span>
+										</div>
+									</div>
+								</div>
+							) : (
+								<div id="no-item-warning" class="text-center py-6 text-slate-400 text-xs">
+									<p>No has seleccionado ningún producto aún.</p>
+									<a href="/ecommerce" class="mt-2 inline-block text-brand-cyan hover:underline font-bold">
+										Ir al catálogo para elegir repuestos →
+									</a>
+								</div>
+							)}
+						</div>
+
+						<!-- Pricing Breakdown -->
+						<div class="space-y-2.5 pt-4 border-t border-white/10 text-xs">
+							<div class="flex items-center justify-between text-slate-400">
+								<span>Subtotal productos:</span>
+								<span id="summary-subtotal" class="font-bold text-white font-mono">$0 CLP</span>
+							</div>
+							<div class="flex items-center justify-between text-slate-400">
+								<span>Costo de entrega:</span>
+								<span id="summary-shipping" class="font-bold text-brand-green font-mono">GRATIS ($0)</span>
+							</div>
+							<div class="flex items-center justify-between text-sm sm:text-base font-extrabold text-white pt-3 border-t border-white/10">
+								<span>Total a pagar:</span>
+								<span id="summary-total" class="text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan font-mono">$0 CLP</span>
+							</div>
+						</div>
+
+						<!-- Payment Method Info Banner -->
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5 text-xs text-slate-300">
+							<div class="flex items-center gap-2 font-bold text-white">
+								<svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+								<span>Pago por Transferencia Bancaria</span>
+							</div>
+							<p class="text-[11px] text-slate-400 leading-relaxed">
+								Al confirmar el pedido, recibirás el ID de orden <strong class="text-white">ST-2026-XXXX</strong> y los datos de nuestra cuenta bancaria oficial.
+							</p>
+						</div>
+
+						<!-- Submit Trigger Button -->
+						<button 
+							type="button" 
+							id="btn-open-confirm-modal"
+							class="w-full py-4 px-6 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-98 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all duration-300 text-sm tracking-wide cursor-pointer flex items-center justify-center gap-2"
+						>
+							<span>Confirmar Pedido & Ver Datos Bancarios</span>
+							<svg class="w-4 h-4 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+						</button>
+
+						<p class="text-center text-[10px] text-slate-500">
+							🔒 Transacción protegida. Respaldada bajo la Ley N° 19.496 y normativa tributaria SII.
+						</p>
+					</div>
+
+				</div>
+			</form>
+		</div>
+	</main>
+
+	<!-- ============================================================ -->
+	<!-- POP-UP OBLIGATORIO DE VERIFICACIÓN VISUAL (YELLOW WARNING BOX) -->
+	<!-- ============================================================ -->
+	<div 
+		id="email-modal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="relative w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-yellow-500/40 shadow-[0_0_60px_rgba(234,179,8,0.2)] transform scale-95 transition-transform duration-300 space-y-6">
+			
+			<!-- Modal Header with Warning Icon -->
+			<div class="flex items-center gap-3">
+				<div class="w-12 h-12 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-2xl shrink-0 shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+					⚠️
+				</div>
+				<div>
+					<h3 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+						¡Confirma tus datos de contacto!
+					</h3>
+					<p class="text-xs text-yellow-300/80 font-medium">
+						Verificación requerida antes de generar el pedido ST-2026
+					</p>
+				</div>
+			</div>
+
+			<p class="text-xs text-slate-300 leading-relaxed">
+				Para garantizar que recibas las instrucciones de transferencia bancaria y tu <strong class="text-white">Factura Electrónica legal ante el SII</strong>, verifica que tu correo esté escrito de forma exacta:
+			</p>
+
+			<!-- THE YELLOW WARNING BOX (Alta visibilidad con resplandor) -->
+			<div class="p-5 rounded-2xl bg-yellow-500/10 border-2 border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.25)] space-y-3">
+				<div class="flex items-center justify-between">
+					<span class="text-[10px] font-black uppercase tracking-wider text-yellow-400">Correo Electrónico Destinatario</span>
+					<span class="text-[10px] text-yellow-400/80 font-mono">Facturación SII</span>
+				</div>
+				<div id="modal-display-email" class="text-lg sm:text-2xl font-black text-yellow-300 tracking-wide font-mono break-all py-1">
+					correo@ejemplo.cl
+				</div>
+				<div class="pt-2 border-t border-yellow-500/20 grid grid-cols-2 gap-2 text-[11px] text-yellow-200/90 font-mono">
+					<div>RUT: <span id="modal-display-rut" class="font-bold text-white">---</span></div>
+					<div>Móvil: <span id="modal-display-phone" class="font-bold text-white">---</span></div>
+				</div>
+			</div>
+
+			<!-- Notice -->
+			<div class="flex items-center gap-2 text-[11px] text-slate-400">
+				<svg class="w-4 h-4 text-brand-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+				<span>Se reservará el stock del repuesto por <strong class="text-white">2 horas</strong> para tu transferencia.</span>
+			</div>
+
+			<!-- Modal Buttons -->
+			<div class="flex flex-col-reverse sm:flex-row items-center gap-3 pt-2">
+				<button 
+					type="button" 
+					id="btn-close-modal" 
+					class="w-full sm:w-auto px-5 py-3 rounded-xl border border-white/10 hover:border-white/20 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+				>
+					Corregir datos
+				</button>
+				<button 
+					type="button" 
+					id="btn-final-confirm-order" 
+					class="w-full sm:flex-1 py-3.5 px-6 rounded-xl font-black text-black bg-gradient-to-r from-yellow-400 to-brand-green hover:opacity-95 shadow-[0_0_20px_rgba(250,204,21,0.4)] text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+				>
+					<span id="btn-final-text">Sí, mis datos son correctos → Generar Pedido</span>
+					<div id="btn-spinner" class="hidden w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+				</button>
+			</div>
+
+		</div>
+	</div>
+
+	<Footer />
+</Layout>
+
+<script>
+	// Interactive Delivery & Checkout Logic
+	const deliveryOptions = document.querySelectorAll('.delivery-option');
+	const despachoFields = document.getElementById('despacho-fields');
+	const communeSelect = document.getElementById('commune-select') as HTMLSelectElement;
+	const addressInput = document.getElementById('address-input') as HTMLInputElement;
+	const fullNameInput = document.getElementById('full_name') as HTMLInputElement;
+	const rutInput = document.getElementById('rut') as HTMLInputElement;
+	const emailInput = document.getElementById('email') as HTMLInputElement;
+	const phoneInput = document.getElementById('phone') as HTMLInputElement;
+
+	const summarySubtotal = document.getElementById('summary-subtotal');
+	const summaryShipping = document.getElementById('summary-shipping');
+	const summaryTotal = document.getElementById('summary-total');
+
+	// Modal elements
+	const emailModal = document.getElementById('email-modal');
+	const btnOpenConfirmModal = document.getElementById('btn-open-confirm-modal');
+	const btnCloseModal = document.getElementById('btn-close-modal');
+	const btnFinalConfirmOrder = document.getElementById('btn-final-confirm-order');
+	const btnFinalText = document.getElementById('btn-final-text');
+	const btnSpinner = document.getElementById('btn-spinner');
+
+	const modalDisplayEmail = document.getElementById('modal-display-email');
+	const modalDisplayRut = document.getElementById('modal-display-rut');
+	const modalDisplayPhone = document.getElementById('modal-display-phone');
+
+	let currentDelivery = 'retiro';
+	let currentShippingCost = 0;
+
+	// Calculate subtotal from DOM items
+	function getItems() {
+		const items: any[] = [];
+		const itemEls = document.querySelectorAll('#checkout-items-list [data-sku]');
+		itemEls.forEach(el => {
+			const sku = el.getAttribute('data-sku') || '';
+			const title = el.getAttribute('data-title') || '';
+			const price = parseFloat(el.getAttribute('data-price') || '0');
+			const image = el.getAttribute('data-image') || '';
+			items.push({
+				sku,
+				titulo: title,
+				precio_venta: price,
+				cantidad: 1,
+				imagen: image
+			});
+		});
+		return items;
+	}
+
+	function updatePrices() {
+		const items = getItems();
+		let subtotal = 0;
+		items.forEach(it => subtotal += it.precio_venta * it.cantidad);
+
+		if (summarySubtotal) {
+			summarySubtotal.textContent = `$${subtotal.toLocaleString('es-CL')} CLP`;
+		}
+
+		if (currentDelivery === 'delivery_rm') {
+			if (summaryShipping) {
+				summaryShipping.textContent = `$${currentShippingCost.toLocaleString('es-CL')} CLP`;
+				summaryShipping.className = "font-bold text-brand-cyan font-mono";
+			}
+		} else {
+			currentShippingCost = 0;
+			if (summaryShipping) {
+				summaryShipping.textContent = "GRATIS ($0)";
+				summaryShipping.className = "font-bold text-brand-green font-mono";
+			}
+		}
+
+		const total = subtotal + currentShippingCost;
+		if (summaryTotal) {
+			summaryTotal.textContent = `$${total.toLocaleString('es-CL')} CLP`;
+		}
+	}
+
+	// Delivery toggle
+	deliveryOptions.forEach(opt => {
+		opt.addEventListener('click', () => {
+			const type = opt.getAttribute('data-delivery');
+			if (!type) return;
+			currentDelivery = type;
+
+			deliveryOptions.forEach(o => {
+				o.classList.remove('border-brand-green/50', 'bg-brand-green/5', 'border-brand-cyan/50', 'bg-brand-cyan/5');
+				o.classList.add('border-white/10', 'bg-white/5');
+			});
+
+			const radio = opt.querySelector('input[type="radio"]') as HTMLInputElement;
+			if (radio) radio.checked = true;
+
+			if (type === 'delivery_rm') {
+				opt.classList.remove('border-white/10', 'bg-white/5');
+				opt.classList.add('border-brand-cyan/50', 'bg-brand-cyan/5');
+				despachoFields?.classList.remove('hidden');
+				if (communeSelect?.value) {
+					const selectedOpt = communeSelect.options[communeSelect.selectedIndex];
+					currentShippingCost = parseInt(selectedOpt.getAttribute('data-price') || '3990', 10);
+				} else {
+					currentShippingCost = 3990;
+				}
+			} else {
+				opt.classList.remove('border-white/10', 'bg-white/5');
+				opt.classList.add('border-brand-green/50', 'bg-brand-green/5');
+				despachoFields?.classList.add('hidden');
+				currentShippingCost = 0;
+			}
+			updatePrices();
+		});
+	});
+
+	communeSelect?.addEventListener('change', () => {
+		const selectedOpt = communeSelect.options[communeSelect.selectedIndex];
+		currentShippingCost = parseInt(selectedOpt.getAttribute('data-price') || '3990', 10);
+		updatePrices();
+	});
+
+	// Open Modal validation
+	btnOpenConfirmModal?.addEventListener('click', () => {
+		const items = getItems();
+		if (items.length === 0) {
+			alert('Debes tener al menos un producto en el pedido para continuar.');
+			return;
+		}
+
+		if (!fullNameInput.value.trim()) {
+			fullNameInput.focus();
+			alert('Por favor ingresa tu Nombre y Apellido.');
+			return;
+		}
+
+		if (!rutInput.value.trim()) {
+			rutInput.focus();
+			alert('El RUT es obligatorio para la emisión de la Factura Electrónica conforme a la normativa del SII.');
+			return;
+		}
+
+		if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
+			emailInput.focus();
+			alert('Por favor ingresa un Correo Electrónico válido.');
+			return;
+		}
+
+		if (!phoneInput.value.trim()) {
+			phoneInput.focus();
+			alert('Por favor ingresa tu teléfono móvil de contacto.');
+			return;
+		}
+
+		if (currentDelivery === 'delivery_rm') {
+			if (!communeSelect.value) {
+				communeSelect.focus();
+				alert('Por favor selecciona la comuna de despacho en la Región Metropolitana.');
+				return;
+			}
+			if (!addressInput.value.trim()) {
+				addressInput.focus();
+				alert('Por favor ingresa tu dirección para el despacho.');
+				return;
+			}
+		}
+
+		// Update modal text with high-visibility values
+		if (modalDisplayEmail) modalDisplayEmail.textContent = emailInput.value.trim().toLowerCase();
+		if (modalDisplayRut) modalDisplayRut.textContent = rutInput.value.trim().toUpperCase();
+		if (modalDisplayPhone) modalDisplayPhone.textContent = phoneInput.value.trim();
+
+		// Show Modal
+		emailModal?.classList.remove('opacity-0', 'pointer-events-none');
+		emailModal?.querySelector('div')?.classList.remove('scale-95');
+		emailModal?.querySelector('div')?.classList.add('scale-100');
+	});
+
+	// Close Modal
+	btnCloseModal?.addEventListener('click', () => {
+		emailModal?.classList.add('opacity-0', 'pointer-events-none');
+		emailModal?.querySelector('div')?.classList.add('scale-95');
+		emailModal?.querySelector('div')?.classList.remove('scale-100');
+	});
+
+	// Final Confirm & Order Generation
+	btnFinalConfirmOrder?.addEventListener('click', async () => {
+		try {
+			if (btnFinalText) btnFinalText.textContent = 'Generando Pedido...';
+			btnSpinner?.classList.remove('hidden');
+			btnFinalConfirmOrder.setAttribute('disabled', 'true');
+
+			const items = getItems();
+			const payload = {
+				full_name: fullNameInput.value.trim(),
+				email: emailInput.value.trim().toLowerCase(),
+				phone: phoneInput.value.trim(),
+				rut: rutInput.value.trim().toUpperCase(),
+				delivery_type: currentDelivery,
+				commune: currentDelivery === 'delivery_rm' ? communeSelect.value : 'Retiro en Oficina',
+				address: currentDelivery === 'delivery_rm' ? addressInput.value.trim() : '',
+				shipping_cost: currentShippingCost,
+				items
+			};
+
+			const response = await fetch('/api/orders/create', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			const data = await response.json();
+
+			if (!response.ok || !data.success) {
+				throw new Error(data.error || 'Error al procesar el pedido');
+			}
+
+			// Store backup snapshot in sessionStorage for quick confirmation rendering
+			if (data.order) {
+				sessionStorage.setItem(`order_${data.orderId}`, JSON.stringify(data.order));
+			}
+
+			// Redirect to post-checkout confirmation view
+			window.location.href = `/pedido/${data.orderId}`;
+
+		} catch (err: any) {
+			alert('Hubo un problema al generar tu pedido: ' + err.message);
+			if (btnFinalText) btnFinalText.textContent = 'Sí, mis datos son correctos → Generar Pedido';
+			btnSpinner?.classList.add('hidden');
+			btnFinalConfirmOrder.removeAttribute('disabled');
+		}
+	});
+
+	// Initial price calculation
+	updatePrices();
+</script>

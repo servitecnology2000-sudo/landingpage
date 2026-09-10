@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
 			{ label: 'Soporte Técnico', href: '/soporte' },
 			{ label: 'Desarrollo de Software', href: '/desarrollo' },
 			{ label: 'CCTV y Redes', href: '/cctv' },
-			{ label: 'Repuestos', href: '/repuestos' },
+			{ label: 'Ecommerce', href: '/ecommerce' },
 		]
 	},
 	{ label: 'Quiénes Somos', href: '/nosotros' },
@@ -79,6 +79,22 @@ const navItems: NavItem[] = [
 					</a>
 				)
 			))}
+
+			<!-- Ecommerce Button (Tienda) -->
+			<a 
+				href="/ecommerce" 
+				class="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 border border-brand-green/40 shadow-[0_0_16px_rgba(0,255,127,0.35)] hover:shadow-[0_0_24px_rgba(0,207,255,0.7)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group cursor-pointer shrink-0 whitespace-nowrap"
+				title="Tienda E-commerce de Componentes y Repuestos de SERVITECNOLOGY"
+			>
+				<svg class="w-3.5 h-3.5 text-black group-hover:scale-110 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+				</svg>
+				<span class="tracking-wide">Ecommerce</span>
+				<span class="relative flex h-2 w-2 shrink-0">
+					<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-75"></span>
+					<span class="relative inline-flex rounded-full h-2 w-2 bg-black"></span>
+				</span>
+			</a>
 
 			<!-- YouTube Channel Button (Canal) -->
 			<a 
@@ -143,6 +159,19 @@ const navItems: NavItem[] = [
 					<span>Nuestro Canal de YouTube</span>
 				</div>
 				<span class="text-xs bg-red-600 px-2 py-0.5 rounded text-white font-mono">En Vivo</span>
+			</a>
+			<!-- Mobile Ecommerce Button -->
+			<a 
+				href="/ecommerce" 
+				class="mobile-nav-link flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-brand-green/20 to-brand-cyan/20 border border-brand-cyan/40 text-white font-bold text-sm shadow-[0_0_15px_rgba(0,207,255,0.2)]"
+			>
+				<div class="flex items-center gap-2.5">
+					<svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+					</svg>
+					<span>Tienda Ecommerce</span>
+				</div>
+				<span class="text-xs bg-brand-green/30 text-brand-green border border-brand-green/40 px-2 py-0.5 rounded font-mono">En Línea</span>
 			</a>
 			{navItems.map((item) => (
 				item.children ? (

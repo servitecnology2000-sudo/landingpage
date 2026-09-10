@@ -104,3 +104,47 @@ CREATE POLICY "Permitir lectura de eventos"
 CREATE INDEX IF NOT EXISTS idx_metricas_tipo ON metricas_eventos(tipo_evento);
 CREATE INDEX IF NOT EXISTS idx_metricas_elemento ON metricas_eventos(elemento_id);
 
+-- =============================================
+-- TABLAS DE ECOMMERCE (FASE 1)
+-- =============================================
+
+-- Tabla de clientes
+CREATE TABLE IF NOT EXISTS public.customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  rut TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir insercion publica de clientes" ON public.customers FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Permitir lectura de clientes" ON public.customers FOR SELECT TO public USING (true);
+CREATE POLICY "Permitir actualizacion de clientes" ON public.customers FOR UPDATE TO public USING (true);
+GRANT ALL ON public.customers TO anon, authenticated, service_role;
+
+-- Tabla de pedidos
+CREATE TABLE IF NOT EXISTS public.orders (
+  id TEXT PRIMARY KEY, -- Formato ST-2026-XXXX
+  customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
+  items JSONB NOT NULL DEFAULT '[]'::jsonb,
+  delivery_type TEXT NOT NULL CHECK (delivery_type IN ('retiro', 'delivery_rm')),
+  commune TEXT,
+  shipping_cost NUMERIC(12,0) DEFAULT 0,
+  total_amount NUMERIC(12,0) NOT NULL,
+  payment_status TEXT NOT NULL DEFAULT 'pendiente' CHECK (payment_status IN ('pendiente', 'en_revision', 'aprobado')),
+  order_status TEXT NOT NULL DEFAULT 'preparacion' CHECK (order_status IN ('preparacion', 'completado', 'cancelado')),
+  stock_reserved_until TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '2 hours'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir insercion de pedidos" ON public.orders FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Permitir lectura publica de pedidos" ON public.orders FOR SELECT TO public USING (true);
+CREATE POLICY "Permitir actualizacion de pedidos" ON public.orders FOR UPDATE TO public USING (true);
+GRANT ALL ON public.orders TO anon, authenticated, service_role;
+
+
