@@ -21,7 +21,9 @@ Para garantizar estabilidad operativa, seguridad tributaria y velocidad de despl
 
 ## 🗺️ Fases del Proyecto E-commerce
 
-### FASE 1: Transferencia Bancaria + Cobertura Región Metropolitana (ESTADO: COMPLETADA ✅)
+### FASE 1: Transferencia Bancaria + Cobertura Región Metropolitana (ESTADO: PAUSA TEMPORAL EN CONSTRUCCIÓN ⚠️)
+> **AVISO DE ESTADO:** La venta directa automatizada en línea se encuentra en pausa temporal mientras se completan las labores de desarrollo y optimización. El catálogo y buscador multicriterio permanecen 100% operativos para consulta, canalizando todas las compras e información de repuestos exclusivamente vía coordinación por WhatsApp oficial (+56948672300).
+
 * **Navegación & UI Global:**
   - Renombramiento de la ruta y menú de `/repuestos` a **"Ecommerce"** en toda la plataforma.
   - Posicionamiento del botón directo **"Ecommerce"** en la barra principal del Header, ubicado al lado del botón de YouTube.

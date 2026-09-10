@@ -61,6 +61,10 @@
   - **Checkout Interactivo & Modal Amarillo:** Creación de `src/pages/checkout.astro` con selector de entrega (Retiro en Oficina $0 vs Despacho RM con selector de comunas y tarifas fijas automáticas), datos de facturación SII con RUT obligatorio, y Pop-up Modal obligatorio con Yellow Warning Box brillante de alta visibilidad para confirmar el correo electrónico antes de emitir la orden.
   - **Instrucciones Bancarias & Post-Checkout:** Creación de `src/pages/pedido/[id].astro` con código `ST-2026-XXXX`, temporizador regresivo de 2 horas de reserva de stock, caja de datos bancarios oficiales de Servitecnology (BancoEstado, Cuenta Corriente, RUT y correo), instrucción de glosa obligatoria y enlace a WhatsApp pre-rellenado para envío de comprobantes.
   - **Términos y Privacidad:** Actualización de `/terminos` y `/privacidad` con cláusulas específicas de e-commerce, transferencia bancaria, reserva de inventario y tratamiento exclusivo de datos personales para facturación electrónica del SII y logística.
+- **2026-09-09 (Pausa Temporal de Transacciones en Ecommerce & Banner de Construcción):**
+  - **Banner Informativo Destacado en `/ecommerce`:** Inserción de un banner de advertencia moderno estilo Warning (fondo ámbar/naranja con resplandor suave, bordes redondeados e ícono ⚠️) ubicado inmediatamente arriba del buscador multicriterio, con el mensaje oficial indicando la pausa temporal de venta directa en línea y canalización de compras vía coordinación por WhatsApp con mensaje predeterminado.
+  - **Deshabilitación de Botones de Compra Directa:** Deshabilitación de botones "Comprar" en tarjetas de catálogo (`src/components/Catalog.astro`) y en la página de detalle (`src/pages/repuesto/[slug].astro`), aplicando estilos visuales `cursor: not-allowed`, opacidad reducida, texto "Compra por WhatsApp", y prevención de apertura del checkout, manteniendo el catálogo y buscador multicriterio 100% operativos.
+  - **Actualización Documental y Control:** Registro del estado de pausa en `docs/e-commerce-roadmap.md` y `agent.md`.
 
 
 
