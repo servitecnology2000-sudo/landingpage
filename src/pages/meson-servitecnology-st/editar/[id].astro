@@ -42,7 +42,9 @@ if (Astro.request.method === 'POST') {
 		const estado = formData.get('estado')?.toString().trim() || 'Usado Verificado';
 		const precio_venta = parseFloat(formData.get('precio_venta')?.toString() || '0');
 		const precio_costo = parseFloat(formData.get('precio_costo')?.toString() || '0');
-		const stock_cantidad = parseInt(formData.get('stock_cantidad')?.toString() || '1');
+		const sin_stock = formData.get('sin_stock') === 'on' || formData.get('sin_stock') === 'true' || formData.get('sin_stock') === '1';
+		const rawStock = formData.get('stock_cantidad')?.toString();
+		const stock_cantidad = sin_stock ? 0 : (rawStock !== undefined && rawStock !== '' ? Math.max(0, parseInt(rawStock, 10) || 0) : 0);
 		
 		// Parse compatibility tags
 		const compatibilidadInput = formData.get('compatibilidad')?.toString() || '';
@@ -91,15 +93,15 @@ if (Astro.request.method === 'POST') {
 
 		// Choose to merge or overwrite images
 		// If new images are uploaded, append them to existing ones, or keep old ones if none uploaded
-		const existingImages: string[] = product.imagenes ?? [];
+		const existingImages: string[] = Array.isArray(product.imagenes) ? product.imagenes : [];
 		const keepOldImages = formData.get('keep_old_images') === 'true';
 		
-		let finalUrls = existingImages;
+		let finalImages: string[] = existingImages;
 		if (newUrls.length > 0) {
 			if (keepOldImages) {
-				finalUrls = [...existingImages, ...newUrls].slice(0, 3);
+				finalImages = [...existingImages, ...newUrls].slice(0, 3);
 			} else {
-				finalUrls = newUrls.slice(0, 3);
+				finalImages = newUrls.slice(0, 3);
 			}
 		}
 
@@ -177,6 +179,66 @@ try {
 		textarea { height: 100px; resize: vertical; }
 		.checkbox-field { flex-direction: row; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
 		.checkbox-field input { width: auto; cursor: pointer; }
+		.stock-toggle-box {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin-top: 0.5rem;
+			padding: 0.6rem 0.85rem;
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: 0.5rem;
+		}
+		.toggle-switch {
+			position: relative;
+			display: inline-block;
+			width: 44px;
+			height: 24px;
+			flex-shrink: 0;
+			margin: 0;
+			cursor: pointer;
+		}
+		.toggle-switch input {
+			opacity: 0;
+			width: 0;
+			height: 0;
+			position: absolute;
+		}
+		.slider {
+			position: absolute;
+			cursor: pointer;
+			top: 0; left: 0; right: 0; bottom: 0;
+			background-color: #3f3f46;
+			transition: 0.25s;
+			border-radius: 24px;
+		}
+		.slider:before {
+			position: absolute;
+			content: "";
+			height: 18px;
+			width: 18px;
+			left: 3px;
+			bottom: 3px;
+			background-color: #ffffff;
+			transition: 0.25s;
+			border-radius: 50%;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+		}
+		.toggle-switch input:checked + .slider {
+			background-color: #ef4444;
+		}
+		.toggle-switch input:checked + .slider:before {
+			transform: translateX(20px);
+		}
+		.toggle-label {
+			font-size: 0.8rem;
+			color: #e2e8f0;
+			cursor: pointer;
+			text-transform: none;
+			letter-spacing: normal;
+			font-weight: 500;
+			user-select: none;
+		}
 		.section-title { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: #00CFFF; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem; }
 		.actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; }
 		.error-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; }
@@ -252,10 +314,32 @@ try {
 						</select>
 					</div>
 
-					<!-- Stock cantidad -->
+					<!-- Stock cantidad y Toggle Sin Stock -->
 					<div class="field">
 						<label for="stock_cantidad">Stock Disponible (Unidades)</label>
-						<input type="number" id="stock_cantidad" name="stock_cantidad" placeholder="Ej: 5" min="0" value={product.stock_cantidad !== undefined ? product.stock_cantidad : 1} required />
+						<input 
+							type="number" 
+							id="stock_cantidad" 
+							name="stock_cantidad" 
+							placeholder="Ej: 5" 
+							min="0" 
+							value={product.stock_cantidad !== undefined ? product.stock_cantidad : 1} 
+							required 
+						/>
+						<div class="stock-toggle-box">
+							<label class="toggle-switch">
+								<input 
+									type="checkbox" 
+									id="sin_stock" 
+									name="sin_stock" 
+									checked={product.stock_cantidad <= 0} 
+								/>
+								<span class="slider"></span>
+							</label>
+							<label for="sin_stock" class="toggle-label">
+								Producto Agotado / Sin Stock
+							</label>
+						</div>
 					</div>
 
 					<!-- Precio Venta -->
@@ -347,6 +431,50 @@ try {
 				.replace(/-+/g, '-');
 			slugInput.value = slug;
 		});
+
+		// Stock toggle logic
+		const sinStockCheckbox = document.getElementById('sin_stock') as HTMLInputElement;
+		const stockInput = document.getElementById('stock_cantidad') as HTMLInputElement;
+
+		if (sinStockCheckbox && stockInput) {
+			let savedStockValue = parseInt(stockInput.value, 10) > 0 ? stockInput.value : '1';
+
+			const updateStockUI = () => {
+				if (sinStockCheckbox.checked) {
+					if (parseInt(stockInput.value, 10) > 0) {
+						savedStockValue = stockInput.value;
+					}
+					stockInput.value = '0';
+					stockInput.disabled = true;
+					stockInput.style.opacity = '0.4';
+					stockInput.style.cursor = 'not-allowed';
+				} else {
+					stockInput.disabled = false;
+					stockInput.style.opacity = '1';
+					stockInput.style.cursor = 'text';
+					stockInput.value = savedStockValue && parseInt(savedStockValue, 10) > 0 ? savedStockValue : '1';
+				}
+			};
+
+			sinStockCheckbox.addEventListener('change', updateStockUI);
+
+			// Synchronize on load
+			if (sinStockCheckbox.checked) {
+				stockInput.value = '0';
+				stockInput.disabled = true;
+				stockInput.style.opacity = '0.4';
+				stockInput.style.cursor = 'not-allowed';
+			}
+
+			// Ensure disabled input does not prevent form sending 0
+			const form = stockInput.closest('form');
+			form?.addEventListener('submit', () => {
+				if (sinStockCheckbox.checked) {
+					stockInput.disabled = false;
+					stockInput.value = '0';
+				}
+			});
+		}
 	</script>
 </body>
 </html>
