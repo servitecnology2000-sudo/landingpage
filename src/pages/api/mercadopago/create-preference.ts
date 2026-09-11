@@ -175,14 +175,18 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 		const baseUrl = isLocalhost ? 'https://servitecnology.com' : url.origin;
 
+		const payerEmail = isSandbox
+			? (customer.email?.includes('@testuser.com') ? customer.email : (process.env['ML_PRUEBAS_COMPRADOR_EMAIL'] || 'test_user_4386276905329265909@testuser.com'))
+			: customer.email;
+
 		const preferenceData: any = {
 			items: mpItemsPayload,
 			payer: {
-				name: customer.full_name,
-				email: customer.email,
+				name: isSandbox ? 'Comprador de Prueba' : customer.full_name,
+				email: payerEmail,
 				identification: {
 					type: 'RUT',
-					number: customer.rut || ''
+					number: isSandbox ? '11111111-1' : (customer.rut || '')
 				}
 			},
 			back_urls: {
