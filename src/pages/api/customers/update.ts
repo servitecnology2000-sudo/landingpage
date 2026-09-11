@@ -54,8 +54,9 @@ export const POST: APIRoute = async ({ request }) => {
 			});
 		}
 
-		// Dirección completa formateada con comuna y región si están disponibles
-		const fullAddress = commune ? `${address.trim()}, ${commune}${region ? ` (${region})` : ''}` : address.trim();
+		// Dirección limpia: si ya contiene la comuna/región, no volver a concatenar repetitivamente
+		const suffix = commune ? `${commune}${region ? ` (${region})` : ''}` : '';
+		const fullAddress = (suffix && !address.includes(commune)) ? `${address.trim()}, ${suffix}` : address.trim();
 
 		// Actualizar o insertar cliente usando supabaseAdmin para garantizar persistencia y bypass de RLS server-side
 		const { data, error } = await supabaseAdmin

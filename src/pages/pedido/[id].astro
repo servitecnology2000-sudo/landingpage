@@ -24,7 +24,20 @@ try {
 	console.warn('No se pudo leer pedido desde Supabase, se resolverá en cliente:', e);
 }
 
-// Datos bancarios oficiales de SERVITECNOLOGY SpA
+// Parámetros de retorno de Mercado Pago
+const paymentStatusParam = Astro.url.searchParams.get('payment');
+const statusParam = Astro.url.searchParams.get('status');
+const collectionStatusParam = Astro.url.searchParams.get('collection_status');
+const paymentIdParam = Astro.url.searchParams.get('payment_id') || Astro.url.searchParams.get('collection_id');
+
+const isPaid = (order?.payment_status === 'aprobado') ||
+	(paymentStatusParam === 'success') ||
+	(statusParam === 'approved') ||
+	(collectionStatusParam === 'approved');
+
+const finalPaymentId = order?.mp_payment_id || paymentIdParam || '';
+
+// Datos bancarios oficiales de SERVITECNOLOGY SpA (para compras por transferencia)
 const BANK_DETAILS = {
 	banco: "BancoEstado",
 	tipoCuenta: "Cuenta Corriente",
@@ -36,28 +49,43 @@ const BANK_DETAILS = {
 ---
 
 <Layout 
-	title={`Pedido ${orderId} | Instrucciones de Transferencia — SERVITECNOLOGY`}
-	description="Instrucciones oficiales para completar la transferencia bancaria de tu pedido en SERVITECNOLOGY. Reserva de stock por 2 horas y facturación electrónica SII."
+	title={isPaid ? `¡Pago Confirmado! | Pedido ${orderId} — SERVITECNOLOGY` : `Pedido ${orderId} | Instrucciones de Transferencia — SERVITECNOLOGY`}
+	description="Detalle oficial de tu pedido en SERVITECNOLOGY. Seguimiento de entrega, facturación electrónica SII y soporte técnico especializado."
 >
 	<Header />
 
 	<main class="relative bg-black min-h-screen py-16 border-b border-white/5">
 		<!-- Glows -->
-		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-yellow-500/5 rounded-full blur-[160px] pointer-events-none"></div>
+		<div class={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] ${isPaid ? 'bg-emerald-500/10' : 'bg-yellow-500/5'} rounded-full blur-[160px] pointer-events-none`}></div>
+
+		<!-- Indicador oculto para hidratación en cliente -->
+		<div id="is-paid-indicator" data-paid={isPaid ? 'true' : 'false'} class="hidden"></div>
 
 		<div class="relative z-10 mx-auto max-w-4xl px-6 w-full">
 			
 			<!-- Success & Status Banner -->
 			<div class="text-center max-w-2xl mx-auto mb-10 space-y-4">
-				<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-					<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
-					<span>Pendiente de Pago por Transferencia</span>
-				</div>
+				{isPaid ? (
+					<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+						<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+						<span>Pago Confirmado con Mercado Pago</span>
+					</div>
+				) : (
+					<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+						<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+						<span>Pendiente de Pago por Transferencia</span>
+					</div>
+				)}
+
 				<h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
-					¡Pedido Registrado con Éxito!
+					{isPaid ? '¡Pago Confirmado & Pedido en Preparación!' : '¡Pedido Registrado con Éxito!'}
 				</h1>
-				<p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-					Gracias por comprar en SERVITECNOLOGY. Tu pedido ha sido generado bajo el código único:
+				<p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+					{isPaid ? (
+						'Hemos recibido tu pago mediante Mercado Pago. Tus repuestos están asegurados y nuestro equipo técnico ya se encuentra preparando tu despacho o citación de retiro.'
+					) : (
+						'Gracias por comprar en SERVITECNOLOGY. Tu pedido ha sido generado bajo el código único:'
+					)}
 				</p>
 				
 				<!-- Order ID Pill with Copy Button -->
@@ -75,118 +103,218 @@ const BANK_DETAILS = {
 				</div>
 			</div>
 
-			<!-- 2-Hour Stock Reservation Timer Card -->
-			<div class="mb-10 p-5 rounded-2xl bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-transparent border border-yellow-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-				<div class="flex items-center gap-3.5">
-					<div class="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400/40 flex items-center justify-center text-xl shrink-0">
-						⏱️
+			<!-- Status Bar: Paid Banner or Countdown Timer -->
+			{isPaid ? (
+				<div class="mb-10 p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-brand-cyan/10 to-transparent border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+					<div class="flex items-center gap-3.5">
+						<div class="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center text-xl shrink-0">
+							✅
+						</div>
+						<div class="text-left">
+							<h3 class="text-sm font-bold text-white">Stock 100% Asegurado y Descontado</h3>
+							<p class="text-xs text-slate-300">
+								Transacción aprobada {finalPaymentId ? `(N° Operación: ${finalPaymentId})` : ''}. Se ha enviado un correo formal con el resumen completo.
+							</p>
+						</div>
 					</div>
-					<div>
-						<h3 class="text-sm font-bold text-white">Reserva Temporal de Stock Activa</h3>
-						<p class="text-xs text-slate-300">Tus repuestos quedan reservados exclusivamente para ti durante 2 horas.</p>
+					<div class="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-center font-mono font-black text-emerald-300 text-xs sm:text-sm shrink-0">
+						Estado: En Preparación
 					</div>
 				</div>
-				<div class="px-4 py-2 rounded-xl bg-black/60 border border-yellow-500/40 text-center font-mono font-black text-yellow-300 text-base sm:text-lg shrink-0" id="countdown-timer">
-					01:59:59
+			) : (
+				<div class="mb-10 p-5 rounded-2xl bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-transparent border border-yellow-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+					<div class="flex items-center gap-3.5">
+						<div class="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400/40 flex items-center justify-center text-xl shrink-0">
+							⏱️
+						</div>
+						<div class="text-left">
+							<h3 class="text-sm font-bold text-white">Reserva Temporal de Stock Activa</h3>
+							<p class="text-xs text-slate-300">Tus repuestos quedan reservados exclusivamente para ti durante 2 horas.</p>
+						</div>
+					</div>
+					<div class="px-4 py-2 rounded-xl bg-black/60 border border-yellow-500/40 text-center font-mono font-black text-yellow-300 text-base sm:text-lg shrink-0" id="countdown-timer">
+						01:59:59
+					</div>
 				</div>
-			</div>
+			)}
 
 			<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 				
-				<!-- Left Column: Official Bank Details Box (7 Cols) -->
+				<!-- Left Column: Fulfillment Details or Bank Transfer Box (7 Cols) -->
 				<div class="lg:col-span-7 space-y-6">
 					
-					<!-- BANK DATA BOX (ALTA VISIBILIDAD) -->
-					<div class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border-2 border-brand-green/40 shadow-[0_0_40px_rgba(0,255,127,0.15)] space-y-6">
-						<div class="flex items-center justify-between border-b border-white/10 pb-4">
-							<div class="flex items-center gap-3">
-								<div class="w-8 h-8 rounded-lg bg-brand-green/20 text-brand-green flex items-center justify-center font-bold">
-									🏦
+					{isPaid ? (
+						<div class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border-2 border-emerald-500/40 shadow-[0_0_40px_rgba(16,185,129,0.15)] space-y-6">
+							<div class="flex items-center justify-between border-b border-white/10 pb-4">
+								<div class="flex items-center gap-3">
+									<div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+										📦
+									</div>
+									<h2 class="text-lg font-bold text-white">Detalles de Entrega & Despacho</h2>
 								</div>
-								<h2 class="text-lg font-bold text-white">Datos Bancarios Oficiales</h2>
-							</div>
-							<span class="text-[10px] font-bold text-brand-green uppercase tracking-widest bg-brand-green/10 border border-brand-green/20 px-2 py-0.5 rounded">
-								Cuenta Empresa
-							</span>
-						</div>
-
-						<p class="text-xs text-slate-300 leading-relaxed">
-							Realiza una transferencia electrónica por el monto total a la siguiente cuenta oficial de Servitecnology:
-						</p>
-
-						<div class="space-y-3 font-mono text-xs">
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">Banco:</span>
-								<span class="font-bold text-white text-sm">{BANK_DETAILS.banco}</span>
-							</div>
-
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">Tipo de Cuenta:</span>
-								<span class="font-bold text-white">{BANK_DETAILS.tipoCuenta}</span>
-							</div>
-
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">Número de Cuenta:</span>
-								<div class="flex items-center gap-2">
-									<span class="font-black text-brand-cyan text-sm">{BANK_DETAILS.numeroCuenta}</span>
-									<button type="button" class="btn-copy-account text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.numeroCuenta}>Copiar</button>
-								</div>
-							</div>
-
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">Titular:</span>
-								<span class="font-bold text-white">{BANK_DETAILS.titular}</span>
-							</div>
-
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">RUT:</span>
-								<div class="flex items-center gap-2">
-									<span class="font-bold text-white">{BANK_DETAILS.rut}</span>
-									<button type="button" class="btn-copy-rut text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.rut}>Copiar</button>
-								</div>
-							</div>
-
-							<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-								<span class="text-slate-400 font-sans">Correo comprobante:</span>
-								<span class="font-bold text-slate-200">{BANK_DETAILS.email}</span>
-							</div>
-
-							<!-- CRITICAL TRANSFER SUBJECT INSTRUCTION -->
-							<div class="p-4 rounded-xl bg-yellow-500/10 border-2 border-yellow-400/50 space-y-1 text-center">
-								<span class="text-[11px] font-black text-yellow-400 uppercase tracking-wide font-sans">
-									⚠️ Asunto / Mensaje obligatorio de la transferencia:
+								<span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+									{order?.delivery_type === 'retiro' ? 'Retiro en Taller' : 'Envío por Pagar'}
 								</span>
-								<div class="text-xl font-black text-yellow-300 font-mono tracking-widest pt-1">
-									{orderId}
+							</div>
+
+							<div class="space-y-3 text-xs">
+								{order?.delivery_type === 'retiro' ? (
+									<div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+										<div class="flex items-center gap-2 text-brand-cyan font-bold text-sm">
+											<span>📍</span>
+											<span>Oficina Técnica Servitecnology (Santiago Centro)</span>
+										</div>
+										<p class="text-slate-300 leading-relaxed">
+											Tus repuestos serán embalados y rotulados inmediatamente. Te enviaremos una notificación por correo electrónico y WhatsApp en cuanto tu orden esté lista para retiro.
+										</p>
+										<div class="pt-2 text-[11px] text-slate-400 space-y-1">
+											<p>• <strong>Ubicación:</strong> Santiago Centro, Región Metropolitana.</p>
+											<p>• <strong>Requisitos de retiro:</strong> Presentar el código <span class="font-mono text-white font-bold">{orderId}</span> y cédula de identidad.</p>
+										</div>
+									</div>
+								) : (
+									<div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+										<div class="flex items-center gap-2 text-brand-cyan font-bold text-sm">
+											<span>🚚</span>
+											<span>Despacho a Domicilio — Envío por Pagar (Cobro en Destino)</span>
+										</div>
+										<p class="text-slate-300 leading-relaxed">
+											El costo del flete se abona directamente a la empresa de transporte al momento de recibir el paquete en tu dirección.
+										</p>
+										<div class="pt-2 text-[11px] text-slate-400 space-y-1">
+											<p>• <strong>Comuna de Destino:</strong> <span class="text-white font-semibold">{order?.commune || 'Por coordinar'}</span></p>
+											<p>• <strong>Dirección Registrada:</strong> <span class="text-white font-semibold">{order?.shipping_address || 'Por coordinar'}</span></p>
+											<p>• <strong>Seguimiento:</strong> Te enviaremos el número de transporte de Starken / Chilexpress en cuanto sea despachado.</p>
+										</div>
+									</div>
+								)}
+
+								<div class="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2 font-mono text-xs">
+									<div class="flex items-center justify-between">
+										<span class="text-slate-400 font-sans">Pasarela de Pago:</span>
+										<span class="font-bold text-white flex items-center gap-1.5">
+											<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+											Mercado Pago (Acreditado)
+										</span>
+									</div>
+									{finalPaymentId && (
+										<div class="flex items-center justify-between">
+											<span class="text-slate-400 font-sans">N° Operación MP:</span>
+											<span class="font-bold text-brand-cyan">{finalPaymentId}</span>
+										</div>
+									)}
+									<div class="flex items-center justify-between">
+										<span class="text-slate-400 font-sans">Estado de la Orden:</span>
+										<span class="font-bold text-emerald-400">En Preparación</span>
+									</div>
 								</div>
-								<p class="text-[10px] text-slate-400 font-sans mt-1">
-									Debes incluir exactamente este código para que el sistema asocie tu pago automáticamente.
-								</p>
+							</div>
+
+							<div class="pt-2">
+								<a 
+									id="btn-whatsapp-paid"
+									href={`https://wa.me/56948672300?text=${encodeURIComponent(`Hola SERVITECNOLOGY, mi pago para el pedido ${orderId} fue acreditado exitosamente con Mercado Pago (ID: ${finalPaymentId}). Quisiera consultar sobre el estado de preparación y entrega.`)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="w-full py-4 px-6 rounded-2xl font-bold text-black bg-brand-green hover:opacity-90 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all flex items-center justify-center gap-2.5 text-sm tracking-wide"
+								>
+									<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+									<span>Consultar Estado por WhatsApp</span>
+								</a>
 							</div>
 						</div>
+					) : (
+						<div class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border-2 border-brand-green/40 shadow-[0_0_40px_rgba(0,255,127,0.15)] space-y-6">
+							<div class="flex items-center justify-between border-b border-white/10 pb-4">
+								<div class="flex items-center gap-3">
+									<div class="w-8 h-8 rounded-lg bg-brand-green/20 text-brand-green flex items-center justify-center font-bold">
+										🏦
+									</div>
+									<h2 class="text-lg font-bold text-white">Datos Bancarios Oficiales</h2>
+								</div>
+								<span class="text-[10px] font-bold text-brand-green uppercase tracking-widest bg-brand-green/10 border border-brand-green/20 px-2 py-0.5 rounded">
+									Cuenta Empresa
+								</span>
+							</div>
 
-						<!-- Notification via WhatsApp Button -->
-						<div class="pt-2">
-							<a 
-								id="btn-whatsapp-notify"
-								href={`https://wa.me/56948672300?text=${encodeURIComponent(`Hola SERVITECNOLOGY, acabo de realizar la transferencia para mi pedido ${orderId}. Adjunto mi comprobante de pago.`)}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="w-full py-4 px-6 rounded-2xl font-bold text-black bg-brand-green hover:opacity-90 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all flex items-center justify-center gap-2.5 text-sm tracking-wide"
-							>
-								<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-								<span>Informar Transferencia vía WhatsApp</span>
-							</a>
+							<p class="text-xs text-slate-300 leading-relaxed">
+								Realiza una transferencia electrónica por el monto total a la siguiente cuenta oficial de Servitecnology:
+							</p>
+
+							<div class="space-y-3 font-mono text-xs">
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">Banco:</span>
+									<span class="font-bold text-white text-sm">{BANK_DETAILS.banco}</span>
+								</div>
+
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">Tipo de Cuenta:</span>
+									<span class="font-bold text-white">{BANK_DETAILS.tipoCuenta}</span>
+								</div>
+
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">Número de Cuenta:</span>
+									<div class="flex items-center gap-2">
+										<span class="font-black text-brand-cyan text-sm">{BANK_DETAILS.numeroCuenta}</span>
+										<button type="button" class="btn-copy-account text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.numeroCuenta}>Copiar</button>
+									</div>
+								</div>
+
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">Titular:</span>
+									<span class="font-bold text-white">{BANK_DETAILS.titular}</span>
+								</div>
+
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">RUT:</span>
+									<div class="flex items-center gap-2">
+										<span class="font-bold text-white">{BANK_DETAILS.rut}</span>
+										<button type="button" class="btn-copy-rut text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.rut}>Copiar</button>
+									</div>
+								</div>
+
+								<div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+									<span class="text-slate-400 font-sans">Correo comprobante:</span>
+									<span class="font-bold text-slate-200">{BANK_DETAILS.email}</span>
+								</div>
+
+								<div class="p-4 rounded-xl bg-yellow-500/10 border-2 border-yellow-400/50 space-y-1 text-center">
+									<span class="text-[11px] font-black text-yellow-400 uppercase tracking-wide font-sans">
+										⚠️ Asunto / Mensaje obligatorio de la transferencia:
+									</span>
+									<div class="text-xl font-black text-yellow-300 font-mono tracking-widest pt-1">
+										{orderId}
+									</div>
+									<p class="text-[10px] text-slate-400 font-sans mt-1">
+										Debes incluir exactamente este código para que el sistema asocie tu pago automáticamente.
+									</p>
+								</div>
+							</div>
+
+							<div class="pt-2">
+								<a 
+									id="btn-whatsapp-notify"
+									href={`https://wa.me/56948672300?text=${encodeURIComponent(`Hola SERVITECNOLOGY, acabo de realizar la transferencia para mi pedido ${orderId}. Adjunto mi comprobante de pago.`)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="w-full py-4 px-6 rounded-2xl font-bold text-black bg-brand-green hover:opacity-90 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all flex items-center justify-center gap-2.5 text-sm tracking-wide"
+								>
+									<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+									<span>Informar Transferencia vía WhatsApp</span>
+								</a>
+							</div>
 						</div>
-					</div>
+					)}
 
-					<!-- SII Electronic Invoicing Guarantee -->
+					<!-- SII Electronic Invoicing Guarantee & 3x3 Warranty -->
 					<div class="p-5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
 						<svg class="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-						<div class="space-y-1 text-xs">
-							<h4 class="font-bold text-white">Garantía de Factura Electrónica SII</h4>
+						<div class="space-y-1 text-xs text-left">
+							<h4 class="font-bold text-white">Factura Electrónica SII & Garantía Técnica 3x3</h4>
 							<p class="text-slate-400 leading-relaxed">
-								Una vez validada la transferencia bancaria por nuestro equipo administrativo, recibirás en tu correo la Factura Electrónica emitida formalmente ante el SII junto con el comprobante de despacho o la citación de retiro.
+								{isPaid 
+									? 'Tu Factura Electrónica conforme al SII será emitida y enviada a tu correo registrado. Todos los repuestos disponen de 90 días de garantía técnica formal con Servitecnology SpA.'
+									: 'Una vez validada la transferencia bancaria por nuestro equipo administrativo, recibirás en tu correo la Factura Electrónica emitida formalmente ante el SII junto con el comprobante de despacho o la citación de retiro.'}
 							</p>
 						</div>
 					</div>
@@ -222,10 +350,19 @@ const BANK_DETAILS = {
 						</div>
 
 						<!-- Delivery info -->
-						<div class="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1.5 text-xs">
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1.5 text-xs text-left">
 							<span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Método de Entrega:</span>
 							<p id="delivery-display" class="text-white font-bold">
-								{order ? (order.delivery_type === 'delivery_rm' ? `Despacho a Domicilio: ${order.commune}` : 'Retiro en Oficina Técnica ($0)') : 'Cargando datos...'}
+								{order ? (order.delivery_type === 'retiro' ? 'Retiro en Oficina Técnica ($0)' : `Despacho a Domicilio (${order.commune || 'Por coordinar'})`) : 'Cargando datos...'}
+							</p>
+						</div>
+
+						<!-- Payment status pill in sidebar -->
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1 text-xs text-left">
+							<span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Estado del Pago:</span>
+							<p class={`font-bold ${isPaid ? 'text-emerald-400' : 'text-yellow-400'} flex items-center gap-1.5`}>
+								<span class={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-400' : 'bg-yellow-400'}`}></span>
+								{isPaid ? 'Aprobado con Mercado Pago' : 'Pendiente de Transferencia'}
 							</p>
 						</div>
 
@@ -234,11 +371,11 @@ const BANK_DETAILS = {
 							<div class="flex items-center justify-between text-slate-400">
 								<span>Despacho:</span>
 								<span id="display-shipping" class="font-bold text-white font-mono">
-									{order ? (order.shipping_cost > 0 ? `$${order.shipping_cost?.toLocaleString('es-CL')} CLP` : 'GRATIS ($0)') : '---'}
+									{order ? (order.shipping_cost > 0 ? `$${order.shipping_cost?.toLocaleString('es-CL')} CLP` : 'Cobro en Destino / Gratis') : '---'}
 								</span>
 							</div>
 							<div class="flex items-center justify-between text-base font-extrabold text-white pt-2 border-t border-white/10">
-								<span>Total a Transferir:</span>
+								<span>{isPaid ? 'Total Pagado en Web:' : 'Total a Transferir:'}</span>
 								<span id="display-total" class="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan font-mono">
 									{order ? `$${order.total_amount?.toLocaleString('es-CL')} CLP` : '---'}
 								</span>
@@ -262,7 +399,8 @@ const BANK_DETAILS = {
 </Layout>
 
 <script>
-	// Client hydration: restore order from sessionStorage if server had pending DB sync
+	// Client hydration
+	const isPaidMode = document.getElementById('is-paid-indicator')?.getAttribute('data-paid') === 'true';
 	const orderId = document.getElementById('order-id-display')?.textContent?.trim() || '';
 	const storedOrderStr = sessionStorage.getItem(`order_${orderId}`);
 
@@ -290,10 +428,10 @@ const BANK_DETAILS = {
 
 			// Delivery display
 			const deliveryEl = document.getElementById('delivery-display');
-			if (deliveryEl) {
-				deliveryEl.textContent = storedOrder.delivery_type === 'delivery_rm' 
-					? `Despacho a Domicilio (${storedOrder.commune})`
-					: 'Retiro en Oficina Técnica ($0)';
+			if (deliveryEl && storedOrder.delivery_type) {
+				deliveryEl.textContent = storedOrder.delivery_type === 'retiro' 
+					? 'Retiro en Oficina Técnica ($0)'
+					: `Despacho a Domicilio (${storedOrder.commune || 'Por coordinar'})`;
 			}
 
 			// Shipping
@@ -301,20 +439,22 @@ const BANK_DETAILS = {
 			if (shippingEl) {
 				shippingEl.textContent = storedOrder.shipping_cost > 0
 					? `$${storedOrder.shipping_cost.toLocaleString('es-CL')} CLP`
-					: 'GRATIS ($0)';
+					: 'Cobro en Destino / Gratis';
 			}
 
 			// Total
 			const totalEl = document.getElementById('display-total');
-			if (totalEl) {
-				totalEl.textContent = `$${(storedOrder.total_amount || 0).toLocaleString('es-CL')} CLP`;
+			if (totalEl && storedOrder.total_amount) {
+				totalEl.textContent = `$${storedOrder.total_amount.toLocaleString('es-CL')} CLP`;
 			}
 
-			// WhatsApp button prefill update
-			const btnWa = document.getElementById('btn-whatsapp-notify') as HTMLAnchorElement;
-			if (btnWa) {
-				const waText = `Hola SERVITECNOLOGY, acabo de realizar la transferencia para mi pedido ${orderId} por un total de $${(storedOrder.total_amount || 0).toLocaleString('es-CL')} CLP. Adjunto mi comprobante de pago.`;
-				btnWa.href = `https://wa.me/56948672300?text=${encodeURIComponent(waText)}`;
+			// Only update WhatsApp transfer prefill if NOT paid
+			if (!isPaidMode) {
+				const btnWa = document.getElementById('btn-whatsapp-notify') as HTMLAnchorElement;
+				if (btnWa) {
+					const waText = `Hola SERVITECNOLOGY, acabo de realizar la transferencia para mi pedido ${orderId} por un total de $${(storedOrder.total_amount || 0).toLocaleString('es-CL')} CLP. Adjunto mi comprobante de pago.`;
+					btnWa.href = `https://wa.me/56948672300?text=${encodeURIComponent(waText)}`;
+				}
 			}
 
 		} catch (e) {
@@ -322,13 +462,13 @@ const BANK_DETAILS = {
 		}
 	}
 
-	// Importar limpiador de carrito al confirmar orden
+	// Limpiar carrito al confirmar orden
 	import { clearCart } from '../../lib/cart';
 	try {
 		clearCart();
 	} catch(e) {}
 
-	// Copy ID Button
+	// Botón Copiar Código de Pedido
 	const btnCopyId = document.getElementById('btn-copy-id');
 	const copyText = document.getElementById('copy-text');
 	btnCopyId?.addEventListener('click', async () => {
@@ -341,7 +481,7 @@ const BANK_DETAILS = {
 		}
 	});
 
-	// Botones copiar datos bancarios (cuenta y RUT)
+	// Botones copiar datos bancarios (cuenta y RUT) en caso de transferencia
 	document.querySelectorAll('.btn-copy-account, .btn-copy-rut').forEach(btn => {
 		btn.addEventListener('click', async () => {
 			const val = btn.getAttribute('data-val') || '';
@@ -358,23 +498,25 @@ const BANK_DETAILS = {
 		});
 	});
 
-	// 2-hour countdown timer
+	// Contador regresivo de 2 horas ÚNICAMENTE en modo transferencia pendiente
 	const timerEl = document.getElementById('countdown-timer');
-	let remainingSeconds = 2 * 60 * 60; // 2 horas
+	if (timerEl && !isPaidMode) {
+		let remainingSeconds = 2 * 60 * 60; // 2 horas
 
-	const interval = setInterval(() => {
-		remainingSeconds--;
-		if (remainingSeconds <= 0) {
-			clearInterval(interval);
-			if (timerEl) timerEl.textContent = "Expirado";
-			return;
-		}
+		const interval = setInterval(() => {
+			remainingSeconds--;
+			if (remainingSeconds <= 0) {
+				clearInterval(interval);
+				if (timerEl) timerEl.textContent = "Expirado";
+				return;
+			}
 
-		const hrs = Math.floor(remainingSeconds / 3600);
-		const mins = Math.floor((remainingSeconds % 3600) / 60);
-		const secs = remainingSeconds % 60;
+			const hrs = Math.floor(remainingSeconds / 3600);
+			const mins = Math.floor((remainingSeconds % 3600) / 60);
+			const secs = remainingSeconds % 60;
 
-		const formatted = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-		if (timerEl) timerEl.textContent = formatted;
-	}, 1000);
+			const formatted = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+			if (timerEl) timerEl.textContent = formatted;
+		}, 1000);
+	}
 </script>
