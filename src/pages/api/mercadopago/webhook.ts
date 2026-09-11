@@ -33,7 +33,16 @@ export const POST: APIRoute = async ({ request }) => {
 			});
 		}
 
-		console.log(`[MercadoPago Webhook] Recibida notificación para paymentId: ${paymentId}, type: ${type}`);
+		console.log(`[MercadoPago Webhook] Recibida notificación para ID: ${paymentId}, type: ${type}`);
+
+		// Si es una notificación de merchant_order, responder 200 (se procesará cuando llegue la notificación de 'payment')
+		if (type === 'merchant_order' || url.searchParams.get('topic') === 'merchant_order') {
+			console.log(`[MercadoPago Webhook] Notificación informativa de merchant_order ${paymentId} recibida.`);
+			return new Response(JSON.stringify({ received: true, type: 'merchant_order' }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' }
+			});
+		}
 
 		// 1. Consultar el estado real del pago en la API de Mercado Pago
 		const paymentApi = new Payment(mpClient);
