@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 	const SUPABASE_URL =
 		process.env['PUBLIC_SUPABASE_URL'] ||
 		import.meta.env.PUBLIC_SUPABASE_URL ||
-		'https://mivsnmvupahgbrjfdyhl.supabase.co';
+		'';
 
 	const SERVICE_ROLE_KEY =
 		process.env['SUPABASE_SERVICE_ROLE_KEY'] ||
@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 	const ANON_KEY =
 		process.env['PUBLIC_SUPABASE_ANON_KEY'] ||
 		import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
-		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pdnNubXZ1cGFoZ2JyamZkeWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NDIzMjcsImV4cCI6MjA5OTIxODMyN30.aj9zXGTF6FwjpKmkfTIbfxN3USS3gHIxpP4GB38XNAw';
+		'';
 
 	// Use SERVICE_ROLE_KEY if present, otherwise fallback to ANON_KEY
 	const apiKeyToUse = SERVICE_ROLE_KEY || ANON_KEY;
@@ -49,10 +49,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 	const adminSecret =
 		process.env['ADMIN_SECRET'] ||
 		import.meta.env.ADMIN_SECRET ||
-		'20181860';
+		'';
 	const sessionCookie = cookies.get('admin_session');
 
-	if (sessionCookie?.value !== adminSecret) {
+	if (!adminSecret || sessionCookie?.value !== adminSecret) {
 		return new Response(
 			JSON.stringify({ success: false, error: 'UNAUTHORIZED', message: 'No tienes sesión administrativa activa.' }),
 			{ status: 401, headers: { 'Content-Type': 'application/json' } }
