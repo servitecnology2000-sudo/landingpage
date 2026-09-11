@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # vercel folder
 .vercel/
+
+# local agent config
+.agents/

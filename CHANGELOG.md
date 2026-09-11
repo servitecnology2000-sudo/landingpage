@@ -1,26 +1,7 @@
-# SERVITECH - Estado del Proyecto y Memoria del Agente
+# Historial de Versiones
 
-## 🚀 Arquitectura Actual del Ecosistema
-- **Frontend:** Landing Page moderna y responsiva desplegada en Vercel (https://landingpage-opal-iota.vercel.app/).
-- **Estilos:** Tailwind CSS con diseño de tarjetas asimétricas estilo "Bento Grid" (2 tarjetas destacadas arriba, 3 medianas abajo) en la sección de servicios.
-- **Base de Datos & Storage:** Proyecto activo en Supabase conectado (ID de referencia: `mivsnmvupahgbrjfdyhl`).
-- **Tabla de Inventario:** `repuestos_productos` (Campos implementados: id, sku, titulo, slug, descripcion, categoria, compatibilidad, precio_venta, precio_costo, estado, stock_cantidad, imagenes, seo_titulo, seo_descripcion, seo_keywords, created_at).
-- **Tabla de Analíticas:** `metricas_eventos` (Campos: id, tipo_evento, elemento_id, url_origen, creado_en).
-- **Almacenamiento de Imágenes:** Bucket público en Supabase Storage llamado `imagenes-repuestos`.
+Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
-## 🛠️ Rutas y Módulos Activos
-1. **Ruta Pública (`/`):** Landing page principal. Incluye secciones: Hero (con enfoque After Office/Soporte Fuera de Oficina, sin imagen de reloj y con frase de certificación destacada), Servicios Estrella (Bento Grid) y Repuestos y Componentes (Tienda dinámica conectada a Supabase con navegación por flechas en carruseles y visor Lightbox flotante a pantalla completa).
-2. **Ruta Administrativa Privada (`/admin`):** Panel de control autogestionable y operativo para operaciones CRUD (Crear, Leer, Actualizar, Eliminar) de repuestos, carga múltiple de imágenes y automatización de Slugs y SEO.
-
-## 🎨 Lineamientos de Diseño y UX Aprobados
-- **Imágenes de Servicios:** Estilo "Mockups Flotantes" tridimensionales con position absolute, overflow visible, sombras (drop-shadow) y transiciones suaves en hover (translateY).
-- **Protección de Texto:** Ancho máximo restringido (max-w) en las descripciones de servicios para evitar solapamientos con las imágenes.
-- **SEO Semántico:** Títulos y meta-descripciones inyectados dinámicamente en el <head> por cada producto desde la base de datos.
-
-## 📋 Regla de Actualización Obligatoria para el Agente
-- CADA VEZ que realice un cambio, actualización de código, refactorización o despliegue en este proyecto, DEBO actualizar inmediatamente este archivo 'agent.md' antes de finalizar la tarea, registrando los cambios en un historial de versiones al final del documento.
-
-## 🕒 Historial de Versiones
 - **2026-07-12:** Creación inicial del archivo de memoria del agente.
 - **2026-07-12:** Actualización del número comercial de WhatsApp a +56948672300 de forma global. Adición de botones "Repuestos y Componentes" y "Escríbenos" en el Hero. Rediseño de escala en imágenes de Servicios (Bento Grid) aumentando a `w-[130%]` y reduciendo el contenedor de texto a `max-w-[45%]` para mayor impacto visual. Despliegue en Vercel.
 - **2026-07-12 (Analíticas e Inventario):** Actualización masiva de inventario y analíticas. Migración de esquema en Supabase de `stock_disponible` (booleano) a `stock_cantidad` (entero). Creación de tabla `metricas_eventos`. Inyección de script VanillaJS en frontend para tracking de `visita_pagina` y `clic_boton`. Mejora en `/admin` con panel de métricas, buscador en tiempo real, formateo de fecha y selector de categorías dinámico. Renderizado de stock numérico y desactivación automática de botón WhatsApp si el stock es 0 en catálogo. Se generó `migration.sql` para su ejecución manual.
@@ -65,20 +46,52 @@
   - **Banner Informativo Destacado en `/ecommerce`:** Inserción de un banner de advertencia moderno estilo Warning (fondo ámbar/naranja con resplandor suave, bordes redondeados e ícono ⚠️) ubicado inmediatamente arriba del buscador multicriterio, con el mensaje oficial indicando la pausa temporal de venta directa en línea y canalización de compras vía coordinación por WhatsApp con mensaje predeterminado.
   - **Deshabilitación de Botones de Compra Directa:** Deshabilitación de botones "Comprar" en tarjetas de catálogo (`src/components/Catalog.astro`) y en la página de detalle (`src/pages/repuesto/[slug].astro`), aplicando estilos visuales `cursor: not-allowed`, opacidad reducida, texto "Compra por WhatsApp", y prevención de apertura del checkout, manteniendo el catálogo y buscador multicriterio 100% operativos.
   - **Actualización Documental y Control:** Registro del estado de pausa en `docs/e-commerce-roadmap.md` y `agent.md`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- **2026-09-11 (Migración Base de Datos MVP E-commerce: Auth & Mercado Pago):**
+  - Ejecución y aplicación exitosa de la migración `supabase/migrations/20260910_ecommerce_mvp_auth_mp.sql` en el proyecto `servitecnology2000` (`mivsnmvupahgbrjfdyhl`).
+  - Creación de tabla `customers` con clave foránea vinculada directamente a `auth.users(id)` (Supabase Auth / Google OAuth) y campos para logística (`address`, `phone`, `rut`).
+  - Creación de tabla `orders` con soporte para transacciones de Mercado Pago (`mp_preference_id`, `mp_payment_id`), estados ampliados (`aprobado`, `rechazado`), reserva de stock y políticas RLS completas.
+- **2026-09-11 (Modularización de Planes de Implementación & Fase 1 Detallada):**
+  - Reestructuración de `docs/DesarrolloEcommerce/implementation_plan.md` convirtiéndolo en el Plan Maestro de Arquitectura y Single Source of Truth del proyecto.
+  - Creación del plan de implementación detallado `docs/DesarrolloEcommerce/fase-1-auth-checkout.md` enfocado exclusivamente en Google OAuth (Supabase Auth), persistencia en `customers`, validación de RUT para facturación SII y checkout bajo modalidad "Envío por Pagar / Cobro en Destino" con valores estimados referenciales.
+- **2026-09-11 (Activación de Proveedor Google OAuth en Supabase):**
+  - Configuración y vinculación de credenciales Google Cloud OAuth (Client ID y Client Secret) en el proyecto Supabase `servitecnology2000`.
+  - Habilitación de `external_google_enabled: true` y configuración de la lista de URIs autorizadas de redirección (`http://localhost:4321/**`, `https://servitecnology.com/**`, `https://*.vercel.app/**`).
+- **2026-09-11 (Implementación Fase 1: Google OAuth, Datos Obligatorios & Cobro en Destino):**
+  - Creación de API Route `src/pages/api/customers/update.ts` con validación estricta de RUT chileno (algoritmo Módulo 11) y persistencia server-side con `supabaseAdmin` en `public.customers` vinculada a `auth.users(id)`.
+  - Rediseño completo de `src/pages/checkout.astro`: detección de sesión Supabase en tiempo real, modo invitado con botón Google OAuth, selector dinámico de regiones y comunas bajo modalidad "Envío por Pagar / Cobro en Destino" con tabla de tarifas estimadas referenciales ($0 de flete en pasarela web), validación visual de RUT y modal de confirmación antes del pago.
+- **2026-09-11 (Elaboración de Plan Detallado Fase 2: Mercado Pago API & Preferencias Dinámicas):**
+  - Creación de `docs/DesarrolloEcommerce/fase-2-mercadopago-api.md` con especificación de integración de SDK `mercadopago`, validación estricta anti-fraude de precios y stock en servidor (`repuestos_productos`), persistencia de pedidos preliminares `ST-2026-XXXX` en `public.orders` y obtención de `init_point` dinámico.
+  - Servidor de desarrollo local iniciado en background en `http://localhost:4321`.
+- **2026-09-11 (Implementación Fase 2: SDK Mercado Pago & Generador de Preferencias Dinámicas):**
+  - Instalación de la librería oficial `mercadopago` y configuración desacoplada en `src/lib/mercadopago.ts`.
+  - Creación de API Route `src/pages/api/mercadopago/create-preference.ts`: validación estricta de stock y precios reales contra Supabase (`repuestos_productos`), inserción de pedidos preliminares `ST-2026-XXXX` en `public.orders` y generación de la preferencia de pago (`init_point`).
+  - Conexión del checkout (`src/pages/checkout.astro`) con el endpoint de Mercado Pago: manejo de modo de espera de credenciales (fallback orden `ST-2026`) y redirección fluida a Checkout Pro al recibir el link dinámico. Compilación verificada con 0 errores.
+- **2026-09-11 (Implementación Fase 3: Webhooks de Conciliación, Descuento de Stock & Correos Transaccionales):**
+  - Instalación de `nodemailer` y creación del módulo de correo `src/lib/mailer.ts` con plantilla HTML corporativa de alta definición para confirmación de compra y despacho desde el remitente oficial `notificaciones@servitecnology.com`.
+  - Creación de API Route `src/pages/api/mercadopago/webhook.ts`: recepción de notificaciones en tiempo real de Mercado Pago, validación del estado con `Payment.get()`, idempotencia ante peticiones duplicadas, actualización de `orders` a `aprobado`, decremento automático y definitivo del inventario en `repuestos_productos` y despacho automático del email de confirmación.
+  - Creación del plan detallado en `docs/DesarrolloEcommerce/fase-3-webhooks-notificaciones.md`. Compilación validada con 0 errores.
+- **2026-09-11 (Configuración de Servidor SMTP Blindado en Supabase y Backend):**
+  - Actualización directa mediante la API de Supabase de la configuración Custom SMTP en el proyecto `servitecnology2000`: host `mail.whagil.com`, puerto 465 SSL, usuario `notificaciones@servitecnology.com`, sender name `Servitecnology eCommerce`.
+  - Configuración y validación de autenticación de credenciales en `src/lib/mailer.ts` con tolerancia TLS para certificados del servidor de correo. Compilación validada con 0 errores.
+- **2026-09-11 (Activación de Credenciales Mercado Pago & Prueba de Preferencias en Vivo):**
+  - Mapeo en `src/lib/mercadopago.ts` de las variables de entorno guardadas en `.env` (`ML_PRUEBAS_ACCESS_TOKEN`, `ML_PRUEBAS_PUBLIC_KEY`).
+  - Verificación exitosa de comunicación directa con la API oficial de Mercado Pago: generación y respuesta de `preference_id` (`3680788543-...`) e `init_point` funcional con estado HTTP 201.
+  - Reinicio del servidor de desarrollo local en segundo plano en `http://localhost:4321` con las nuevas credenciales activas.
+- **2026-09-11 (Ajuste de Validación Mercado Pago: back_urls HTTPS & auto_return):**
+  - Corrección en `src/pages/api/mercadopago/create-preference.ts` del error `auto_return invalid. back_url.success must be defined`: Mercado Pago rechaza dominios `http://localhost` para retornos automáticos. Se implementó resolución de URL canónica HTTPS (`https://servitecnology.com`) cuando se ejecute en entorno local, garantizando generación fluida de sesión de pago tanto en desarrollo como en producción.
+- **2026-09-11 (Reactivación de Ecommerce en /repuestos, Carrito Dinámico & Barra Flotante de Compra):**
+  - **Eliminación del Banner de Construcción:** Remoción definitiva del aviso "🛠️ Ecommerce en construcción / Venta en Pausa" en el catálogo (`src/components/Catalog.astro`) y reactivación de los botones de compra directa.
+  - **Gestor de Carrito Reactivo (`src/lib/cart.ts`):** Creación del motor de persistencia en `localStorage` con emisión y escucha de eventos personalizados `st:cart:updated` para sincronizar compras entre pestañas y vistas en tiempo real.
+  - **Acceso al Carrito en Navbar (`Header.astro`):** Integración de un botón interactivo de Carrito de Compras en el menú de escritorio y menú móvil con badge indicador de cantidad en tiempo real.
+  - **Barra Flotante de Compra en Catálogo (`Catalog.astro`):** Implementación de una barra flotante sticky con diseño glassmorphism (`#floating-cart-bar`) que se despliega automáticamente cuando el usuario añade repuestos, mostrando el total de artículos, monto acumulado en CLP y acceso directo a finalizar la compra.
+  - **Doble CTA en Detalle de Producto (`repuesto/[slug].astro`):** Incorporación de dos botones: "Agregar al Carrito" (permite seguir navegando sin abandonar la ficha técnica) y "Comprar Ahora" (añade el producto y redirige de inmediato a la pasarela).
+  - **Gestión Multi-item en Checkout (`checkout.astro`):** Soporte para múltiples productos, controles dinámicos de cantidad (`+` / `-`), botón para quitar artículos, cálculo reactivo de subtotales, vaciado automático de carrito tras completar el pago, enrutamiento a `initPoint` estable (`www.mercadopago.cl`) para prevenir el bucle de redirecciones `ERR_TOO_MANY_REDIRECTS` de sandbox.mercadopago.cl y vista de carrito vacío con enlace al catálogo. Compilación validada con 0 errores.
+- **2026-09-11 (Reemplazo de Alerts Nativos por Modal Moderno de Notificaciones en Checkout):**
+  - **Componente Modal Moderno (`#system-notice-modal`):** Eliminación del 100% de los diálogos nativos `alert()` del navegador en `checkout.astro`. Creación de un modal con estética glassmorphism (`bg-zinc-950/90`, bordes con resplandor neón adaptativo ámbar/rojo/verde, badges informativos, tipografía premium y botones interactivos).
+  - **Experiencia Anti-Sobrevendido:** Ante respuestas de stock insuficiente del servidor, se cierra automáticamente el modal de confirmación, se restablece el estado del botón y se despliega el nuevo modal con el mensaje detallado de stock disponible vs solicitado para que el cliente ajuste la cantidad de inmediato. Compilación validada con 0 errores.
+- **2026-09-11 (Documentación Oficial de Tarjetas de Prueba Mercado Pago Chile):**
+  - Creación de `docs/DesarrolloEcommerce/guia-tarjetas-prueba-mercadopago.md` con las tarjetas de prueba oficiales de Chile extraídas del panel de la aplicación `Servitecnology-eCommerce` (Mastercard, Visa, Amex, Débito), códigos de simulación de estados de pago (`APRO`, `CONT`, `FUND`, `SECU`, etc.) y diagrama de flujo de conciliación de pagos, webhooks y correos.
+- **2026-09-11 (Erradicación Total de Alerts Nativos & Resiliencia en Fallos de Pago):**
+  - **Reemplazo de Alerts en Copia de Datos Bancarios (`pedido/[id].astro`):** Sustitución de `alert()` por microinteracciones reactivas con feedback visual `¡Copiado! ✓` en verde esmeralda para el número de cuenta y RUT bancario.
+  - **Preservación del Carrito ante Cancelación/Fallo:** El carrito ya no se vacía anticipadamente al ser redirigido a Mercado Pago, sino exclusivamente cuando se confirma la orden en `/pedido/[id]`.
+  - **Gestión Visual de Retorno Fallido en Checkout:** Detección de parámetros de fallo (`payment=failure`) tras regresar de la pasarela, desplegando el modal moderno explicativo y manteniendo los repuestos en el carrito intactos para que el usuario pueda reintentar con otro medio de pago sin tener que volver a armar su carrito. Compilación validada con 0 errores.

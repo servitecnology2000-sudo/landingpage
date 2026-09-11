@@ -39,35 +39,6 @@ const phone = "56948672300";
 	<div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
 
 	<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
-		
-		<!-- BANNER INFORMATIVO DESTACADO: ECOMMERCE EN CONSTRUCCIÓN -->
-		<div class="max-w-3xl mx-auto mb-8 w-full">
-			<div class="relative overflow-hidden p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/15 border-2 border-amber-400/50 shadow-[0_0_30px_rgba(245,158,11,0.2)] backdrop-blur-md">
-				<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-					<div class="flex items-start gap-3.5 text-left">
-						<span class="text-2xl sm:text-3xl shrink-0 select-none animate-bounce">⚠️</span>
-						<div class="space-y-1">
-							<h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-300 flex items-center gap-2 flex-wrap">
-								<span>🛠️ Ecommerce en construcción</span>
-								<span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-400/20 text-amber-200 border border-amber-400/40 font-mono font-bold">Venta en Pausa</span>
-							</h3>
-							<p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-								Por el momento, la venta directa en línea se encuentra en pausa. Las compras e información sobre repuestos se realizan únicamente previa coordinación por WhatsApp.
-							</p>
-						</div>
-					</div>
-					<a 
-						href="https://wa.me/56948672300?text=Hola%20Servitecnology,%20quisiera%20consultar%20por%20la%20disponibilidad%20de%20un%20repuesto."
-						target="_blank"
-						rel="noopener noreferrer"
-						class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-black bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 whitespace-nowrap cursor-pointer"
-					>
-						<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-						<span>Coordinar por WhatsApp</span>
-					</a>
-				</div>
-			</div>
-		</div>
 
 		<!-- UNIVERSAL ADVANCED SEARCH BAR (Directly above section header and title) -->
 		<div class="max-w-3xl mx-auto mb-10 w-full">
@@ -320,21 +291,27 @@ const phone = "56948672300";
 								<div class="flex flex-col gap-2">
 									<div class="flex gap-2">
 										{product.stock_cantidad > 0 ? (
-											<span
-												class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-semibold bg-white/5 border border-white/10 text-slate-400 opacity-60 cursor-not-allowed select-none"
-												title="Venta en línea en pausa temporal. Haz clic abajo en 'Consultar vía WhatsApp' para coordinar tu compra."
+											<button
+												type="button"
+												class="btn-add-cart flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-95 active:scale-95 shadow-[0_0_15px_rgba(0,255,127,0.25)] transition-all duration-300 cursor-pointer"
+												data-sku={product.sku}
+												data-title={product.titulo}
+												data-price={product.precio_venta}
+												data-image={images[0] || '/imagenes/logost.png'}
+												data-slug={product.slug}
+												title="Agregar repuesto a tu carrito"
 											>
-												<svg class="w-3.5 h-3.5 fill-none stroke-current opacity-70" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-												<span>Compra por WhatsApp</span>
-											</span>
+												<svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+												<span class="btn-text">Agregar al Carrito</span>
+											</button>
 										) : (
-											<span class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-semibold bg-red-500/10 border border-red-500/20 text-red-500/50 cursor-not-allowed">
+											<span class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold bg-red-500/10 border border-red-500/20 text-red-500/50 cursor-not-allowed">
 												Agotado
 											</span>
 										)}
 										<a
 											href={`/repuesto/${product.slug}`}
-											class="flex-1 flex items-center justify-center gap-1 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[11px] font-semibold tracking-wide hover:border-brand-cyan/30 hover:text-brand-cyan transition-all duration-300 active:scale-95"
+											class="flex-1 flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-semibold tracking-wide hover:border-brand-cyan/30 hover:text-brand-cyan transition-all duration-300 active:scale-95"
 										>
 											Detalles
 										</a>
@@ -357,6 +334,36 @@ const phone = "56948672300";
 				</div>
 			</>
 		)}
+	</div>
+
+	<!-- FLOATING CART BAR (Displays when user has items in cart) -->
+	<div 
+		id="floating-cart-bar" 
+		class="fixed bottom-6 inset-x-4 max-w-lg mx-auto z-40 transform translate-y-32 opacity-0 transition-all duration-500 pointer-events-none"
+	>
+		<div class="flex items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-950/95 border border-brand-green/40 shadow-[0_10px_40px_rgba(0,255,127,0.25)] backdrop-blur-xl">
+			<div class="flex items-center gap-3 min-w-0">
+				<div class="w-10 h-10 rounded-xl bg-brand-green/20 border border-brand-green/40 flex items-center justify-center text-lg shrink-0">
+					🛒
+				</div>
+				<div class="min-w-0">
+					<div class="flex items-center gap-1.5">
+						<span id="floating-cart-count" class="text-xs font-black text-white">0 productos</span>
+						<span class="text-[10px] text-slate-400">en el carrito</span>
+					</div>
+					<div id="floating-cart-total" class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan font-mono">
+						$0 CLP
+					</div>
+				</div>
+			</div>
+			<a 
+				href="/checkout" 
+				class="px-4 py-2.5 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-95 shadow-[0_0_15px_rgba(0,255,127,0.3)] transition-all duration-300 text-xs tracking-wide cursor-pointer flex items-center gap-1.5 shrink-0"
+			>
+				<span>Pagar</span>
+				<svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+			</a>
+		</div>
 	</div>
 </section>
 
@@ -567,6 +574,67 @@ const phone = "56948672300";
 					(window as any).openLightbox(images, idx);
 				}
 			} catch(e) {}
+		});
+	});
+
+	// Add to cart & floating cart logic
+	import { addToCart, getCart, getCartCount } from '../lib/cart';
+
+	const floatingCartBar = document.getElementById('floating-cart-bar');
+	const floatingCartCount = document.getElementById('floating-cart-count');
+	const floatingCartTotal = document.getElementById('floating-cart-total');
+
+	function updateFloatingCart() {
+		const cart = getCart();
+		const count = getCartCount();
+		if (!floatingCartBar) return;
+
+		if (count > 0) {
+			const subtotal = cart.reduce((acc, it) => acc + (it.precio_venta * (it.cantidad || 1)), 0);
+			if (floatingCartCount) floatingCartCount.textContent = `${count} repuesto${count > 1 ? 's' : ''}`;
+			if (floatingCartTotal) floatingCartTotal.textContent = `$${subtotal.toLocaleString('es-CL')} CLP`;
+			floatingCartBar.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+			floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+		} else {
+			floatingCartBar.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+			floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+		}
+	}
+
+	window.addEventListener('st:cart:updated', updateFloatingCart);
+	// Ejecutar al cargar la página
+	updateFloatingCart();
+
+	document.querySelectorAll('.btn-add-cart').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const sku = btn.getAttribute('data-sku') || '';
+			const title = btn.getAttribute('data-title') || '';
+			const price = parseFloat(btn.getAttribute('data-price') || '0');
+			const image = btn.getAttribute('data-image') || '';
+			const slug = btn.getAttribute('data-slug') || '';
+
+			if (!sku) return;
+
+			addToCart({
+				sku,
+				titulo: title,
+				precio_venta: price,
+				cantidad: 1,
+				imagen: image,
+				slug
+			});
+
+			// Animación y feedback instantáneo en el botón
+			const spanText = btn.querySelector('.btn-text');
+			const originalText = spanText ? spanText.textContent : 'Agregar al Carrito';
+			if (spanText) spanText.textContent = '¡Agregado! ✓';
+			btn.classList.add('ring-2', 'ring-brand-green', 'scale-105');
+
+			setTimeout(() => {
+				if (spanText) spanText.textContent = originalText;
+				btn.classList.remove('ring-2', 'ring-brand-green', 'scale-105');
+			}, 1200);
 		});
 	});
 </script>

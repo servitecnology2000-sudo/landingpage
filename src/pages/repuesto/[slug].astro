@@ -228,12 +228,33 @@ const productSchema = {
 					<!-- CTA buttons -->
 					<div class="pt-4 space-y-3">
 						{product.stock_cantidad > 0 ? (
-							<div
-								class="flex items-center justify-center gap-3 w-full px-6 py-4 rounded-xl font-bold bg-white/5 border border-white/10 text-slate-400 opacity-60 cursor-not-allowed select-none text-sm uppercase tracking-wide"
-								title="Venta directa en línea en pausa temporal por desarrollo. Realiza tu compra por WhatsApp a continuación."
-							>
-								<svg class="w-5 h-5 fill-none stroke-current opacity-70" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-								<span>Compra por WhatsApp (En Línea en Pausa)</span>
+							<div class="flex flex-col sm:flex-row gap-3">
+								<button
+									type="button"
+									id="btn-detail-add-cart"
+									class="flex-1 flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl font-bold text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-brand-green/40 transition-all duration-300 text-sm tracking-wide cursor-pointer"
+									data-sku={product.sku}
+									data-title={product.titulo}
+									data-price={product.precio_venta}
+									data-image={images[0] || '/imagenes/logost.png'}
+									data-slug={product.slug}
+								>
+									<svg class="w-4 h-4 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+									<span id="btn-detail-add-text">Agregar al Carrito</span>
+								</button>
+								<button
+									type="button"
+									id="btn-detail-buy-now"
+									class="flex-1 flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-98 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all duration-300 text-sm uppercase tracking-wide cursor-pointer"
+									data-sku={product.sku}
+									data-title={product.titulo}
+									data-price={product.precio_venta}
+									data-image={images[0] || '/imagenes/logost.png'}
+									data-slug={product.slug}
+								>
+									<svg class="w-4 h-4 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+									<span>Comprar Ahora</span>
+								</button>
 							</div>
 						) : (
 							<div class="w-full py-4 text-center rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-sm">
@@ -306,5 +327,44 @@ const productSchema = {
 				}
 			} catch(e) {}
 		});
+	});
+
+	// Cart & Buy button logic
+	import { addToCart } from '../../lib/cart';
+
+	const btnDetailAddCart = document.getElementById('btn-detail-add-cart');
+	const btnDetailAddText = document.getElementById('btn-detail-add-text');
+	const btnDetailBuyNow = document.getElementById('btn-detail-buy-now');
+
+	function getItemData(btn: HTMLElement) {
+		const sku = btn.getAttribute('data-sku') || '';
+		const title = btn.getAttribute('data-title') || '';
+		const price = parseFloat(btn.getAttribute('data-price') || '0');
+		const image = btn.getAttribute('data-image') || '';
+		const slug = btn.getAttribute('data-slug') || '';
+		return { sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image, slug };
+	}
+
+	btnDetailAddCart?.addEventListener('click', () => {
+		const item = getItemData(btnDetailAddCart);
+		if (!item.sku) return;
+
+		addToCart(item);
+
+		if (btnDetailAddText) btnDetailAddText.textContent = '¡Agregado al Carrito! ✓';
+		btnDetailAddCart.classList.add('ring-2', 'ring-brand-green', 'text-brand-green');
+
+		setTimeout(() => {
+			if (btnDetailAddText) btnDetailAddText.textContent = 'Agregar al Carrito';
+			btnDetailAddCart.classList.remove('ring-2', 'ring-brand-green', 'text-brand-green');
+		}, 1500);
+	});
+
+	btnDetailBuyNow?.addEventListener('click', () => {
+		const item = getItemData(btnDetailBuyNow);
+		if (!item.sku) return;
+
+		addToCart(item);
+		window.location.href = '/checkout';
 	});
 </script>

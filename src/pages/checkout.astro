@@ -29,100 +29,156 @@ if (skuParam || idParam) {
 	}
 }
 
-// Lista oficial de comunas de la Región Metropolitana con tarifas fijas de despacho
+// Lista oficial de comunas de la Región Metropolitana con tarifas estimadas referenciales (Cobro en Destino)
 const COMUNAS_RM = [
-	{ name: "Santiago Centro", price: 3990 },
-	{ name: "Providencia", price: 3990 },
-	{ name: "Las Condes", price: 3990 },
-	{ name: "Ñuñoa", price: 3990 },
-	{ name: "Vitacura", price: 3990 },
-	{ name: "Lo Barnechea", price: 4990 },
-	{ name: "La Reina", price: 3990 },
-	{ name: "Macul", price: 3990 },
-	{ name: "Peñalolén", price: 3990 },
-	{ name: "San Joaquín", price: 3990 },
-	{ name: "San Miguel", price: 3990 },
-	{ name: "La Florida", price: 3990 },
-	{ name: "La Cisterna", price: 3990 },
-	{ name: "La Granja", price: 3990 },
-	{ name: "San Ramón", price: 3990 },
-	{ name: "El Bosque", price: 3990 },
-	{ name: "Lo Espejo", price: 3990 },
-	{ name: "Pedro Aguirre Cerda", price: 3990 },
-	{ name: "Cerrillos", price: 3990 },
-	{ name: "Maipú", price: 3990 },
-	{ name: "Estación Central", price: 3990 },
-	{ name: "Pudahuel", price: 3990 },
-	{ name: "Lo Prado", price: 3990 },
-	{ name: "Quinta Normal", price: 3990 },
-	{ name: "Cerro Navia", price: 3990 },
-	{ name: "Renca", price: 3990 },
-	{ name: "Conchalí", price: 3990 },
-	{ name: "Independencia", price: 3990 },
-	{ name: "Recoleta", price: 3990 },
-	{ name: "Huechuraba", price: 3990 },
-	{ name: "Quilicura", price: 3990 },
-	{ name: "Puente Alto", price: 4490 },
-	{ name: "San Bernardo", price: 4490 },
-	{ name: "Colina", price: 5990 },
-	{ name: "Lampa", price: 5990 },
-	{ name: "Buin", price: 5990 },
-	{ name: "Paine", price: 5990 },
-	{ name: "Talagante", price: 5990 },
-	{ name: "Peñaflor", price: 5990 },
-	{ name: "Padre Hurtado", price: 5490 },
-	{ name: "Melipilla", price: 6990 },
-	{ name: "Curacaví", price: 6990 }
+	{ name: "Santiago Centro", estimated: 3990 },
+	{ name: "Providencia", estimated: 3990 },
+	{ name: "Las Condes", estimated: 3990 },
+	{ name: "Ñuñoa", estimated: 3990 },
+	{ name: "Vitacura", estimated: 3990 },
+	{ name: "Lo Barnechea", estimated: 4990 },
+	{ name: "La Reina", estimated: 3990 },
+	{ name: "Macul", estimated: 3990 },
+	{ name: "Peñalolén", estimated: 3990 },
+	{ name: "San Joaquín", estimated: 3990 },
+	{ name: "San Miguel", estimated: 3990 },
+	{ name: "La Florida", estimated: 3990 },
+	{ name: "La Cisterna", estimated: 3990 },
+	{ name: "La Granja", estimated: 3990 },
+	{ name: "San Ramón", estimated: 3990 },
+	{ name: "El Bosque", estimated: 3990 },
+	{ name: "Lo Espejo", estimated: 3990 },
+	{ name: "Pedro Aguirre Cerda", estimated: 3990 },
+	{ name: "Cerrillos", estimated: 3990 },
+	{ name: "Maipú", estimated: 3990 },
+	{ name: "Estación Central", estimated: 3990 },
+	{ name: "Pudahuel", estimated: 3990 },
+	{ name: "Lo Prado", estimated: 3990 },
+	{ name: "Quinta Normal", estimated: 3990 },
+	{ name: "Cerro Navia", estimated: 3990 },
+	{ name: "Renca", estimated: 3990 },
+	{ name: "Conchalí", estimated: 3990 },
+	{ name: "Independencia", estimated: 3990 },
+	{ name: "Recoleta", estimated: 3990 },
+	{ name: "Huechuraba", estimated: 3990 },
+	{ name: "Quilicura", estimated: 3990 },
+	{ name: "Puente Alto", estimated: 4490 },
+	{ name: "San Bernardo", estimated: 4490 },
+	{ name: "Colina", estimated: 5490 },
+	{ name: "Lampa", estimated: 5490 },
+	{ name: "Buin", estimated: 5490 },
+	{ name: "Paine", estimated: 5490 },
+	{ name: "Talagante", estimated: 5490 },
+	{ name: "Peñaflor", estimated: 5490 },
+	{ name: "Padre Hurtado", estimated: 4990 },
+	{ name: "Melipilla", estimated: 5990 },
+	{ name: "Curacaví", estimated: 5990 }
+];
+
+// Regiones de Chile para envíos nacionales por pagar
+const REGIONES_CHILE = [
+	{ id: "RM", name: "Región Metropolitana de Santiago", estimatedMin: 3990, estimatedMax: 4990 },
+	{ id: "V", name: "Valparaíso (V Región)", estimatedMin: 4990, estimatedMax: 6490 },
+	{ id: "VI", name: "O'Higgins (VI Región)", estimatedMin: 4990, estimatedMax: 6490 },
+	{ id: "VII", name: "Maule (VII Región)", estimatedMin: 5990, estimatedMax: 7490 },
+	{ id: "VIII", name: "Biobío (VIII Región)", estimatedMin: 5990, estimatedMax: 7990 },
+	{ id: "XVI", name: "Ñuble (XVI Región)", estimatedMin: 5990, estimatedMax: 7490 },
+	{ id: "IX", name: "Araucanía (IX Región)", estimatedMin: 6490, estimatedMax: 8490 },
+	{ id: "XIV", name: "Los Ríos (XIV Región)", estimatedMin: 6990, estimatedMax: 8990 },
+	{ id: "X", name: "Los Lagos (X Región)", estimatedMin: 6990, estimatedMax: 8990 },
+	{ id: "IV", name: "Coquimbo (IV Región)", estimatedMin: 5490, estimatedMax: 6990 },
+	{ id: "III", name: "Atacama (III Región)", estimatedMin: 6490, estimatedMax: 8490 },
+	{ id: "II", name: "Antofagasta (II Región)", estimatedMin: 7490, estimatedMax: 9990 },
+	{ id: "I", name: "Tarapacá (I Región)", estimatedMin: 7990, estimatedMax: 10490 },
+	{ id: "XV", name: "Arica y Parinacota (XV Región)", estimatedMin: 8490, estimatedMax: 10990 },
+	{ id: "XI", name: "Aysén (XI Región)", estimatedMin: 8990, estimatedMax: 12490 },
+	{ id: "XII", name: "Magallanes y Antártica (XII Región)", estimatedMin: 9490, estimatedMax: 12990 }
 ];
 ---
 
 <Layout 
 	title="Checkout Seguro | SERVITECNOLOGY E-commerce" 
-	description="Finaliza tu compra de repuestos y hardware con transferencia bancaria directa. Retiro en oficina o despacho a domicilio en la Región Metropolitana."
-	keywords="checkout servitecnology, comprar repuestos st, transferencia bancaria, despacho santiago"
+	description="Finaliza tu compra de repuestos y hardware técnico con Mercado Pago o Transferencia. Envíos a todo Chile bajo modalidad cobro en destino y retiro en oficina."
+	keywords="checkout servitecnology, comprar repuestos st, mercado pago, cobro en destino, envio starken chilexpress"
 >
 	<Header />
 
-	<main class="relative bg-black min-h-screen py-16 border-b border-white/5">
-		<!-- Background Glows -->
-		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
-		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+	<main class="relative bg-black min-h-screen py-14 border-b border-white/5">
+		<!-- Background Ambient Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
 
-		<div class="relative z-10 mx-auto max-w-5xl px-6 w-full">
+		<div class="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 w-full">
 			<!-- Breadcrumb / Back Link -->
 			<div class="mb-8">
 				<a href="/repuestos" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-brand-cyan transition-colors">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-					Volver a la Tienda Ecommerce
+					Volver al Catálogo de Repuestos
 				</a>
 			</div>
 
-			<div class="flex items-center justify-between flex-wrap gap-4 mb-10 pb-6 border-b border-white/10">
+			<!-- Page Header with User State Badge -->
+			<div class="flex items-center justify-between flex-wrap gap-4 mb-8 pb-6 border-b border-white/10">
 				<div>
-					<span class="text-xs font-bold uppercase tracking-widest text-brand-green bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full">
-						Fase 1: Transferencia Bancaria
-					</span>
-					<h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3">
-						Checkout & Finalización de Pedido
+					<div class="flex items-center gap-2">
+						<span class="text-[11px] font-extrabold uppercase tracking-widest text-brand-green bg-brand-green/10 border border-brand-green/20 px-3 py-1 rounded-full">
+							MVP E-commerce Automatizado
+						</span>
+						<span class="text-[11px] font-bold text-slate-400 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
+							Fase 1: Auth & Datos
+						</span>
+					</div>
+					<h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mt-3">
+						Checkout & Datos de Envío
 					</h1>
 				</div>
-				<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-medium">
-					<span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-					<span>Reserva temporal de stock por 2 horas</span>
+
+				<!-- Auth User Status Chip -->
+				<div id="auth-status-chip" class="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-zinc-900/90 border border-white/10 text-xs">
+					<div class="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" id="user-status-dot"></div>
+					<div class="text-left">
+						<span id="user-status-text" class="text-slate-300 font-medium">Modo Invitado</span>
+						<div id="user-status-sub" class="text-[10px] text-slate-500">Google OAuth requerido para pagar</div>
+					</div>
+					<button 
+						type="button" 
+						id="btn-quick-google-login" 
+						class="ml-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+					>
+						<svg class="w-3.5 h-3.5" viewBox="0 0 24 24">
+							<path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+							<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+							<path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/>
+							<path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/>
+						</svg>
+						<span>Acceder</span>
+					</button>
+					<button 
+						type="button" 
+						id="btn-logout" 
+						class="hidden ml-2 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[11px] font-medium transition-colors"
+					>
+						Salir
+					</button>
 				</div>
 			</div>
 
-			<!-- Checkout Form Grid -->
-			<form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+			<!-- Form Container -->
+			<form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 				
-				<!-- Left Column: Customer & Delivery Details (7 Cols) -->
-				<div class="lg:col-span-7 space-y-8">
+				<!-- Left Column: Delivery & Shipping Data (7 Cols) -->
+				<div class="lg:col-span-7 space-y-6">
 					
-					<!-- Section 1: Delivery Mode -->
-					<div class="p-6 rounded-2xl bg-zinc-950/60 border border-white/10 backdrop-blur-md space-y-6">
-						<div class="flex items-center gap-3">
-							<span class="w-7 h-7 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan text-xs font-bold flex items-center justify-center">1</span>
-							<h2 class="text-lg font-bold text-white">Método de Entrega</h2>
+					<!-- Section 1: Delivery Mode (Cobro en Destino / Retiro) -->
+					<div class="p-6 rounded-2xl bg-zinc-950/70 border border-white/10 backdrop-blur-md space-y-6 shadow-xl">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-3">
+								<span class="w-7 h-7 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan text-xs font-bold flex items-center justify-center">1</span>
+								<h2 class="text-base sm:text-lg font-bold text-white">Método de Entrega & Despacho</h2>
+							</div>
+							<span class="text-[11px] text-brand-green bg-brand-green/10 border border-brand-green/20 px-2.5 py-0.5 rounded-full font-mono font-bold">
+								Flete $0 en Web
+							</span>
 						</div>
 
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -134,66 +190,110 @@ const COMUNAS_RM = [
 										<svg class="w-4 h-4 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
 										Retiro en Oficina
 									</span>
-									<span class="text-xs font-extrabold text-brand-green bg-brand-green/20 px-2 py-0.5 rounded">GRATIS ($0)</span>
+									<span class="text-[11px] font-extrabold text-brand-green bg-brand-green/20 px-2 py-0.5 rounded">GRATIS ($0)</span>
 								</div>
 								<p class="text-xs text-slate-400 leading-relaxed">
-									Retira en nuestra oficina técnica en Santiago Centro previa confirmación de transferencia.
+									Retira en nuestra oficina técnica en Santiago Centro previa coordinación y validación.
 								</p>
 							</label>
 
-							<!-- Option B: Despacho a Domicilio RM -->
-							<label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all delivery-option border-white/10 hover:border-white/20 bg-white/5" data-delivery="delivery_rm">
-								<input type="radio" name="delivery_type" value="delivery_rm" class="hidden" />
+							<!-- Option B: Envío por Pagar (Cobro en Destino) -->
+							<label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all delivery-option border-white/10 hover:border-white/20 bg-white/5" data-delivery="envio_cobro_destino">
+								<input type="radio" name="delivery_type" value="envio_cobro_destino" class="hidden" />
 								<div class="flex items-center justify-between mb-2">
 									<span class="font-bold text-sm text-white flex items-center gap-2">
 										<svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
-										Despacho a Domicilio RM
+										Envío por Pagar
 									</span>
-									<span class="text-xs font-bold text-brand-cyan bg-brand-cyan/20 px-2 py-0.5 rounded">Fijo por comuna</span>
+									<span class="text-[11px] font-bold text-brand-cyan bg-brand-cyan/20 px-2 py-0.5 rounded">Cobro en Destino</span>
 								</div>
 								<p class="text-xs text-slate-400 leading-relaxed">
-									Entrega directa en cualquier comuna de la Región Metropolitana con tarifa estándar.
+									Despacho a todo Chile (Starken / Chilexpress). Cancelas el costo del transporte al recibir.
 								</p>
 							</label>
 						</div>
 
-						<!-- Despacho Fields (shown only when delivery_rm is active) -->
+						<!-- Cobro en Destino Fields & Estimaciones -->
 						<div id="despacho-fields" class="hidden space-y-4 pt-4 border-t border-white/10">
+							
+							<!-- Selector de Región -->
 							<div>
-								<label for="commune-select" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-									Comuna de Destino (Región Metropolitana) *
+								<label for="region-select" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Región de Destino *
 								</label>
-								<select id="commune-select" name="commune" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors">
-									<option value="" disabled selected>Selecciona tu comuna...</option>
-									{COMUNAS_RM.map(c => (
-										<option value={c.name} data-price={c.price}>
-											{c.name} — ${c.price.toLocaleString('es-CL')} CLP
+								<select id="region-select" name="region" class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors">
+									<option value="" disabled selected>Selecciona tu región...</option>
+									{REGIONES_CHILE.map(r => (
+										<option value={r.id} data-min={r.estimatedMin} data-max={r.estimatedMax}>
+											{r.name}
 										</option>
 									))}
 								</select>
 							</div>
 
+							<!-- Comuna (Dinámica según región) -->
+							<div id="commune-rm-container">
+								<label for="commune-select" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Comuna de Destino (Región Metropolitana) *
+								</label>
+								<select id="commune-select" name="commune_rm" class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors">
+									<option value="" disabled selected>Selecciona tu comuna...</option>
+									{COMUNAS_RM.map(c => (
+										<option value={c.name} data-estimated={c.estimated}>
+											{c.name} — Estimado: ~${c.estimated.toLocaleString('es-CL')} CLP
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div id="commune-manual-container" class="hidden">
+								<label for="commune-manual" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+									Ciudad o Comuna en Región *
+								</label>
+								<input 
+									type="text" 
+									id="commune-manual" 
+									name="commune_manual" 
+									placeholder="Ej: Viña del Mar, Concepción, La Serena"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors"
+								/>
+							</div>
+
+							<!-- Dirección exacta -->
 							<div>
 								<label for="address-input" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-									Dirección Completa (Calle, Número, Depto / Oficina) *
+									Dirección Completa (Calle, Número, Depto / Sucursal Courier) *
 								</label>
 								<input 
 									type="text" 
 									id="address-input" 
 									name="address" 
-									placeholder="Ej: Av. Providencia 1234, Depto 502"
-									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors"
+									placeholder="Ej: Av. Providencia 1234, Depto 502 (o Sucursal Starken)"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-cyan focus:outline-none transition-colors"
 								/>
 							</div>
+
+							<!-- Banner Explicativo de Flete Estimado Referencial -->
+							<div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-2">
+								<div class="flex items-center gap-2 font-bold text-amber-300">
+									<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+									<span>Modalidad Cobro en Destino (Flete por pagar)</span>
+								</div>
+								<p class="leading-relaxed text-amber-200/90 text-[11px]">
+									En esta web pagarás únicamente el valor de los productos seleccionados (<strong class="text-white">$0 flete en el checkout</strong>). 
+									El costo del flete mostrado (<span id="estimated-shipping-text" class="font-bold text-white">~$3.990 - $4.990 CLP</span>) es solo un <strong>estimado referencial</strong> que deberás abonar directamente a Starken o Chilexpress al recibir tu encomienda.
+								</p>
+							</div>
+
 						</div>
 					</div>
 
 					<!-- Section 2: Customer Data & SII Tax Invoicing -->
-					<div class="p-6 rounded-2xl bg-zinc-950/60 border border-white/10 backdrop-blur-md space-y-6">
+					<div class="p-6 rounded-2xl bg-zinc-950/70 border border-white/10 backdrop-blur-md space-y-6 shadow-xl">
 						<div class="flex items-center gap-3">
 							<span class="w-7 h-7 rounded-full bg-brand-green/20 border border-brand-green/40 text-brand-green text-xs font-bold flex items-center justify-center">2</span>
 							<div>
-								<h2 class="text-lg font-bold text-white">Datos del Comprador & Facturación SII</h2>
+								<h2 class="text-base sm:text-lg font-bold text-white">Datos del Comprador & Facturación SII</h2>
 								<p class="text-xs text-slate-400">Emisión formal con respaldo tributario chileno</p>
 							</div>
 						</div>
@@ -203,10 +303,10 @@ const COMUNAS_RM = [
 							<svg class="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
 							<div>
 								<p class="text-xs font-semibold text-white leading-relaxed">
-									Todas las compras incluyen <strong class="text-brand-cyan">Factura Electrónica</strong> de acuerdo a la normativa del Servicio de Impuestos Internos (SII).
+									Todas las compras incluyen <strong class="text-brand-cyan">Factura Electrónica</strong> conforme a las directrices del Servicio de Impuestos Internos (SII).
 								</p>
 								<p class="text-[11px] text-slate-400 mt-1">
-									Por disposición legal, el RUT es obligatorio para emitir y registrar el documento tributario.
+									Por normativa legal, el RUT es obligatorio. Los datos quedarán vinculados a tu cuenta para futuros pedidos.
 								</p>
 							</div>
 						</div>
@@ -222,13 +322,13 @@ const COMUNAS_RM = [
 									name="full_name" 
 									required
 									placeholder="Ej: Andrés Muñoz Silva"
-									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors"
 								/>
 							</div>
 
 							<div>
 								<label for="rut" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-									RUT (Persona o Empresa) *
+									RUT Chileno (Persona o Empresa) *
 								</label>
 								<input 
 									type="text" 
@@ -236,13 +336,14 @@ const COMUNAS_RM = [
 									name="rut" 
 									required
 									placeholder="Ej: 12.345.678-9"
-									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
 								/>
+								<span id="rut-error" class="hidden text-[11px] text-red-400 mt-1 font-medium">RUT inválido. Verifica el dígito verificador.</span>
 							</div>
 
 							<div>
 								<label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-									Correo Electrónico (Para Factura y Pedido) *
+									Correo Electrónico (Factura y Resumen) *
 								</label>
 								<input 
 									type="email" 
@@ -250,13 +351,13 @@ const COMUNAS_RM = [
 									name="email" 
 									required
 									placeholder="ejemplo@correo.cl"
-									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
 								/>
 							</div>
 
 							<div>
 								<label for="phone" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-									Teléfono / WhatsApp Móvil *
+									Teléfono Móvil / WhatsApp *
 								</label>
 								<input 
 									type="tel" 
@@ -264,7 +365,7 @@ const COMUNAS_RM = [
 									name="phone" 
 									required
 									placeholder="Ej: +56 9 1234 5678"
-									class="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
+									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
 								/>
 							</div>
 						</div>
@@ -272,10 +373,10 @@ const COMUNAS_RM = [
 
 				</div>
 
-				<!-- Right Column: Order Summary & Confirmation CTA (5 Cols) -->
+				<!-- Right Column: Order Summary & Checkout Action (5 Cols) -->
 				<div class="lg:col-span-5 space-y-6">
 					
-					<div class="p-6 rounded-2xl bg-zinc-950/80 border border-white/10 backdrop-blur-md sticky top-28 space-y-6 shadow-2xl">
+					<div class="p-6 rounded-2xl bg-zinc-950/85 border border-white/10 backdrop-blur-md sticky top-28 space-y-6 shadow-2xl">
 						<h3 class="text-base font-bold text-white uppercase tracking-wider border-b border-white/10 pb-3 flex items-center justify-between">
 							<span>Resumen del Pedido</span>
 							<span id="items-count-badge" class="text-xs bg-white/10 text-slate-300 px-2 py-0.5 rounded-full font-mono">1 item</span>
@@ -308,43 +409,37 @@ const COMUNAS_RM = [
 						<!-- Pricing Breakdown -->
 						<div class="space-y-2.5 pt-4 border-t border-white/10 text-xs">
 							<div class="flex items-center justify-between text-slate-400">
-								<span>Subtotal productos:</span>
+								<span>Subtotal repuestos:</span>
 								<span id="summary-subtotal" class="font-bold text-white font-mono">$0 CLP</span>
 							</div>
 							<div class="flex items-center justify-between text-slate-400">
-								<span>Costo de entrega:</span>
+								<span>Costo de envío en web:</span>
 								<span id="summary-shipping" class="font-bold text-brand-green font-mono">GRATIS ($0)</span>
 							</div>
+							<div id="summary-shipping-note" class="text-[10px] text-slate-400 text-right">
+								* Flete se abona por separado en destino al courier
+							</div>
 							<div class="flex items-center justify-between text-sm sm:text-base font-extrabold text-white pt-3 border-t border-white/10">
-								<span>Total a pagar:</span>
+								<span>Total a pagar en web:</span>
 								<span id="summary-total" class="text-xl sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan font-mono">$0 CLP</span>
 							</div>
 						</div>
 
-						<!-- Payment Method Info Banner -->
-						<div class="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5 text-xs text-slate-300">
-							<div class="flex items-center gap-2 font-bold text-white">
-								<svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-								<span>Pago por Transferencia Bancaria</span>
-							</div>
-							<p class="text-[11px] text-slate-400 leading-relaxed">
-								Al confirmar el pedido, recibirás el ID de orden <strong class="text-white">ST-2026-XXXX</strong> y los datos de nuestra cuenta bancaria oficial.
+						<!-- Dynamic Action Button based on Auth -->
+						<div class="space-y-3 pt-2">
+							<button 
+								type="button" 
+								id="btn-proceed-checkout"
+								class="w-full py-4 px-6 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-98 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all duration-300 text-sm tracking-wide cursor-pointer flex items-center justify-center gap-2"
+							>
+								<span id="btn-proceed-text">Continuar al Pago</span>
+								<svg class="w-4 h-4 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+							</button>
+
+							<p class="text-center text-[10px] text-slate-400">
+								🔒 Datos protegidos bajo normativa del SII y Ley N° 19.496.
 							</p>
 						</div>
-
-						<!-- Submit Trigger Button -->
-						<button 
-							type="button" 
-							id="btn-open-confirm-modal"
-							class="w-full py-4 px-6 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-98 shadow-[0_0_25px_rgba(0,255,127,0.3)] transition-all duration-300 text-sm tracking-wide cursor-pointer flex items-center justify-center gap-2"
-						>
-							<span>Confirmar Pedido & Ver Datos Bancarios</span>
-							<svg class="w-4 h-4 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-						</button>
-
-						<p class="text-center text-[10px] text-slate-500">
-							🔒 Transacción protegida. Respaldada bajo la Ley N° 19.496 y normativa tributaria SII.
-						</p>
 					</div>
 
 				</div>
@@ -353,72 +448,180 @@ const COMUNAS_RM = [
 	</main>
 
 	<!-- ============================================================ -->
-	<!-- POP-UP OBLIGATORIO DE VERIFICACIÓN VISUAL (YELLOW WARNING BOX) -->
+	<!-- MODAL: GOOGLE OAUTH LOGIN REQUERIDO AL FINAL DEL CHECKOUT      -->
 	<!-- ============================================================ -->
 	<div 
-		id="email-modal" 
+		id="google-auth-modal" 
 		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="relative w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-yellow-500/40 shadow-[0_0_60px_rgba(234,179,8,0.2)] transform scale-95 transition-transform duration-300 space-y-6">
+		<div class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-brand-cyan/40 shadow-[0_0_60px_rgba(0,207,255,0.2)] transform scale-95 transition-transform duration-300 space-y-6">
 			
-			<!-- Modal Header with Warning Icon -->
 			<div class="flex items-center gap-3">
-				<div class="w-12 h-12 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center text-2xl shrink-0 shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-					⚠️
+				<div class="w-12 h-12 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center text-xl shrink-0">
+					🔐
 				</div>
 				<div>
-					<h3 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-						¡Confirma tus datos de contacto!
+					<h3 class="text-lg font-extrabold text-white tracking-tight">
+						Identifícate para continuar
 					</h3>
-					<p class="text-xs text-yellow-300/80 font-medium">
-						Verificación requerida antes de generar el pedido ST-2026
+					<p class="text-xs text-brand-cyan font-medium">
+						Paso final para emitir tu orden y factura
 					</p>
 				</div>
 			</div>
 
 			<p class="text-xs text-slate-300 leading-relaxed">
-				Para garantizar que recibas las instrucciones de transferencia bancaria y tu <strong class="text-white">Factura Electrónica legal ante el SII</strong>, verifica que tu correo esté escrito de forma exacta:
+				Para vincular tu compra a tu factura del SII y enviarte el link de pago y seguimiento del flete, ingresa con tu cuenta de Google en un solo clic:
 			</p>
 
-			<!-- THE YELLOW WARNING BOX (Alta visibilidad con resplandor) -->
-			<div class="p-5 rounded-2xl bg-yellow-500/10 border-2 border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.25)] space-y-3">
-				<div class="flex items-center justify-between">
-					<span class="text-[10px] font-black uppercase tracking-wider text-yellow-400">Correo Electrónico Destinatario</span>
-					<span class="text-[10px] text-yellow-400/80 font-mono">Facturación SII</span>
+			<button 
+				type="button" 
+				id="btn-modal-google-login"
+				class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+			>
+				<svg class="w-5 h-5" viewBox="0 0 24 24">
+					<path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+					<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+					<path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/>
+					<path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/>
+				</svg>
+				<span>Continuar con Google</span>
+			</button>
+
+			<div class="pt-2 text-center">
+				<button 
+					type="button" 
+					id="btn-close-google-modal" 
+					class="text-xs text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+				>
+					Regresar al formulario
+				</button>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: CONFIRMACIÓN VISUAL DE DATOS ANTES DE MERCADO PAGO      -->
+	<!-- ============================================================ -->
+	<div 
+		id="confirm-modal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="relative w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-brand-green/40 shadow-[0_0_60px_rgba(0,255,127,0.2)] transform scale-95 transition-transform duration-300 space-y-6">
+			
+			<div class="flex items-center gap-3">
+				<div class="w-12 h-12 rounded-2xl bg-brand-green/20 border border-brand-green/40 flex items-center justify-center text-2xl shrink-0">
+					📦
 				</div>
-				<div id="modal-display-email" class="text-lg sm:text-2xl font-black text-yellow-300 tracking-wide font-mono break-all py-1">
-					correo@ejemplo.cl
-				</div>
-				<div class="pt-2 border-t border-yellow-500/20 grid grid-cols-2 gap-2 text-[11px] text-yellow-200/90 font-mono">
-					<div>RUT: <span id="modal-display-rut" class="font-bold text-white">---</span></div>
-					<div>Móvil: <span id="modal-display-phone" class="font-bold text-white">---</span></div>
+				<div>
+					<h3 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+						Revisa tus datos de entrega y factura
+					</h3>
+					<p class="text-xs text-brand-green font-medium">
+						Verificación antes de conectar con el pago
+					</p>
 				</div>
 			</div>
 
-			<!-- Notice -->
-			<div class="flex items-center gap-2 text-[11px] text-slate-400">
-				<svg class="w-4 h-4 text-brand-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-				<span>Se reservará el stock del repuesto por <strong class="text-white">2 horas</strong> para tu transferencia.</span>
+			<!-- Visual Warning / Data Box -->
+			<div class="p-5 rounded-2xl bg-zinc-900 border border-white/15 space-y-3 text-xs">
+				<div class="flex justify-between border-b border-white/10 pb-2">
+					<span class="text-slate-400">Destinatario / Razón Social:</span>
+					<span id="modal-display-name" class="font-bold text-white">---</span>
+				</div>
+				<div class="flex justify-between border-b border-white/10 pb-2">
+					<span class="text-slate-400">RUT (SII):</span>
+					<span id="modal-display-rut" class="font-bold text-brand-cyan font-mono">---</span>
+				</div>
+				<div class="flex justify-between border-b border-white/10 pb-2">
+					<span class="text-slate-400">Correo Electrónico:</span>
+					<span id="modal-display-email" class="font-bold text-white font-mono">---</span>
+				</div>
+				<div class="flex justify-between border-b border-white/10 pb-2">
+					<span class="text-slate-400">Teléfono Móvil:</span>
+					<span id="modal-display-phone" class="font-bold text-white font-mono">---</span>
+				</div>
+				<div class="flex justify-between border-b border-white/10 pb-2">
+					<span class="text-slate-400">Modalidad de Entrega:</span>
+					<span id="modal-display-delivery" class="font-bold text-brand-green">---</span>
+				</div>
+				<div class="flex justify-between pt-1">
+					<span class="text-slate-400">Dirección de Despacho:</span>
+					<span id="modal-display-address" class="font-bold text-white text-right max-w-[220px] truncate">---</span>
+				</div>
 			</div>
 
-			<!-- Modal Buttons -->
+			<!-- Notice de Flete en Destino -->
+			<div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/5 border border-white/10 text-[11px] text-slate-300">
+				<span class="text-brand-cyan text-sm mt-0.5">ℹ️</span>
+				<span>
+					Recuerda que el flete se paga en destino a la empresa de transporte al recibir. En la pantalla siguiente procederás a pagar únicamente el monto de los repuestos.
+				</span>
+			</div>
+
+			<!-- Buttons -->
 			<div class="flex flex-col-reverse sm:flex-row items-center gap-3 pt-2">
 				<button 
 					type="button" 
-					id="btn-close-modal" 
+					id="btn-close-confirm-modal" 
 					class="w-full sm:w-auto px-5 py-3 rounded-xl border border-white/10 hover:border-white/20 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
 				>
-					Corregir datos
+					Modificar datos
 				</button>
 				<button 
 					type="button" 
-					id="btn-final-confirm-order" 
-					class="w-full sm:flex-1 py-3.5 px-6 rounded-xl font-black text-black bg-gradient-to-r from-yellow-400 to-brand-green hover:opacity-95 shadow-[0_0_20px_rgba(250,204,21,0.4)] text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+					id="btn-final-save-and-pay" 
+					class="w-full sm:flex-1 py-3.5 px-6 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-95 shadow-[0_0_20px_rgba(0,255,127,0.3)] text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
 				>
-					<span id="btn-final-text">Sí, mis datos son correctos → Generar Pedido</span>
-					<div id="btn-spinner" class="hidden w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+					<span id="btn-final-text">Guardar Datos & Proceder al Pago</span>
+					<div id="btn-final-spinner" class="hidden w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+				</button>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: NOTIFICACIÓN MODERNA DEL SISTEMA (Reemplazo de alert) -->
+	<!-- ============================================================ -->
+	<div 
+		id="system-notice-modal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div id="notice-modal-box" class="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.2)] transform scale-95 transition-all duration-300 space-y-6">
+			
+			<div class="flex items-center gap-3.5">
+				<div id="notice-icon-container" class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl shrink-0">
+					<span id="notice-icon">⚠️</span>
+				</div>
+				<div>
+					<h3 id="notice-title" class="text-lg font-black text-white tracking-tight">
+						Atención con tu Pedido
+					</h3>
+					<span id="notice-tag" class="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+						Aviso del Sistema
+					</span>
+				</div>
+			</div>
+
+			<div class="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+				<p id="notice-message" class="whitespace-pre-line leading-relaxed"></p>
+			</div>
+
+			<div class="pt-1">
+				<button 
+					type="button" 
+					id="btn-close-notice-modal" 
+					class="w-full py-3.5 px-6 rounded-xl font-black text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 active:scale-98 shadow-[0_0_20px_rgba(0,255,127,0.3)] transition-all duration-200 text-xs uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+				>
+					<span id="notice-btn-text">Entendido</span>
 				</button>
 			</div>
 
@@ -429,37 +632,112 @@ const COMUNAS_RM = [
 </Layout>
 
 <script>
-	// Interactive Delivery & Checkout Logic
+	import { supabase } from '../lib/supabase';
+
+	// Algoritmo de validación de RUT Chileno (Módulo 11)
+	function isValidChileanRut(rutStr: string): boolean {
+		if (!rutStr || typeof rutStr !== 'string') return false;
+		const clean = rutStr.replace(/[^0-9kK]/g, '').toUpperCase();
+		if (clean.length < 8 || clean.length > 9) return false;
+
+		const cuerpo = clean.slice(0, -1);
+		const dv = clean.slice(-1);
+
+		let suma = 0;
+		let multiplo = 2;
+
+		for (let i = cuerpo.length - 1; i >= 0; i--) {
+			suma += parseInt(cuerpo[i], 10) * multiplo;
+			multiplo = multiplo < 7 ? multiplo + 1 : 2;
+		}
+
+		const dvEsperado = 11 - (suma % 11);
+		let dvCalculado = '';
+		if (dvEsperado === 11) dvCalculado = '0';
+		else if (dvEsperado === 10) dvCalculado = 'K';
+		else dvCalculado = dvEsperado.toString();
+
+		return dv === dvCalculado;
+	}
+
+	// Formateador visual de RUT (XX.XXX.XXX-X)
+	function formatRut(rutStr: string): string {
+		const clean = rutStr.replace(/[^0-9kK]/g, '').toUpperCase();
+		if (clean.length < 2) return clean;
+		const cuerpo = clean.slice(0, -1);
+		const dv = clean.slice(-1);
+		let formatted = '';
+		let count = 0;
+		for (let i = cuerpo.length - 1; i >= 0; i--) {
+			formatted = cuerpo[i] + formatted;
+			count++;
+			if (count === 3 && i > 0) {
+				formatted = '.' + formatted;
+				count = 0;
+			}
+		}
+		return `${formatted}-${dv}`;
+	}
+
+	// Elementos DOM
 	const deliveryOptions = document.querySelectorAll('.delivery-option');
 	const despachoFields = document.getElementById('despacho-fields');
+	const regionSelect = document.getElementById('region-select') as HTMLSelectElement;
+	const communeRmContainer = document.getElementById('commune-rm-container');
 	const communeSelect = document.getElementById('commune-select') as HTMLSelectElement;
+	const communeManualContainer = document.getElementById('commune-manual-container');
+	const communeManual = document.getElementById('commune-manual') as HTMLInputElement;
 	const addressInput = document.getElementById('address-input') as HTMLInputElement;
+	const estimatedShippingText = document.getElementById('estimated-shipping-text');
+
 	const fullNameInput = document.getElementById('full_name') as HTMLInputElement;
 	const rutInput = document.getElementById('rut') as HTMLInputElement;
+	const rutError = document.getElementById('rut-error');
 	const emailInput = document.getElementById('email') as HTMLInputElement;
 	const phoneInput = document.getElementById('phone') as HTMLInputElement;
 
 	const summarySubtotal = document.getElementById('summary-subtotal');
 	const summaryShipping = document.getElementById('summary-shipping');
 	const summaryTotal = document.getElementById('summary-total');
+	const summaryShippingNote = document.getElementById('summary-shipping-note');
 
-	// Modal elements
-	const emailModal = document.getElementById('email-modal');
-	const btnOpenConfirmModal = document.getElementById('btn-open-confirm-modal');
-	const btnCloseModal = document.getElementById('btn-close-modal');
-	const btnFinalConfirmOrder = document.getElementById('btn-final-confirm-order');
+	const userStatusDot = document.getElementById('user-status-dot');
+	const userStatusText = document.getElementById('user-status-text');
+	const userStatusSub = document.getElementById('user-status-sub');
+	const btnQuickGoogleLogin = document.getElementById('btn-quick-google-login');
+	const btnLogout = document.getElementById('btn-logout');
+
+	const btnProceedCheckout = document.getElementById('btn-proceed-checkout');
+	const btnProceedText = document.getElementById('btn-proceed-text');
+
+	// Modales
+	const googleAuthModal = document.getElementById('google-auth-modal');
+	const btnModalGoogleLogin = document.getElementById('btn-modal-google-login');
+	const btnCloseGoogleModal = document.getElementById('btn-close-google-modal');
+
+	const confirmModal = document.getElementById('confirm-modal');
+	const btnCloseConfirmModal = document.getElementById('btn-close-confirm-modal');
+	const btnFinalSaveAndPay = document.getElementById('btn-final-save-and-pay');
 	const btnFinalText = document.getElementById('btn-final-text');
-	const btnSpinner = document.getElementById('btn-spinner');
+	const btnFinalSpinner = document.getElementById('btn-final-spinner');
 
-	const modalDisplayEmail = document.getElementById('modal-display-email');
+	const modalDisplayName = document.getElementById('modal-display-name');
 	const modalDisplayRut = document.getElementById('modal-display-rut');
+	const modalDisplayEmail = document.getElementById('modal-display-email');
 	const modalDisplayPhone = document.getElementById('modal-display-phone');
+	const modalDisplayDelivery = document.getElementById('modal-display-delivery');
+	const modalDisplayAddress = document.getElementById('modal-display-address');
 
+	// Estado local
+	let currentUser: any = null;
 	let currentDelivery = 'retiro';
-	let currentShippingCost = 0;
 
-	// Calculate subtotal from DOM items
+	// 1. Obtener items del carrito
 	function getItems() {
+		const cart = getCart();
+		if (cart.length > 0) {
+			return cart;
+		}
 		const items: any[] = [];
 		const itemEls = document.querySelectorAll('#checkout-items-list [data-sku]');
 		itemEls.forEach(el => {
@@ -467,46 +745,42 @@ const COMUNAS_RM = [
 			const title = el.getAttribute('data-title') || '';
 			const price = parseFloat(el.getAttribute('data-price') || '0');
 			const image = el.getAttribute('data-image') || '';
+			const qty = parseInt(el.getAttribute('data-quantity') || '1', 10);
 			items.push({
 				sku,
 				titulo: title,
 				precio_venta: price,
-				cantidad: 1,
+				cantidad: qty,
 				imagen: image
 			});
 		});
 		return items;
 	}
 
-	function updatePrices() {
+	function updateTotals() {
 		const items = getItems();
 		let subtotal = 0;
-		items.forEach(it => subtotal += it.precio_venta * it.cantidad);
+		items.forEach(it => subtotal += (it.precio_venta || 0) * (it.cantidad || 1));
 
 		if (summarySubtotal) {
 			summarySubtotal.textContent = `$${subtotal.toLocaleString('es-CL')} CLP`;
 		}
 
-		if (currentDelivery === 'delivery_rm') {
-			if (summaryShipping) {
-				summaryShipping.textContent = `$${currentShippingCost.toLocaleString('es-CL')} CLP`;
-				summaryShipping.className = "font-bold text-brand-cyan font-mono";
-			}
-		} else {
-			currentShippingCost = 0;
-			if (summaryShipping) {
-				summaryShipping.textContent = "GRATIS ($0)";
-				summaryShipping.className = "font-bold text-brand-green font-mono";
-			}
+		if (summaryTotal) {
+			// En modalidad cobro en destino, el flete en web es $0
+			summaryTotal.textContent = `$${subtotal.toLocaleString('es-CL')} CLP`;
 		}
 
-		const total = subtotal + currentShippingCost;
-		if (summaryTotal) {
-			summaryTotal.textContent = `$${total.toLocaleString('es-CL')} CLP`;
+		if (currentDelivery === 'retiro') {
+			if (summaryShipping) summaryShipping.textContent = "GRATIS ($0)";
+			if (summaryShippingNote) summaryShippingNote.textContent = "* Retiro presencial en nuestra oficina en Santiago Centro";
+		} else {
+			if (summaryShipping) summaryShipping.textContent = "$0 en web (Cobro en Destino)";
+			if (summaryShippingNote) summaryShippingNote.textContent = "* Flete estimado por pagar directamente al transportista";
 		}
 	}
 
-	// Delivery toggle
+	// 2. Control de Delivery Type
 	deliveryOptions.forEach(opt => {
 		opt.addEventListener('click', () => {
 			const type = opt.getAttribute('data-delivery');
@@ -521,143 +795,618 @@ const COMUNAS_RM = [
 			const radio = opt.querySelector('input[type="radio"]') as HTMLInputElement;
 			if (radio) radio.checked = true;
 
-			if (type === 'delivery_rm') {
+			if (type === 'envio_cobro_destino') {
 				opt.classList.remove('border-white/10', 'bg-white/5');
 				opt.classList.add('border-brand-cyan/50', 'bg-brand-cyan/5');
 				despachoFields?.classList.remove('hidden');
-				if (communeSelect?.value) {
-					const selectedOpt = communeSelect.options[communeSelect.selectedIndex];
-					currentShippingCost = parseInt(selectedOpt.getAttribute('data-price') || '3990', 10);
-				} else {
-					currentShippingCost = 3990;
-				}
 			} else {
 				opt.classList.remove('border-white/10', 'bg-white/5');
 				opt.classList.add('border-brand-green/50', 'bg-brand-green/5');
 				despachoFields?.classList.add('hidden');
-				currentShippingCost = 0;
 			}
-			updatePrices();
+			updateTotals();
 		});
 	});
 
-	communeSelect?.addEventListener('change', () => {
-		const selectedOpt = communeSelect.options[communeSelect.selectedIndex];
-		currentShippingCost = parseInt(selectedOpt.getAttribute('data-price') || '3990', 10);
-		updatePrices();
+	// Región select listener
+	regionSelect?.addEventListener('change', () => {
+		const regionVal = regionSelect.value;
+		const selectedOpt = regionSelect.options[regionSelect.selectedIndex];
+		const min = selectedOpt.getAttribute('data-min');
+		const max = selectedOpt.getAttribute('data-max');
+
+		if (estimatedShippingText && min && max) {
+			estimatedShippingText.textContent = `~$${parseInt(min, 10).toLocaleString('es-CL')} - $${parseInt(max, 10).toLocaleString('es-CL')} CLP`;
+		}
+
+		if (regionVal === 'RM') {
+			communeRmContainer?.classList.remove('hidden');
+			communeManualContainer?.classList.add('hidden');
+		} else {
+			communeRmContainer?.classList.add('hidden');
+			communeManualContainer?.classList.remove('hidden');
+		}
 	});
 
-	// Open Modal validation
-	btnOpenConfirmModal?.addEventListener('click', () => {
+	// Formateo y validación de RUT en tiempo real
+	rutInput?.addEventListener('input', () => {
+		const formatted = formatRut(rutInput.value);
+		rutInput.value = formatted;
+		if (formatted.length >= 8) {
+			if (isValidChileanRut(formatted)) {
+				rutError?.classList.add('hidden');
+				rutInput.classList.remove('border-red-500');
+				rutInput.classList.add('border-brand-green');
+			} else {
+				rutError?.classList.remove('hidden');
+				rutInput.classList.remove('border-brand-green');
+				rutInput.classList.add('border-red-500');
+			}
+		} else {
+			rutError?.classList.add('hidden');
+			rutInput.classList.remove('border-brand-green', 'border-red-500');
+		}
+	});
+
+	// 3. Supabase Auth Management (Google OAuth)
+	async function initAuth() {
+		try {
+			const { data: { session } } = await supabase.auth.getSession();
+			handleSession(session);
+
+			supabase.auth.onAuthStateChange((_event, session) => {
+				handleSession(session);
+			});
+		} catch (e) {
+			console.error('Error inicializando sesión de Supabase:', e);
+		}
+	}
+
+	async function handleSession(session: any) {
+		if (session && session.user) {
+			currentUser = session.user;
+			
+			// Actualizar Badge de Usuario
+			if (userStatusDot) {
+				userStatusDot.className = "w-2.5 h-2.5 rounded-full bg-brand-green shadow-[0_0_8px_rgba(0,255,127,0.8)]";
+			}
+			if (userStatusText) {
+				userStatusText.textContent = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+			}
+			if (userStatusSub) {
+				userStatusSub.textContent = "Sesión activa (Google)";
+			}
+			btnQuickGoogleLogin?.classList.add('hidden');
+			btnLogout?.classList.remove('hidden');
+
+			// Pre-rellenar Email y Nombre si están vacíos
+			if (emailInput && !emailInput.value) {
+				emailInput.value = currentUser.email || '';
+			}
+			if (fullNameInput && !fullNameInput.value) {
+				fullNameInput.value = currentUser.user_metadata?.full_name || '';
+			}
+
+			// Consultar si ya existe perfil guardado en public.customers
+			try {
+				const { data: customer } = await supabase
+					.from('customers')
+					.select('*')
+					.eq('id', currentUser.id)
+					.maybeSingle();
+
+				if (customer) {
+					if (fullNameInput && customer.full_name) fullNameInput.value = customer.full_name;
+					if (rutInput && customer.rut) {
+						rutInput.value = customer.rut;
+						if (isValidChileanRut(customer.rut)) {
+							rutInput.classList.add('border-brand-green');
+						}
+					}
+					if (phoneInput && customer.phone) phoneInput.value = customer.phone;
+					if (addressInput && customer.address) addressInput.value = customer.address;
+				}
+			} catch (cErr) {
+				console.warn('Consulta de perfil existente en customers:', cErr);
+			}
+
+			if (btnProceedText) {
+				btnProceedText.textContent = "Confirmar Datos & Continuar";
+			}
+
+		} else {
+			currentUser = null;
+			if (userStatusDot) userStatusDot.className = "w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse";
+			if (userStatusText) userStatusText.textContent = "Modo Invitado";
+			if (userStatusSub) userStatusSub.textContent = "Google OAuth requerido para pagar";
+			btnQuickGoogleLogin?.classList.remove('hidden');
+			btnLogout?.classList.add('hidden');
+			if (btnProceedText) btnProceedText.textContent = "Continuar al Pago";
+		}
+	}
+
+	// Gestor del Modal Moderno de Notificaciones
+	const systemNoticeModal = document.getElementById('system-notice-modal');
+	const noticeModalBox = document.getElementById('notice-modal-box');
+	const noticeIconContainer = document.getElementById('notice-icon-container');
+	const noticeIcon = document.getElementById('notice-icon');
+	const noticeTitle = document.getElementById('notice-title');
+	const noticeTag = document.getElementById('notice-tag');
+	const noticeMessage = document.getElementById('notice-message');
+	const btnCloseNoticeModal = document.getElementById('btn-close-notice-modal');
+	const noticeBtnText = document.getElementById('notice-btn-text');
+
+	let noticeResolve: (() => void) | null = null;
+
+	function showSystemNotice({
+		title = 'Atención con tu Pedido',
+		message = '',
+		type = 'warning',
+		btnText = 'Entendido'
+	}: {
+		title?: string;
+		message: string;
+		type?: 'warning' | 'error' | 'success' | 'info';
+		btnText?: string;
+	}): Promise<void> {
+		return new Promise((resolve) => {
+			noticeResolve = resolve;
+
+			if (noticeTitle) noticeTitle.textContent = title;
+			if (noticeMessage) noticeMessage.textContent = message;
+			if (noticeBtnText) noticeBtnText.textContent = btnText;
+
+			if (type === 'error') {
+				if (noticeIcon) noticeIcon.textContent = '🛑';
+				if (noticeTag) {
+					noticeTag.textContent = 'Error';
+					noticeTag.className = 'text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-mono';
+				}
+				if (noticeIconContainer) {
+					noticeIconContainer.className = 'w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-2xl shrink-0';
+				}
+				if (noticeModalBox) {
+					noticeModalBox.className = 'relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.25)] transform scale-100 transition-all duration-300 space-y-6';
+				}
+			} else if (type === 'success') {
+				if (noticeIcon) noticeIcon.textContent = '🎉';
+				if (noticeTag) {
+					noticeTag.textContent = 'Éxito';
+					noticeTag.className = 'text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/30 font-mono';
+				}
+				if (noticeIconContainer) {
+					noticeIconContainer.className = 'w-12 h-12 rounded-2xl bg-brand-green/15 border border-brand-green/30 flex items-center justify-center text-2xl shrink-0';
+				}
+				if (noticeModalBox) {
+					noticeModalBox.className = 'relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-brand-green/40 shadow-[0_0_50px_rgba(0,255,127,0.25)] transform scale-100 transition-all duration-300 space-y-6';
+				}
+			} else {
+				if (noticeIcon) noticeIcon.textContent = '⚠️';
+				if (noticeTag) {
+					noticeTag.textContent = 'Aviso de Stock / Validación';
+					noticeTag.className = 'text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono';
+				}
+				if (noticeIconContainer) {
+					noticeIconContainer.className = 'w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl shrink-0';
+				}
+				if (noticeModalBox) {
+					noticeModalBox.className = 'relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.25)] transform scale-100 transition-all duration-300 space-y-6';
+				}
+			}
+
+			systemNoticeModal?.classList.remove('opacity-0', 'pointer-events-none');
+			noticeModalBox?.classList.remove('scale-95');
+			noticeModalBox?.classList.add('scale-100');
+		});
+	}
+
+	function closeSystemNotice() {
+		systemNoticeModal?.classList.add('opacity-0', 'pointer-events-none');
+		noticeModalBox?.classList.add('scale-95');
+		noticeModalBox?.classList.remove('scale-100');
+		if (noticeResolve) {
+			noticeResolve();
+			noticeResolve = null;
+		}
+	}
+
+	btnCloseNoticeModal?.addEventListener('click', closeSystemNotice);
+	systemNoticeModal?.addEventListener('click', (e) => {
+		if (e.target === systemNoticeModal) closeSystemNotice();
+	});
+
+	async function loginWithGoogle() {
+		try {
+			const { error } = await supabase.auth.signInWithOAuth({
+				provider: 'google',
+				options: {
+					redirectTo: window.location.origin + window.location.pathname + window.location.search
+				}
+			});
+			if (error) throw error;
+		} catch (err: any) {
+			showSystemNotice({
+				title: 'Error de Autenticación',
+				message: 'Hubo un error al intentar conectar con Google: ' + (err.message || err),
+				type: 'error'
+			});
+		}
+	}
+
+	async function logoutUser() {
+		await supabase.auth.signOut();
+		window.location.reload();
+	}
+
+	btnQuickGoogleLogin?.addEventListener('click', loginWithGoogle);
+	btnModalGoogleLogin?.addEventListener('click', loginWithGoogle);
+	btnLogout?.addEventListener('click', logoutUser);
+
+	// Modales open/close helpers
+	function openGoogleModal() {
+		googleAuthModal?.classList.remove('opacity-0', 'pointer-events-none');
+		googleAuthModal?.querySelector('div')?.classList.remove('scale-95');
+		googleAuthModal?.querySelector('div')?.classList.add('scale-100');
+	}
+
+	function closeGoogleModal() {
+		googleAuthModal?.classList.add('opacity-0', 'pointer-events-none');
+		googleAuthModal?.querySelector('div')?.classList.add('scale-95');
+		googleAuthModal?.querySelector('div')?.classList.remove('scale-100');
+	}
+
+	btnCloseGoogleModal?.addEventListener('click', closeGoogleModal);
+
+	function openConfirmModal() {
+		// Populate modal values
+		if (modalDisplayName) modalDisplayName.textContent = fullNameInput.value.trim();
+		if (modalDisplayRut) modalDisplayRut.textContent = rutInput.value.trim().toUpperCase();
+		if (modalDisplayEmail) modalDisplayEmail.textContent = emailInput.value.trim().toLowerCase();
+		if (modalDisplayPhone) modalDisplayPhone.textContent = phoneInput.value.trim();
+		if (modalDisplayDelivery) {
+			modalDisplayDelivery.textContent = currentDelivery === 'retiro' ? 'Retiro en Oficina Técnica ($0)' : 'Envío por Pagar (Cobro en Destino)';
+		}
+		if (modalDisplayAddress) {
+			if (currentDelivery === 'retiro') {
+				modalDisplayAddress.textContent = 'Santiago Centro (Oficina Técnica)';
+			} else {
+				const commune = regionSelect.value === 'RM' ? communeSelect.value : communeManual.value.trim();
+				modalDisplayAddress.textContent = `${addressInput.value.trim()}, ${commune}`;
+			}
+		}
+
+		confirmModal?.classList.remove('opacity-0', 'pointer-events-none');
+		confirmModal?.querySelector('div')?.classList.remove('scale-95');
+		confirmModal?.querySelector('div')?.classList.add('scale-100');
+	}
+
+	function closeConfirmModal() {
+		confirmModal?.classList.add('opacity-0', 'pointer-events-none');
+		confirmModal?.querySelector('div')?.classList.add('scale-95');
+		confirmModal?.querySelector('div')?.classList.remove('scale-100');
+	}
+
+	btnCloseConfirmModal?.addEventListener('click', closeConfirmModal);
+
+	// 4. Click en "Continuar al Pago" (Validación de Flujo)
+	btnProceedCheckout?.addEventListener('click', () => {
 		const items = getItems();
 		if (items.length === 0) {
-			alert('Debes tener al menos un producto en el pedido para continuar.');
+			showSystemNotice({
+				title: 'Carrito Vacío',
+				message: 'Debes tener al menos un repuesto en tu carrito para continuar con la compra.',
+				type: 'warning',
+				btnText: 'Aceptar'
+			});
 			return;
 		}
 
+		// Si el usuario no ha iniciado sesión con Google, desplegar modal de OAuth
+		if (!currentUser) {
+			openGoogleModal();
+			return;
+		}
+
+		// Validar campos obligatorios
 		if (!fullNameInput.value.trim()) {
 			fullNameInput.focus();
-			alert('Por favor ingresa tu Nombre y Apellido.');
+			showSystemNotice({
+				title: 'Nombre Obligatorio',
+				message: 'Por favor ingresa tu Nombre y Apellido o Razón Social para emitir tu factura conforme a las normativas del SII.',
+				type: 'warning'
+			});
 			return;
 		}
 
-		if (!rutInput.value.trim()) {
+		if (!rutInput.value.trim() || !isValidChileanRut(rutInput.value)) {
 			rutInput.focus();
-			alert('El RUT es obligatorio para la emisión de la Factura Electrónica conforme a la normativa del SII.');
+			rutError?.classList.remove('hidden');
+			showSystemNotice({
+				title: 'RUT Inválido',
+				message: 'El RUT es obligatorio ante el SII y debe tener un formato válido con su dígito verificador (Módulo 11).',
+				type: 'warning'
+			});
 			return;
 		}
 
 		if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
 			emailInput.focus();
-			alert('Por favor ingresa un Correo Electrónico válido.');
+			showSystemNotice({
+				title: 'Correo Requerido',
+				message: 'Por favor ingresa un correo electrónico válido para enviarte el respaldo de compra y factura electrónica.',
+				type: 'warning'
+			});
 			return;
 		}
 
 		if (!phoneInput.value.trim()) {
 			phoneInput.focus();
-			alert('Por favor ingresa tu teléfono móvil de contacto.');
+			showSystemNotice({
+				title: 'Teléfono Móvil Requerido',
+				message: 'Por favor ingresa un teléfono móvil de contacto para coordinar la entrega o el despacho de tu pedido.',
+				type: 'warning'
+			});
 			return;
 		}
 
-		if (currentDelivery === 'delivery_rm') {
-			if (!communeSelect.value) {
+		if (currentDelivery === 'envio_cobro_destino') {
+			if (!regionSelect.value) {
+				regionSelect.focus();
+				showSystemNotice({
+					title: 'Región de Entrega Requerida',
+					message: 'Por favor selecciona la región de destino para calcular la estimación del transporte por pagar.',
+					type: 'warning'
+				});
+				return;
+			}
+			if (regionSelect.value === 'RM' && !communeSelect.value) {
 				communeSelect.focus();
-				alert('Por favor selecciona la comuna de despacho en la Región Metropolitana.');
+				showSystemNotice({
+					title: 'Comuna Requerida',
+					message: 'Por favor selecciona la comuna en la Región Metropolitana.',
+					type: 'warning'
+				});
+				return;
+			}
+			if (regionSelect.value !== 'RM' && !communeManual.value.trim()) {
+				communeManual.focus();
+				showSystemNotice({
+					title: 'Ciudad o Comuna Requerida',
+					message: 'Por favor escribe tu ciudad o comuna de destino para la entrega por pagar.',
+					type: 'warning'
+				});
 				return;
 			}
 			if (!addressInput.value.trim()) {
 				addressInput.focus();
-				alert('Por favor ingresa tu dirección para el despacho.');
+				showSystemNotice({
+					title: 'Dirección Requerida',
+					message: 'Por favor ingresa la dirección exacta de entrega o sucursal de Starken / Chilexpress.',
+					type: 'warning'
+				});
 				return;
 			}
 		}
 
-		// Update modal text with high-visibility values
-		if (modalDisplayEmail) modalDisplayEmail.textContent = emailInput.value.trim().toLowerCase();
-		if (modalDisplayRut) modalDisplayRut.textContent = rutInput.value.trim().toUpperCase();
-		if (modalDisplayPhone) modalDisplayPhone.textContent = phoneInput.value.trim();
-
-		// Show Modal
-		emailModal?.classList.remove('opacity-0', 'pointer-events-none');
-		emailModal?.querySelector('div')?.classList.remove('scale-95');
-		emailModal?.querySelector('div')?.classList.add('scale-100');
+		// Si todo es válido y el usuario tiene sesión, abrir modal de confirmación final
+		openConfirmModal();
 	});
 
-	// Close Modal
-	btnCloseModal?.addEventListener('click', () => {
-		emailModal?.classList.add('opacity-0', 'pointer-events-none');
-		emailModal?.querySelector('div')?.classList.add('scale-95');
-		emailModal?.querySelector('div')?.classList.remove('scale-100');
-	});
-
-	// Final Confirm & Order Generation
-	btnFinalConfirmOrder?.addEventListener('click', async () => {
+	// 5. Guardar datos en `customers` y avanzar hacia el pago
+	btnFinalSaveAndPay?.addEventListener('click', async () => {
 		try {
-			if (btnFinalText) btnFinalText.textContent = 'Generando Pedido...';
-			btnSpinner?.classList.remove('hidden');
-			btnFinalConfirmOrder.setAttribute('disabled', 'true');
+			if (btnFinalText) btnFinalText.textContent = 'Guardando perfil...';
+			btnFinalSpinner?.classList.remove('hidden');
+			btnFinalSaveAndPay.setAttribute('disabled', 'true');
 
-			const items = getItems();
-			const payload = {
+			const communeVal = currentDelivery === 'retiro' 
+				? 'Retiro Oficina' 
+				: (regionSelect.value === 'RM' ? communeSelect.value : communeManual.value.trim());
+
+			const payloadCustomer = {
+				id: currentUser.id,
 				full_name: fullNameInput.value.trim(),
 				email: emailInput.value.trim().toLowerCase(),
 				phone: phoneInput.value.trim(),
 				rut: rutInput.value.trim().toUpperCase(),
+				address: addressInput.value.trim() || 'Retiro en Oficina Técnica',
+				commune: communeVal,
+				region: regionSelect.value || 'RM'
+			};
+
+			// Guardar / actualizar en base de datos public.customers vía API
+			const resCustomer = await fetch('/api/customers/update', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payloadCustomer)
+			});
+
+			const dataCustomer = await resCustomer.json();
+			if (!resCustomer.ok || !dataCustomer.success) {
+				throw new Error(dataCustomer.error || 'Error al persistir datos de cliente');
+			}
+
+			// 6. FASE 2: Invocar creación de preferencia en Mercado Pago
+			if (btnFinalText) btnFinalText.textContent = 'Conectando con Mercado Pago...';
+
+			const items = getItems();
+			const payloadPreference = {
+				customer_id: currentUser.id,
 				delivery_type: currentDelivery,
-				commune: currentDelivery === 'delivery_rm' ? communeSelect.value : 'Retiro en Oficina',
-				address: currentDelivery === 'delivery_rm' ? addressInput.value.trim() : '',
-				shipping_cost: currentShippingCost,
+				commune: communeVal,
+				address: addressInput.value.trim() || 'Retiro en Oficina Técnica',
 				items
 			};
 
-			const response = await fetch('/api/orders/create', {
+			const resPreference = await fetch('/api/mercadopago/create-preference', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payloadPreference)
 			});
 
-			const data = await response.json();
+			const dataPreference = await resPreference.json();
 
-			if (!response.ok || !data.success) {
-				throw new Error(data.error || 'Error al procesar el pedido');
+			if (!resPreference.ok || !dataPreference.success) {
+				throw new Error(dataPreference.error || 'Error al generar la sesión de pago');
 			}
 
-			// Store backup snapshot in sessionStorage for quick confirmation rendering
-			if (data.order) {
-				sessionStorage.setItem(`order_${data.orderId}`, JSON.stringify(data.order));
+			// Caso A: Credenciales aún no configuradas en .env (Esperando aprobación de ML)
+			if (dataPreference.isPendingCredentials) {
+				if (btnFinalText) btnFinalText.textContent = '¡Orden ST-2026 generada!';
+				clearCart();
+				await showSystemNotice({
+					title: '¡Orden Generada!',
+					message: `¡Orden ${dataPreference.orderId} generada con éxito!\n\nNota: Redirigiendo a la confirmación del pedido.`,
+					type: 'success',
+					btnText: 'Ver Pedido'
+				});
+				window.location.href = dataPreference.redirectUrl || `/pedido/${dataPreference.orderId}`;
+				return;
 			}
 
-			// Redirect to post-checkout confirmation view
-			window.location.href = `/pedido/${data.orderId}`;
+			// Caso B: Link Dinámico Oficial generado por Mercado Pago
+			if (dataPreference.initPoint) {
+				if (btnFinalText) btnFinalText.textContent = 'Redirigiendo a Mercado Pago...';
+				window.location.href = dataPreference.initPoint;
+				return;
+			}
+
+			throw new Error('No se recibió el enlace de pago de Mercado Pago.');
 
 		} catch (err: any) {
-			alert('Hubo un problema al generar tu pedido: ' + err.message);
-			if (btnFinalText) btnFinalText.textContent = 'Sí, mis datos son correctos → Generar Pedido';
-			btnSpinner?.classList.add('hidden');
-			btnFinalConfirmOrder.removeAttribute('disabled');
+			closeConfirmModal();
+			showSystemNotice({
+				title: 'Inconveniente con el Pedido',
+				message: err.message || 'Error al conectar con la pasarela de pago',
+				type: 'warning',
+				btnText: 'Entendido, Modificar Carrito'
+			});
+			if (btnFinalText) btnFinalText.textContent = 'Guardar Datos & Proceder al Pago';
+			btnFinalSpinner?.classList.add('hidden');
+			btnFinalSaveAndPay.removeAttribute('disabled');
 		}
 	});
 
-	// Initial price calculation
-	updatePrices();
+	// Inicializar sincronización con Carrito LocalStorage
+	import { getCart, removeFromCart, updateItemQuantity, clearCart, addToCart } from '../lib/cart';
+
+	function syncCartUI() {
+		const cartItems = getCart();
+		const itemsListEl = document.getElementById('checkout-items-list');
+		const itemsCountBadge = document.getElementById('items-count-badge');
+		if (!itemsListEl) return;
+
+		// Si el carrito en localStorage está vacío pero hay un producto inicial cargado por URL en el SSR inicial
+		if (cartItems.length === 0) {
+			const initialEl = itemsListEl.querySelector('[data-sku]');
+			if (initialEl) {
+				const sku = initialEl.getAttribute('data-sku') || '';
+				const title = initialEl.getAttribute('data-title') || '';
+				const price = parseFloat(initialEl.getAttribute('data-price') || '0');
+				const image = initialEl.getAttribute('data-image') || '';
+				if (sku) {
+					addToCart({ sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image });
+					return;
+				}
+			}
+		}
+
+		// Si hay items en LocalStorage, renderizarlos sobreescribiendo el contenedor
+		if (cartItems.length > 0) {
+			itemsListEl.innerHTML = cartItems.map(it => `
+				<div class="flex items-center gap-3 p-3.5 rounded-xl bg-white/5 border border-white/5" data-sku="${it.sku}" data-price="${it.precio_venta}" data-title="${it.titulo}" data-image="${it.imagen || ''}" data-quantity="${it.cantidad || 1}">
+					<img src="${it.imagen || '/imagenes/logost.png'}" alt="" class="w-14 h-14 rounded-lg object-cover bg-zinc-900 border border-white/10 shrink-0" />
+					<div class="flex-1 min-w-0">
+						<h4 class="text-xs font-bold text-white truncate">${it.titulo}</h4>
+						<p class="text-[10px] text-slate-400 font-mono">SKU: ${it.sku}</p>
+						<div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+							<span class="text-xs font-extrabold text-brand-green font-mono">$${((it.precio_venta || 0) * (it.cantidad || 1)).toLocaleString('es-CL')} CLP</span>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center bg-zinc-900 border border-white/15 rounded-lg p-0.5">
+									<button type="button" class="btn-qty-minus w-6 h-6 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer" data-sku="${it.sku}">-</button>
+									<span class="text-xs font-bold text-white px-2 font-mono">${it.cantidad || 1}</span>
+									<button type="button" class="btn-qty-plus w-6 h-6 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer" data-sku="${it.sku}">+</button>
+								</div>
+								<button type="button" class="btn-remove-item text-slate-400 hover:text-red-400 p-1 transition-colors cursor-pointer" data-sku="${it.sku}" title="Eliminar del pedido">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			`).join('');
+
+			if (itemsCountBadge) {
+				const totalUnits = cartItems.reduce((acc, it) => acc + (it.cantidad || 1), 0);
+				itemsCountBadge.textContent = `${totalUnits} item${totalUnits > 1 ? 's' : ''}`;
+			}
+
+			// Listeners para botones de cantidad
+			itemsListEl.querySelectorAll('.btn-qty-minus').forEach(b => {
+				b.addEventListener('click', () => {
+					const sku = b.getAttribute('data-sku');
+					if (!sku) return;
+					const currentItem = cartItems.find(i => i.sku === sku);
+					if (currentItem) {
+						updateItemQuantity(sku, (currentItem.cantidad || 1) - 1);
+					}
+				});
+			});
+
+			itemsListEl.querySelectorAll('.btn-qty-plus').forEach(b => {
+				b.addEventListener('click', () => {
+					const sku = b.getAttribute('data-sku');
+					if (!sku) return;
+					const currentItem = cartItems.find(i => i.sku === sku);
+					if (currentItem) {
+						updateItemQuantity(sku, (currentItem.cantidad || 1) + 1);
+					}
+				});
+			});
+
+			// Botones para quitar productos del checkout
+			itemsListEl.querySelectorAll('.btn-remove-item').forEach(b => {
+				b.addEventListener('click', () => {
+					const skuToRemove = b.getAttribute('data-sku');
+					if (skuToRemove) {
+						removeFromCart(skuToRemove);
+					}
+				});
+			});
+		} else {
+			itemsListEl.innerHTML = `
+				<div class="text-center py-8 text-slate-400 space-y-3">
+					<div class="text-3xl">🛒</div>
+					<p class="font-bold text-white text-sm">Tu carrito está actualmente vacío</p>
+					<p class="text-xs text-slate-400">Selecciona repuestos desde el catálogo para continuar con la compra.</p>
+					<a href="/repuestos" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,255,127,0.3)]">
+						← Ir al Catálogo de Repuestos
+					</a>
+				</div>
+			`;
+			if (itemsCountBadge) itemsCountBadge.textContent = "0 items";
+		}
+
+		updateTotals();
+	}
+
+	// Escuchar eventos de actualización de carrito
+	window.addEventListener('st:cart:updated', syncCartUI);
+
+	// Inicializar
+	initAuth();
+	syncCartUI();
+	updateTotals();
+
+	// Manejo de retorno de Mercado Pago cuando el pago falla o es cancelado
+	const urlParams = new URLSearchParams(window.location.search);
+	if (urlParams.get('payment') === 'failure') {
+		const failedOrder = urlParams.get('order') || '';
+		showSystemNotice({
+			title: 'Pago No Completado',
+			message: `No se completó el pago en Mercado Pago${failedOrder ? ` (Orden ${failedOrder})` : ''}.\n\nTus repuestos siguen guardados en el carrito para que puedas revisar tus datos o intentar con otro medio de pago.`,
+			type: 'warning',
+			btnText: 'Revisar Carrito'
+		});
+	}
 </script>

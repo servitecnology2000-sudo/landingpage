@@ -129,7 +129,7 @@ const BANK_DETAILS = {
 								<span class="text-slate-400 font-sans">Número de Cuenta:</span>
 								<div class="flex items-center gap-2">
 									<span class="font-black text-brand-cyan text-sm">{BANK_DETAILS.numeroCuenta}</span>
-									<button type="button" class="text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer" onclick={`navigator.clipboard.writeText('${BANK_DETAILS.numeroCuenta}'); alert('Número de cuenta copiado');`}>Copiar</button>
+									<button type="button" class="btn-copy-account text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.numeroCuenta}>Copiar</button>
 								</div>
 							</div>
 
@@ -142,7 +142,7 @@ const BANK_DETAILS = {
 								<span class="text-slate-400 font-sans">RUT:</span>
 								<div class="flex items-center gap-2">
 									<span class="font-bold text-white">{BANK_DETAILS.rut}</span>
-									<button type="button" class="text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer" onclick={`navigator.clipboard.writeText('${BANK_DETAILS.rut}'); alert('RUT copiado');`}>Copiar</button>
+									<button type="button" class="btn-copy-rut text-[10px] text-slate-400 hover:text-brand-cyan underline font-sans cursor-pointer transition-colors" data-val={BANK_DETAILS.rut}>Copiar</button>
 								</div>
 							</div>
 
@@ -322,17 +322,40 @@ const BANK_DETAILS = {
 		}
 	}
 
+	// Importar limpiador de carrito al confirmar orden
+	import { clearCart } from '../../lib/cart';
+	try {
+		clearCart();
+	} catch(e) {}
+
 	// Copy ID Button
 	const btnCopyId = document.getElementById('btn-copy-id');
 	const copyText = document.getElementById('copy-text');
 	btnCopyId?.addEventListener('click', async () => {
 		if (orderId) {
 			await navigator.clipboard.writeText(orderId);
-			if (copyText) copyText.textContent = '¡Copiado!';
+			if (copyText) copyText.textContent = '¡Copiado! ✓';
 			setTimeout(() => {
 				if (copyText) copyText.textContent = 'Copiar';
 			}, 2000);
 		}
+	});
+
+	// Botones copiar datos bancarios (cuenta y RUT)
+	document.querySelectorAll('.btn-copy-account, .btn-copy-rut').forEach(btn => {
+		btn.addEventListener('click', async () => {
+			const val = btn.getAttribute('data-val') || '';
+			if (val) {
+				await navigator.clipboard.writeText(val);
+				const originalText = btn.textContent;
+				btn.textContent = '¡Copiado! ✓';
+				btn.classList.add('text-brand-green');
+				setTimeout(() => {
+					btn.textContent = originalText;
+					btn.classList.remove('text-brand-green');
+				}, 2000);
+			}
+		});
 	});
 
 	// 2-hour countdown timer
