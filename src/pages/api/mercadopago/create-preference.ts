@@ -185,8 +185,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 				name: isSandbox ? 'Comprador de Prueba' : customer.full_name,
 				email: payerEmail,
 				identification: {
-					type: 'RUT',
-					number: isSandbox ? '11111111-1' : (customer.rut || '')
+					type: isSandbox ? 'Otro' : 'RUT',
+					number: isSandbox ? '123456789' : (customer.rut || '')
 				}
 			},
 			back_urls: {

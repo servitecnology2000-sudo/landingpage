@@ -44,30 +44,42 @@ Esta guía documenta los datos oficiales proporcionados por el panel de desarrol
 
 ---
 
-## 🎯 Simulación de Estados de Pago (Nombre del Titular)
+## 🎯 Simulación de Estados de Pago (Nombre del Titular y Documento)
 
-Mercado Pago permite simular diferentes escenarios de respuesta (aprobación, saldo insuficiente, tarjeta vencida, etc.) **según el nombre del titular** que ingreses en el formulario:
+Mercado Pago exige en Chile (**MLC**) que en el formulario de la tarjeta se seleccione en el selector de documento el tipo **"Otro"** (¡NO RUT!) con el número **`123456789`**:
 
-| Nombre del Titular | Resultado Simulado | Documento de Identidad (RUT / Otro) | Comportamiento en Servitecnology |
-| :---: | :--- | :---: | :--- |
-| **`APRO`** | **Pago aprobado** ✅ | `123456789` (o RUT válido) | Webhook actualiza orden a `aprobado`, descuenta stock real en `repuestos_productos` y envía correo desde `notificaciones@servitecnology.com`. |
-| **`CONT`** | **Pendiente de pago** ⏳ | Cualquiera | Orden queda en estado `pendiente`. No se descuenta stock hasta confirmación. |
-| **`FUND`** | **Rechazado por fondos insuficientes** ❌ | Cualquiera | La pasarela notifica rechazo por saldo insuficiente. |
-| **`SECU`** | **Rechazado por código de seguridad inválido** ❌ | Cualquiera | Simula error de CVV. |
-| **`EXPI`** | **Rechazado por fecha de vencimiento** ❌ | Cualquiera | Simula tarjeta expirada. |
-| **`CALL`** | **Rechazado con validación para autorizar** ❌ | Cualquiera | Simula retención por parte del banco emisor. |
-| **`FORM`** | **Rechazado por error en formulario** ❌ | Cualquiera | Simula error de tipeo o validación de campos. |
-| **`OTHE`** | **Rechazado por error general** ❌ | Cualquiera | Simula caída o rechazo genérico de pasarela. |
+> [!CAUTION]
+> **Campo "Documento del titular":**  
+> 1. Haz clic en el selector desplegable donde dice `RUT ˅`.  
+> 2. Selecciona **`Otro`**.  
+> 3. Escribe exactamente: **`123456789`**.  
+> Si dejas seleccionado `RUT` o escribes un RUT chileno con una tarjeta de prueba, la pasarela intenta resolver un banco chileno inexistente, muestra **`UNDEFINED SOURCE`** y rechaza el pago con *"No pudimos procesar tu pago"*. Con la tarjeta Visa además dirá que *"no se puede pagar con esa tarjeta"*.
+
+| Nombre del Titular | Resultado Simulado | Tipo de Documento | Número de Documento |
+| :---: | :--- | :---: | :---: |
+| **`APRO`** | **Pago aprobado** ✅ | **`Otro`** (¡NO RUT!) | **`123456789`** |
+| **`CONT`** | **Pendiente de pago** ⏳ | **`Otro`** | `123456789` |
+| **`FUND`** | **Rechazado por fondos insuficientes** ❌ | **`Otro`** | `123456789` |
+| **`SECU`** | **Rechazado por código de seguridad inválido** ❌ | **`Otro`** | `123456789` |
+| **`EXPI`** | **Rechazado por fecha de vencimiento** ❌ | **`Otro`** | `123456789` |
+| **`CALL`** | **Rechazado con validación para autorizar** ❌ | **`Otro`** | `123456789` |
+| **`FORM`** | **Rechazado por error en formulario** ❌ | **`Otro`** | `123456789` |
+| **`OTHE`** | **Rechazado por error general** ❌ | **`Otro`** | `123456789` |
 
 ---
 
-## 👤 Cuenta de Prueba Comprador (*Test User*)
+## 👤 Cuentas Oficiales de Prueba en esta Aplicación
 
-Si requieres probar el inicio de sesión como usuario registrado en lugar de pagar como invitado:
-
-- **Usuario / Email:** `TESTUSER2887970320255947564`
-- **Contraseña:** `zGew8fijBV`
-- **Código de verificación (2FA):** `788543`
+En Mercado Pago existen dos perfiles creados para esta integración:
+1. **Cuenta Vendedora (Servitecnology):**
+   - **ID:** `3680788543`
+   - **Usuario:** `TESTUSER2887970320255947564`
+   - **Email:** `test_user_2887970320255947564@testuser.com`
+2. **Cuenta Compradora Oficial (Buyer):**
+   - **ID:** `3683310708`
+   - **Usuario:** `TESTUSER4386276905329265909`
+   - **Email:** `test_user_4386276905329265909@testuser.com`
+   - **Contraseña:** `evA1cLVqLf`
 
 ---
 
