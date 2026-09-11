@@ -210,9 +210,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 				.eq('id', orderId);
 		}
 
-		const effectiveInitPoint = isSandbox && mpResponse.sandbox_init_point
-			? mpResponse.sandbox_init_point
-			: (mpResponse.init_point || mpResponse.sandbox_init_point);
+		// Usar init_point oficial para evitar bucles de redirección entre sandbox.mercadopago.cl y mercadopago.cl (ERR_TOO_MANY_REDIRECTS)
+		const effectiveInitPoint = mpResponse.init_point || mpResponse.sandbox_init_point;
 
 		return new Response(JSON.stringify({
 			success: true,
