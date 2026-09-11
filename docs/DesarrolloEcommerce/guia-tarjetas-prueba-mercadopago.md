@@ -12,10 +12,23 @@ Esta guía documenta los datos oficiales proporcionados por el panel de desarrol
 
 ### Cómo realizar la prueba correctamente:
 1. Abre tu navegador en una **Ventana de Incógnito / Pestaña Privada** (para evitar que tome cookies de tu cuenta personal de Mercado Libre).
-2. Agrega los repuestos en `http://localhost:4321/repuestos` y ve al `/checkout`.
-3. Completa los datos de envío y haz clic en **Guardar Datos & Proceder al Pago**.
-4. En la pantalla de Mercado Pago, selecciona **"Pagar con tarjeta de crédito o débito"** (o *"Pagar como invitado"* / *"Nueva tarjeta"*).
-5. Ingresa una de las tarjetas de prueba oficiales que se detallan a continuación.
+2. En el formulario de `/checkout`, utiliza el **Usuario Comprador de Pruebas** oficial creado para esta aplicación (o un correo de prueba como `test_user_...`):
+   * **Email de prueba:** `test_user_4386276905329265909@testuser.com`
+   * **Contraseña (si Mercado Pago solicita inicio de sesión):** `evA1cLVqLf`
+   * **Usuario:** `TESTUSER4386276905329265909`
+3. Agrega los repuestos en `/repuestos` y ve al `/checkout`.
+4. Completa los datos de envío y haz clic en **Guardar Datos & Proceder al Pago**.
+5. En la pantalla de Mercado Pago, selecciona **"Pagar con tarjeta de crédito o débito"**.
+6. Ingresa una de las tarjetas de prueba oficiales que se detallan a continuación.
+
+---
+
+## 🔍 ¿Por qué ocurría el error "UNDEFINED SOURCE" y "No pudimos procesar tu pago"?
+1. **Redirección a Producción (`init_point`) en lugar de Sandbox (`sandbox_init_point`):**  
+   Mercado Pago genera dos URLs de pago: `init_point` (para producción real) y `sandbox_init_point` (`https://sandbox.mercadopago.cl/...`).  
+   Si se intenta usar una tarjeta de prueba ficticia en el entorno de producción (`init_point`), la red bancaria chilena no reconoce el banco emisor de la tarjeta y muestra **`UNDEFINED SOURCE`**. Al hacer clic en "Pagar", el motor antifraude rechaza la transacción con *"No pudimos procesar tu pago"*.
+2. **Cruce entre Cuenta Personal Real y Vendedor de Pruebas:**  
+   Si en el formulario del checkout se ingresa un correo personal real (por ejemplo `@gmail.com` asociado a tu cuenta de Mercado Libre), Mercado Libre vincula la sesión y bloquea la operación porque las políticas de Mercado Pago impiden que usuarios reales operen con credenciales de prueba. Se debe utilizar siempre el **Comprador de Pruebas** (`test_user_...@testuser.com`).
 
 ---
 

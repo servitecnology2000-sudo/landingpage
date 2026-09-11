@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
-import { preferenceClient, isMercadoPagoConfigured } from '../../../lib/mercadopago';
+import { preferenceClient, isMercadoPagoConfigured, isSandbox } from '../../../lib/mercadopago';
 
 export const prerender = false;
 
@@ -206,12 +206,17 @@ export const POST: APIRoute = async ({ request, url }) => {
 				.eq('id', orderId);
 		}
 
+		const effectiveInitPoint = isSandbox && mpResponse.sandbox_init_point
+			? mpResponse.sandbox_init_point
+			: (mpResponse.init_point || mpResponse.sandbox_init_point);
+
 		return new Response(JSON.stringify({
 			success: true,
 			orderId,
 			preferenceId: mpResponse.id,
-			initPoint: mpResponse.init_point,
-			sandboxInitPoint: mpResponse.sandbox_init_point
+			initPoint: effectiveInitPoint,
+			sandboxInitPoint: mpResponse.sandbox_init_point,
+			isSandbox
 		}), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' }

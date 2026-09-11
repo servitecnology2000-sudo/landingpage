@@ -1265,9 +1265,13 @@ const REGIONES_CHILE = [
 			}
 
 			// Caso B: Link Dinámico Oficial generado por Mercado Pago
-			if (dataPreference.initPoint) {
+			const targetPaymentUrl = (dataPreference.isSandbox && dataPreference.sandboxInitPoint)
+				? dataPreference.sandboxInitPoint
+				: (dataPreference.initPoint || dataPreference.sandboxInitPoint);
+
+			if (targetPaymentUrl) {
 				if (btnFinalText) btnFinalText.textContent = 'Redirigiendo a Mercado Pago...';
-				window.location.href = dataPreference.initPoint;
+				window.location.href = targetPaymentUrl;
 				return;
 			}
 

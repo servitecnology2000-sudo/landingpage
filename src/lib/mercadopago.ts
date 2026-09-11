@@ -13,6 +13,12 @@ const mpAccessToken =
 
 export const isMercadoPagoConfigured = Boolean(mpAccessToken && mpAccessToken.trim().length > 10);
 
+export const isSandbox = Boolean(
+	!_env['ML_PRODUCCION_ACCESS_TOKEN'] &&
+	!import.meta.env.ML_PRODUCCION_ACCESS_TOKEN &&
+	(_env['ML_PRUEBAS_ACCESS_TOKEN'] || import.meta.env.ML_PRUEBAS_ACCESS_TOKEN || mpAccessToken.startsWith('TEST-'))
+);
+
 export const mpClient = new MercadoPagoConfig({
 	accessToken: mpAccessToken,
 	options: { timeout: 8000 }
