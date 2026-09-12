@@ -2,6 +2,16 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-11 (Corrección Bug de Eliminación del Último Item en Carrito Checkout):**
+  - **Detección y Causa Raíz (`src/pages/checkout.astro`):** Se identificó que la función `syncCartUI()` intentaba leer el DOM (`itemsListEl.querySelector('[data-sku]')`) para respaldar productos de SSR cuando `cartItems.length === 0`. Al hacer click en eliminar el único producto o reducir su cantidad a 0, el contenedor HTML aún contenía el elemento del DOM previo a actualizarse, lo que provocaba que el script lo detectara y lo volviera a reinsertar inmediatamente en el `localStorage` mediante `addToCart()`, haciendo imposible vaciar el carrito o eliminar el último producto.
+  - **Unificación de Fuente de la Verdad:** Se eliminó la re-inserción automática reactiva dentro de `syncCartUI()` y se simplificó `getItems()` para que retorne directamente `getCart()`.
+  - **Importación Única en Carga Directa (Query Params):** La importación de productos desde la URL (`?sku=` o `?id=`) ahora se ejecuta estrictamente una sola vez durante la inicialización del cliente si el carrito está vacío, limpiando de inmediato los parámetros de la URL con `history.replaceState` para evitar re-importaciones fantasmas al refrescar o eliminar.
+  - **Estado Vacío y Totales Reactivos:** Al eliminar el último item, el checkout ahora muestra correctamente el estado de carrito vacío ("Tu carrito está actualmente vacío"), oculta el contador del carrito en el header (`0 items`), y actualiza el subtotal y total a `$0 CLP`.
+
+- **2026-09-11 (Optimización Header - Desduplicación de Logo y Corrección de Solapamiento):**
+  - **Eliminación de Texto Duplicado (`src/components/Header.astro`):** Se eliminó la etiqueta `<span>` que renderizaba el texto "SERVITECNOLOGY" en degradado verde/cian al lado del logotipo, el cual duplicaba innecesariamente el nombre ya incorporado en la imagen `logost.png` y provocaba que colisionara o se montara encima del botón de correo `contacto@servitecnology.com` en resoluciones de pantalla medianas.
+  - **Ampliación Proporcional del Logotipo (+20%):** Se aumentó la altura del logotipo oficial (`/imagenes/logost.png`) en un 20% (pasando de `h-10` / 40px a `h-12` / 48px), maximizando la presencia de la marca en el Navbar y liberando más de 200px de espacio horizontal para la navegación.
+
 - **2026-09-11 (Arquitectura Dual de Entorno Sandbox/Producción Mercado Pago):**
   - **Soporte de Conmutación Transparente (`src/lib/mercadopago.ts`):** Implementación de resolución dinámica del entorno mediante `MERCADOPAGO_ENV` (`'production'` o `'sandbox'`), resolviendo automáticamente las credenciales productivas (`ML_PRODUCCION_ACCESS_TOKEN`, `ML_PRODUCCION_PUBLIC_KEY`) o de prueba (`ML_PRUEBAS_ACCESS_TOKEN`, `ML_PRUEBAS_PUBLIC_KEY`).
   - **Aclaración sobre Client ID y Client Secret:** Se determinó que Checkout Pro y los Webhooks operan de manera autónoma con el `ACCESS_TOKEN`, no requiriendo la inyección de `CLIENT_ID` ni `CLIENT_SECRET` en el flujo de pagos directo.

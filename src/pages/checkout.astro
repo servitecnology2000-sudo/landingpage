@@ -633,6 +633,7 @@ const REGIONES_CHILE = [
 
 <script>
 	import { supabase } from '../lib/supabase';
+	import { getCart, removeFromCart, updateItemQuantity, clearCart, addToCart } from '../lib/cart';
 
 	// Algoritmo de validación de RUT Chileno (Módulo 11)
 	function isValidChileanRut(rutStr: string): boolean {
@@ -734,27 +735,7 @@ const REGIONES_CHILE = [
 
 	// 1. Obtener items del carrito
 	function getItems() {
-		const cart = getCart();
-		if (cart.length > 0) {
-			return cart;
-		}
-		const items: any[] = [];
-		const itemEls = document.querySelectorAll('#checkout-items-list [data-sku]');
-		itemEls.forEach(el => {
-			const sku = el.getAttribute('data-sku') || '';
-			const title = el.getAttribute('data-title') || '';
-			const price = parseFloat(el.getAttribute('data-price') || '0');
-			const image = el.getAttribute('data-image') || '';
-			const qty = parseInt(el.getAttribute('data-quantity') || '1', 10);
-			items.push({
-				sku,
-				titulo: title,
-				precio_venta: price,
-				cantidad: qty,
-				imagen: image
-			});
-		});
-		return items;
+		return getCart();
 	}
 
 	function updateTotals() {
@@ -1289,29 +1270,12 @@ const REGIONES_CHILE = [
 		}
 	});
 
-	// Inicializar sincronización con Carrito LocalStorage
-	import { getCart, removeFromCart, updateItemQuantity, clearCart, addToCart } from '../lib/cart';
-
+	// Sincronización reactiva con Carrito LocalStorage
 	function syncCartUI() {
 		const cartItems = getCart();
 		const itemsListEl = document.getElementById('checkout-items-list');
 		const itemsCountBadge = document.getElementById('items-count-badge');
 		if (!itemsListEl) return;
-
-		// Si el carrito en localStorage está vacío pero hay un producto inicial cargado por URL en el SSR inicial
-		if (cartItems.length === 0) {
-			const initialEl = itemsListEl.querySelector('[data-sku]');
-			if (initialEl) {
-				const sku = initialEl.getAttribute('data-sku') || '';
-				const title = initialEl.getAttribute('data-title') || '';
-				const price = parseFloat(initialEl.getAttribute('data-price') || '0');
-				const image = initialEl.getAttribute('data-image') || '';
-				if (sku) {
-					addToCart({ sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image });
-					return;
-				}
-			}
-		}
 
 		// Si hay items en LocalStorage, renderizarlos sobreescribiendo el contenedor
 		if (cartItems.length > 0) {
@@ -1392,6 +1356,28 @@ const REGIONES_CHILE = [
 		updateTotals();
 	}
 
+	// Si se accedió con ?sku= o ?id= por URL directa (compra rápida SSR) y el carrito local está vacío,
+	// importar ese producto inicial una sola vez al cargar la página
+	const urlParams = new URLSearchParams(window.location.search);
+	const initialSkuParam = urlParams.get('sku');
+	const initialIdParam = urlParams.get('id');
+	if ((initialSkuParam || initialIdParam) && getCart().length === 0) {
+		const initialEl = document.getElementById('checkout-items-list')?.querySelector('[data-sku]');
+		if (initialEl) {
+			const sku = initialEl.getAttribute('data-sku') || '';
+			const title = initialEl.getAttribute('data-title') || '';
+			const price = parseFloat(initialEl.getAttribute('data-price') || '0');
+			const image = initialEl.getAttribute('data-image') || '';
+			if (sku) {
+				addToCart({ sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image });
+				const cleanUrl = new URL(window.location.href);
+				cleanUrl.searchParams.delete('sku');
+				cleanUrl.searchParams.delete('id');
+				window.history.replaceState({}, '', cleanUrl.toString());
+			}
+		}
+	}
+
 	// Escuchar eventos de actualización de carrito
 	window.addEventListener('st:cart:updated', syncCartUI);
 
@@ -1401,7 +1387,6 @@ const REGIONES_CHILE = [
 	updateTotals();
 
 	// Manejo de retorno de Mercado Pago cuando el pago falla o es cancelado
-	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('payment') === 'failure') {
 		const failedOrder = urlParams.get('order') || '';
 		showSystemNotice({
