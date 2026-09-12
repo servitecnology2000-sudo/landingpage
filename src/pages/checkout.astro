@@ -364,9 +364,10 @@ const REGIONES_CHILE = [
 									id="phone" 
 									name="phone" 
 									required
-									placeholder="Ej: +56 9 1234 5678"
+									placeholder="Ej: +56 9 1234 5678 o 2 2123 4567"
 									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
 								/>
+								<span id="phone-error" class="hidden text-[11px] text-red-400 mt-1 font-medium">Teléfono inválido. Ingresa un celular (+56 9 XXXX XXXX) o teléfono fijo de Chile (9 dígitos).</span>
 							</div>
 						</div>
 					</div>
@@ -680,6 +681,52 @@ const REGIONES_CHILE = [
 		return `${formatted}-${dv}`;
 	}
 
+	// Algoritmo de limpieza y validación de Teléfonos de Chile (Móviles / Fijos Subtel)
+	function cleanChileanPhone(phoneStr: string): string {
+		if (!phoneStr || typeof phoneStr !== 'string') return '';
+		let clean = phoneStr.replace(/\D/g, '');
+		if (clean.length === 13 && clean.startsWith('0056')) {
+			clean = clean.slice(4);
+		} else if (clean.length === 11 && clean.startsWith('56')) {
+			clean = clean.slice(2);
+		} else if (clean.length === 10 && clean.startsWith('0')) {
+			clean = clean.slice(1);
+		}
+		return clean;
+	}
+
+	function isValidChileanPhone(phoneStr: string): boolean {
+		const clean = cleanChileanPhone(phoneStr);
+		if (clean.length !== 9) return false;
+		// En Chile: celulares empiezan con 9; red fija empieza con 2 (RM) o 3-7 (regiones)
+		return /^[2-9]\d{8}$/.test(clean);
+	}
+
+	// Formateador visual telefónico chileno (+56 9 XXXX XXXX / +56 2 XXXX XXXX / +56 XX XXX XXXX)
+	function formatChileanPhone(phoneStr: string): string {
+		if (!phoneStr) return '';
+		const digits = cleanChileanPhone(phoneStr);
+		if (!digits) return phoneStr.replace(/[^\d+ ]/g, '');
+
+		if (digits.startsWith('9')) {
+			// Celular
+			if (digits.length <= 1) return `+56 ${digits}`;
+			if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
+			return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+		} else if (digits.startsWith('2')) {
+			// Red Fija Santiago (RM)
+			if (digits.length <= 1) return `+56 ${digits}`;
+			if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
+			return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+		} else if (/^[3-7]/.test(digits)) {
+			// Red Fija Regiones (código 2 dígitos: 32, 41, etc.)
+			if (digits.length <= 2) return `+56 ${digits}`;
+			if (digits.length <= 5) return `+56 ${digits.slice(0, 2)} ${digits.slice(2)}`;
+			return `+56 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 9)}`;
+		}
+		return `+56 ${digits}`;
+	}
+
 	// Elementos DOM
 	const deliveryOptions = document.querySelectorAll('.delivery-option');
 	const despachoFields = document.getElementById('despacho-fields');
@@ -696,6 +743,7 @@ const REGIONES_CHILE = [
 	const rutError = document.getElementById('rut-error');
 	const emailInput = document.getElementById('email') as HTMLInputElement;
 	const phoneInput = document.getElementById('phone') as HTMLInputElement;
+	const phoneError = document.getElementById('phone-error');
 
 	const summarySubtotal = document.getElementById('summary-subtotal');
 	const summaryShipping = document.getElementById('summary-shipping');
@@ -829,6 +877,42 @@ const REGIONES_CHILE = [
 		}
 	});
 
+	// Formateo y validación de Teléfono / Celular en tiempo real
+	phoneInput?.addEventListener('input', () => {
+		const formatted = formatChileanPhone(phoneInput.value);
+		phoneInput.value = formatted;
+		const clean = cleanChileanPhone(formatted);
+		if (clean.length >= 9) {
+			if (isValidChileanPhone(formatted)) {
+				phoneError?.classList.add('hidden');
+				phoneInput.classList.remove('border-red-500');
+				phoneInput.classList.add('border-brand-green');
+			} else {
+				phoneError?.classList.remove('hidden');
+				phoneInput.classList.remove('border-brand-green');
+				phoneInput.classList.add('border-red-500');
+			}
+		} else {
+			phoneError?.classList.add('hidden');
+			phoneInput.classList.remove('border-brand-green', 'border-red-500');
+		}
+	});
+
+	phoneInput?.addEventListener('blur', () => {
+		if (phoneInput.value.trim().length > 0) {
+			if (isValidChileanPhone(phoneInput.value)) {
+				phoneInput.value = formatChileanPhone(phoneInput.value);
+				phoneError?.classList.add('hidden');
+				phoneInput.classList.remove('border-red-500');
+				phoneInput.classList.add('border-brand-green');
+			} else {
+				phoneError?.classList.remove('hidden');
+				phoneInput.classList.remove('border-brand-green');
+				phoneInput.classList.add('border-red-500');
+			}
+		}
+	});
+
 	// 3. Supabase Auth Management (Google OAuth)
 	async function initAuth() {
 		try {
@@ -884,7 +968,12 @@ const REGIONES_CHILE = [
 							rutInput.classList.add('border-brand-green');
 						}
 					}
-					if (phoneInput && customer.phone) phoneInput.value = customer.phone;
+					if (phoneInput && customer.phone) {
+						phoneInput.value = formatChileanPhone(customer.phone) || customer.phone;
+						if (isValidChileanPhone(phoneInput.value)) {
+							phoneInput.classList.add('border-brand-green');
+						}
+					}
 					if (addressInput && customer.address) addressInput.value = customer.address;
 				}
 			} catch (cErr) {
@@ -1043,7 +1132,7 @@ const REGIONES_CHILE = [
 		if (modalDisplayName) modalDisplayName.textContent = fullNameInput.value.trim();
 		if (modalDisplayRut) modalDisplayRut.textContent = rutInput.value.trim().toUpperCase();
 		if (modalDisplayEmail) modalDisplayEmail.textContent = emailInput.value.trim().toLowerCase();
-		if (modalDisplayPhone) modalDisplayPhone.textContent = phoneInput.value.trim();
+		if (modalDisplayPhone) modalDisplayPhone.textContent = formatChileanPhone(phoneInput.value) || phoneInput.value.trim();
 		if (modalDisplayDelivery) {
 			modalDisplayDelivery.textContent = currentDelivery === 'retiro' ? 'Retiro en Oficina Técnica ($0)' : 'Envío por Pagar (Cobro en Destino)';
 		}
@@ -1120,11 +1209,14 @@ const REGIONES_CHILE = [
 			return;
 		}
 
-		if (!phoneInput.value.trim()) {
+		if (!phoneInput.value.trim() || !isValidChileanPhone(phoneInput.value)) {
 			phoneInput.focus();
+			phoneError?.classList.remove('hidden');
+			phoneInput.classList.remove('border-brand-green');
+			phoneInput.classList.add('border-red-500');
 			showSystemNotice({
-				title: 'Teléfono Móvil Requerido',
-				message: 'Por favor ingresa un teléfono móvil de contacto para coordinar la entrega o el despacho de tu pedido.',
+				title: 'Teléfono o Celular Inválido',
+				message: 'Por favor ingresa un número de teléfono válido de Chile (Celular/WhatsApp: +56 9 XXXX XXXX o Red Fija: 9 dígitos) para coordinar el despacho o entrega.',
 				type: 'warning'
 			});
 			return;
@@ -1188,7 +1280,7 @@ const REGIONES_CHILE = [
 				id: currentUser.id,
 				full_name: fullNameInput.value.trim(),
 				email: emailInput.value.trim().toLowerCase(),
-				phone: phoneInput.value.trim(),
+				phone: formatChileanPhone(phoneInput.value) || phoneInput.value.trim(),
 				rut: rutInput.value.trim().toUpperCase(),
 				address: addressInput.value.trim() || 'Retiro en Oficina Técnica',
 				commune: communeVal,

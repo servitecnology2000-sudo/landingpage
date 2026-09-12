@@ -2,6 +2,11 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-11 (Validación y Formateo de Teléfonos Chilenos en Checkout):**
+  - **Validación Normativa Subtel (`src/pages/checkout.astro`):** Implementación de validación estricta para números telefónicos de Chile (9 dígitos nacionales tras el código país). Soporte exhaustivo para Celulares / WhatsApp (`+56 9 XXXX XXXX`), telefonía fija de la Región Metropolitana (`+56 2 XXXX XXXX`) y telefonía fija de regiones (`+56 XX XXX XXXX`).
+  - **Formateador y Feedback en Tiempo Real:** Formateo automático progresivo con prefijo internacional `+56`, detección y descarte de ceros iniciales accidentales, feedback visual con bordes esmeralda/rojo, mensaje de error en línea (`#phone-error`) y bloqueo preventivo con alerta del sistema si el número es inválido al intentar proceder al pago.
+  - **Normalización de Datos en Pedidos y Clientes:** Los datos del teléfono ahora se almacenan formateados y homologados en el resumen del modal de confirmación, la base de datos de Supabase y la preferencia de Mercado Pago.
+
 - **2026-09-11 (Autenticación Directa Panel Administrativo con Clave Maestra):**
   - **Diagnóstico y Eliminación de Bloqueo por Certificado Autofirmado:** Se identificó que Supabase Auth Cloud rechaza conexiones SMTP a servidores con certificados SSL autofirmados (como `mail.whagil.com`, error SSL 18), provocando el fallo `500 Internal Server Error: Error sending magic link email`.
   - **Acceso Robusto con Clave Maestra (`src/pages/meson-servitecnology-st/login.astro`):** Se refactorizó la vista de inicio de sesión para autenticar directamente contra la clave maestra secreta (`ADMIN_SECRET` = `20181860`) configurada en el entorno, emitiendo de inmediato la cookie segura `admin_session` con validez de 24 horas y redirigiendo al dashboard `/meson-servitecnology-st` sin depender de servicios externos de correo ni retrasos de OTP.
