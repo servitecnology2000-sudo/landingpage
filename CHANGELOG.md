@@ -2,6 +2,10 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-11 (Arquitectura Dual de Entorno Sandbox/Producción Mercado Pago):**
+  - **Soporte de Conmutación Transparente (`src/lib/mercadopago.ts`):** Implementación de resolución dinámica del entorno mediante `MERCADOPAGO_ENV` (`'production'` o `'sandbox'`), resolviendo automáticamente las credenciales productivas (`ML_PRODUCCION_ACCESS_TOKEN`, `ML_PRODUCCION_PUBLIC_KEY`) o de prueba (`ML_PRUEBAS_ACCESS_TOKEN`, `ML_PRUEBAS_PUBLIC_KEY`).
+  - **Aclaración sobre Client ID y Client Secret:** Se determinó que Checkout Pro y los Webhooks operan de manera autónoma con el `ACCESS_TOKEN`, no requiriendo la inyección de `CLIENT_ID` ni `CLIENT_SECRET` en el flujo de pagos directo.
+  - **Verificación de Token Productivo en Vivo:** Validación exitosa mediante el SDK contra la API de Mercado Pago, comprobando autenticación activa de la cuenta oficial de Servitecnology SpA (`jesusleon@servitecnology.com`, Chile - MLC).
 - **2026-09-11 (Homologación y Validación de Ciclo de Vida Completo Mercado Pago - Hito 80%):**
   - **Prueba Integral de Estados de Transacción:** Validación del comportamiento del sistema ante diversos estados de pago en Checkout Pro (aprobado `APRO`, fondos insuficientes `FUND`, llamada para autorizar `CONT`, código de seguridad `SECU`, etc.). Confirmación de que el flujo de Checkout Pro retiene al usuario de forma segura ante rechazos bancarios ofreciendo reintentar con otro medio de pago; en caso de abandono o cancelación, redirige a `/checkout?payment=failure` preservando el carrito del cliente y actualizando la orden en Supabase a `rechazado`/`cancelado` sin alterar el stock ni disparar correos de factura.
   - **Cumplimiento del Checklist en Developers Dashboard (80%):** Aprobación y verificación de los 4 hitos técnicos obligatorios de Mercado Pago:
