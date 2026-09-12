@@ -187,6 +187,7 @@ import { APP_TIMEZONE, APP_LOCALE } from '../lib/dates';
 
 <script>
 	import { supabase } from '../lib/supabase';
+	import { formatDateTime } from '../lib/dates';
 
 	// DOM Elements
 	const unauthView = document.getElementById('unauth-view');
@@ -342,7 +343,7 @@ import { APP_TIMEZONE, APP_LOCALE } from '../lib/dates';
 
 		ordersList.innerHTML = filtered.map(order => {
 			const isPaid = order.payment_status === 'aprobado';
-			const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString('${APP_LOCALE}', { timeZone: '${APP_TIMEZONE}', day: '2-digit', month: 'long', year: 'numeric' }) : 'Reciente';
+			const dateStr = order.created_at ? formatDateTime(order.created_at, { includeTime: false, monthFormat: 'long' }) : 'Reciente';
 
 			// Stepper logístico
 			const status = order.order_status || 'preparacion';
