@@ -63,7 +63,32 @@ export const POST: APIRoute = async ({ request }) => {
 			console.warn('Advertencia al insertar cliente (posible tabla pendiente en Supabase):', cErr);
 		}
 
-		// 2. Generar ID único ST-2026-XXXX
+		// 2. Validación estricta de stock disponible en Supabase antes de crear la orden
+		for (const item of items) {
+			if (item.sku) {
+				const requestedQty = Math.max(1, parseInt(item.cantidad, 10) || 1);
+				const { data: prod } = await supabaseAdmin
+					.from('repuestos_productos')
+					.select('sku, titulo, stock_cantidad')
+					.eq('sku', item.sku)
+					.maybeSingle();
+
+				if (prod) {
+					const stockDisponible = Math.max(0, parseInt(prod.stock_cantidad, 10) || 0);
+					if (stockDisponible < requestedQty) {
+						return new Response(JSON.stringify({
+							success: false,
+							error: `Stock insuficiente para "${prod.titulo}". Disponible: ${stockDisponible}, Solicitado: ${requestedQty}.`
+						}), {
+							status: 400,
+							headers: { 'Content-Type': 'application/json' }
+						});
+					}
+				}
+			}
+		}
+
+		// 3. Generar ID único ST-2026-XXXX
 		const orderId = generateOrderId();
 		const reservedUntil = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2 horas
 
@@ -87,7 +112,7 @@ export const POST: APIRoute = async ({ request }) => {
 			created_at: new Date().toISOString()
 		};
 
-		// 3. Insertar en tabla orders en Supabase
+		// 4. Insertar en tabla orders en Supabase
 		let orderSavedInDb = false;
 		try {
 			const { error: orderError } = await supabaseAdmin

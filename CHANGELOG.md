@@ -2,6 +2,23 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Control Estricto de Stock en Tiempo Real en Resumen del Checkout y Catálogo):**
+  - **Validación y Bloqueo en Resumen del Pedido (`src/pages/checkout.astro`):**
+    - Sincronización en tiempo real (`validateAndSyncLiveStock`) con Supabase al cargar el checkout: Si un producto en el carrito supera el stock disponible en bodega (como el caso de `A2514_DSM` con 1 unidad disponible), se ajusta automáticamente la cantidad al máximo físico existente y se notifica al usuario con modal informativo.
+    - Bloqueo dinámico del botón `+` (`btn-qty-plus`): Al alcanzar el stock disponible del producto, el botón se deshabilita visual y funcionalmente (`disabled`, opacidad reducida y cursor no permitido), impidiendo agregar más unidades de las existentes.
+    - Indicador visual de disponibilidad: Inclusión de distintivo ámbar `● ¡Solo 1 en stock!` / `● Solo X en stock` en cada ítem del resumen para informar claramente al comprador.
+    - Doble validación en `btnProceedCheckout` y en la generación de pago (`btnFinalSaveAndPay`) bloqueando la orden si algún ítem supera el inventario.
+  - **Nuevo Endpoint de Validación de Stock en Tiempo Real (`/api/cart/validate-stock`):**
+    - Creación de `src/pages/api/cart/validate-stock.ts` para consulta masiva y ultrarrápida del stock y disponibilidad real de los SKUs presentes en el carrito.
+  - **Protección Backend en Generación de Órdenes por Transferencia (`/api/orders/create`):**
+    - Se incorporó la validación estricta de stock antes de insertar cualquier orden en Supabase, impidiendo compras fraudulentas o inconsistentes por transferencia si el stock disponible es menor a la cantidad solicitada (HTTP 400).
+  - **Control en Catálogo y Ficha de Producto (`Catalog.astro` y `repuesto/[slug].astro`):**
+    - Incorporación de `data-stock` en botones de compra y validación en `addToCart()` y `updateItemQuantity()` en `src/lib/cart.ts` con retroalimentación visual inmediata ("¡Máx. Stock en Carrito!").
+  - **Suite de Pruebas Automatizadas y Certificación:**
+    - Creación de `tests/checkout/stock-validation.test.ts` con 4 pruebas completas (ajuste en carrito, límite en incremento, endpoint `/api/cart/validate-stock` y rechazo en `/api/orders/create`).
+    - 105/105 pruebas unitarias e integración aprobadas al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) completada con éxito en 4.49s.
+
 - **2026-09-12 (Resolución de Fuga de Carrito, Cancelación Automática de Intentos y Sincronización Logística en Mesón):**
   - **Preservación del Carrito de Compras en Checkout (`src/pages/checkout.astro`):**
     - Se corrigió la eliminación prematura del carrito local (`clearCart()`) antes de redirigir a Mercado Pago Checkout Pro. Ahora los productos permanecen en el carrito si el cliente hace clic en "Volver", cancela o si el pago es rechazado.

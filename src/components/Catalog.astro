@@ -299,6 +299,7 @@ const phone = "56948672300";
 												data-price={product.precio_venta}
 												data-image={images[0] || '/imagenes/logost.png'}
 												data-slug={product.slug}
+												data-stock={product.stock_cantidad}
 												title="Agregar repuesto a tu carrito"
 											>
 												<svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
@@ -613,21 +614,35 @@ const phone = "56948672300";
 			const price = parseFloat(btn.getAttribute('data-price') || '0');
 			const image = btn.getAttribute('data-image') || '';
 			const slug = btn.getAttribute('data-slug') || '';
+			const rawStock = btn.getAttribute('data-stock');
+			const stockNum = rawStock !== null ? parseInt(rawStock, 10) : undefined;
 
 			if (!sku) return;
 
-			addToCart({
+			const result = addToCart({
 				sku,
 				titulo: title,
 				precio_venta: price,
 				cantidad: 1,
 				imagen: image,
-				slug
+				slug,
+				stock_disponible: stockNum
 			});
 
-			// Animación y feedback instantáneo en el botón
 			const spanText = btn.querySelector('.btn-text');
 			const originalText = spanText ? spanText.textContent : 'Agregar al Carrito';
+
+			if (!result.success) {
+				if (spanText) spanText.textContent = '¡Máx. Stock en Carrito!';
+				btn.classList.add('ring-2', 'ring-amber-400', 'text-amber-300');
+				setTimeout(() => {
+					if (spanText) spanText.textContent = originalText;
+					btn.classList.remove('ring-2', 'ring-amber-400', 'text-amber-300');
+				}, 1500);
+				return;
+			}
+
+			// Animación y feedback instantáneo en el botón
 			if (spanText) spanText.textContent = '¡Agregado! ✓';
 			btn.classList.add('ring-2', 'ring-brand-green', 'scale-105');
 

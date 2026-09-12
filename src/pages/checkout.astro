@@ -409,7 +409,7 @@ const REGIONES_CHILE = [
 						<!-- Items Container -->
 						<div id="checkout-items-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
 							{initialProduct ? (
-								<div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5" data-sku={initialProduct.sku} data-price={initialProduct.precio_venta} data-title={initialProduct.titulo} data-image={initialProduct.imagenes?.[0] || ''}>
+								<div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5" data-sku={initialProduct.sku} data-price={initialProduct.precio_venta} data-title={initialProduct.titulo} data-image={initialProduct.imagenes?.[0] || ''} data-stock={initialProduct.stock_cantidad}>
 									<img src={initialProduct.imagenes?.[0] || '/imagenes/logost.png'} alt="" class="w-14 h-14 rounded-lg object-cover bg-zinc-900 border border-white/10 shrink-0" />
 									<div class="flex-1 min-w-0">
 										<h4 class="text-xs font-bold text-white truncate">{initialProduct.titulo}</h4>
@@ -1241,6 +1241,21 @@ const REGIONES_CHILE = [
 			return;
 		}
 
+		// Validar que ningún producto en el carrito supere el stock físico antes de proceder
+		for (const it of items) {
+			const maxStock = liveStockMap[it.sku] ?? it.stock_disponible;
+			if (maxStock !== undefined && (it.cantidad || 1) > maxStock) {
+				showSystemNotice({
+					title: 'Stock Excedido',
+					message: `La cantidad solicitada para "${it.titulo}" (${it.cantidad}) supera el stock disponible en bodega (${maxStock} unidad${maxStock > 1 ? 'es' : ''}). Por favor ajusta tu pedido en el resumen antes de continuar.`,
+					type: 'warning',
+					btnText: 'Ajustar Pedido'
+				});
+				validateAndSyncLiveStock();
+				return;
+			}
+		}
+
 		// Validar aceptación obligatoria de Términos y Condiciones y Privacidad (Ley N° 21.719)
 		if (!acceptTermsCheckbox?.checked) {
 			termsErrorMsg?.classList.remove('hidden');
@@ -1359,6 +1374,25 @@ const REGIONES_CHILE = [
 				: addressInput.value.trim();
 
 			const items = getItems();
+
+			// Validar stock en tiempo real antes de abrir sesión de pago
+			for (const it of items) {
+				const maxStock = liveStockMap[it.sku] ?? it.stock_disponible;
+				if (maxStock !== undefined && (it.cantidad || 1) > maxStock) {
+					closeConfirmModal();
+					showSystemNotice({
+						title: 'Stock Excedido',
+						message: `La cantidad solicitada para "${it.titulo}" (${it.cantidad}) supera el stock físico disponible en bodega (${maxStock} unidad${maxStock > 1 ? 'es' : ''}).`,
+						type: 'warning',
+						btnText: 'Ajustar Pedido'
+					});
+					validateAndSyncLiveStock();
+					if (btnFinalText) btnFinalText.textContent = 'Guardar Datos & Proceder al Pago';
+					btnFinalSpinner?.classList.add('hidden');
+					btnFinalSaveAndPay.removeAttribute('disabled');
+					return;
+				}
+			}
 			const payloadPreference = {
 				customer_id: currentUser ? currentUser.id : null,
 				customer: {
@@ -1430,6 +1464,70 @@ const REGIONES_CHILE = [
 		}
 	});
 
+	// Mapa en memoria de stock disponible por SKU en tiempo real
+	const liveStockMap: Record<string, number> = {};
+	let isStockValidating = false;
+
+	async function validateAndSyncLiveStock(skipNotice = false) {
+		const cart = getCart();
+		if (cart.length === 0) return;
+		if (isStockValidating) return;
+		isStockValidating = true;
+
+		try {
+			const skus = cart.map(i => i.sku).filter(Boolean);
+			const res = await fetch('/api/cart/validate-stock', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ skus })
+			});
+
+			if (!res.ok) return;
+			const data = await res.json();
+			if (!data.success || !data.stocks) return;
+
+			let cartModified = false;
+			const adjustedNotices: string[] = [];
+
+			cart.forEach(item => {
+				const info = data.stocks[item.sku];
+				if (info) {
+					const realStock = Math.max(0, info.stock);
+					liveStockMap[item.sku] = realStock;
+					item.stock_disponible = realStock;
+
+					if (realStock <= 0) {
+						cartModified = true;
+						adjustedNotices.push(`"${item.titulo}" se encuentra agotado y fue removido del pedido.`);
+						removeFromCart(item.sku);
+					} else if ((item.cantidad || 1) > realStock) {
+						cartModified = true;
+						const prevQty = item.cantidad || 1;
+						item.cantidad = realStock;
+						adjustedNotices.push(`"${item.titulo}": cantidad ajustada de ${prevQty} a ${realStock} unidad${realStock > 1 ? 'es' : ''} (stock máximo disponible).`);
+						updateItemQuantity(item.sku, realStock, realStock);
+					}
+				}
+			});
+
+			// Re-renderizar la UI del carrito con los límites actualizados
+			syncCartUI();
+
+			if (!skipNotice && adjustedNotices.length > 0) {
+				showSystemNotice({
+					title: 'Ajuste de Disponibilidad de Stock',
+					message: `Hemos verificado el inventario en tiempo real con nuestra bodega:\n\n${adjustedNotices.join('\n\n')}\n\nTu resumen y total a pagar se actualizaron automáticamente.`,
+					type: 'warning',
+					btnText: 'Entendido'
+				});
+			}
+		} catch (err) {
+			console.warn('[checkout] Error al validar stock en tiempo real:', err);
+		} finally {
+			isStockValidating = false;
+		}
+	}
+
 	// Sincronización reactiva con Carrito LocalStorage
 	function syncCartUI() {
 		const cartItems = getCart();
@@ -1439,19 +1537,51 @@ const REGIONES_CHILE = [
 
 		// Si hay items en LocalStorage, renderizarlos sobreescribiendo el contenedor
 		if (cartItems.length > 0) {
-			itemsListEl.innerHTML = cartItems.map(it => `
-				<div class="flex items-center gap-3 p-3.5 rounded-xl bg-white/5 border border-white/5" data-sku="${it.sku}" data-price="${it.precio_venta}" data-title="${it.titulo}" data-image="${it.imagen || ''}" data-quantity="${it.cantidad || 1}">
+			itemsListEl.innerHTML = cartItems.map(it => {
+				const maxStock = liveStockMap[it.sku] !== undefined 
+					? liveStockMap[it.sku] 
+					: (it.stock_disponible !== undefined ? it.stock_disponible : undefined);
+
+				const qty = it.cantidad || 1;
+				const isAtMax = maxStock !== undefined && qty >= maxStock;
+				const isExceeded = maxStock !== undefined && qty > maxStock;
+				const isOutOfStock = maxStock !== undefined && maxStock <= 0;
+
+				let stockNoticeHtml = '';
+				if (isOutOfStock) {
+					stockNoticeHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20 animate-pulse">● Agotado</span>`;
+				} else if (isExceeded) {
+					stockNoticeHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">● Supera stock (${maxStock} máx)</span>`;
+				} else if (maxStock !== undefined && maxStock <= 3) {
+					stockNoticeHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+						${maxStock === 1 ? '● ¡Solo 1 en stock!' : `● Solo ${maxStock} en stock`}
+					</span>`;
+				} else if (maxStock !== undefined) {
+					stockNoticeHtml = `<span class="text-[10px] text-slate-500 font-mono">(${maxStock} disp.)</span>`;
+				}
+
+				return `
+				<div class="flex items-center gap-3 p-3.5 rounded-xl bg-white/5 border ${isExceeded ? 'border-red-500/40' : 'border-white/5'} transition-all" data-sku="${it.sku}" data-price="${it.precio_venta}" data-title="${it.titulo}" data-image="${it.imagen || ''}" data-quantity="${qty}">
 					<img src="${it.imagen || '/imagenes/logost.png'}" alt="" class="w-14 h-14 rounded-lg object-cover bg-zinc-900 border border-white/10 shrink-0" />
 					<div class="flex-1 min-w-0">
-						<h4 class="text-xs font-bold text-white truncate">${it.titulo}</h4>
-						<p class="text-[10px] text-slate-400 font-mono">SKU: ${it.sku}</p>
+						<h4 class="text-xs font-bold text-white truncate" title="${it.titulo}">${it.titulo}</h4>
+						<div class="flex items-center gap-2 mt-0.5 flex-wrap">
+							<p class="text-[10px] text-slate-400 font-mono">SKU: ${it.sku}</p>
+							${stockNoticeHtml}
+						</div>
 						<div class="flex items-center justify-between mt-2 flex-wrap gap-2">
-							<span class="text-xs font-extrabold text-brand-green font-mono">$${((it.precio_venta || 0) * (it.cantidad || 1)).toLocaleString('es-CL')} CLP</span>
+							<span class="text-xs font-extrabold text-brand-green font-mono">$${((it.precio_venta || 0) * qty).toLocaleString('es-CL')} CLP</span>
 							<div class="flex items-center gap-2">
 								<div class="flex items-center bg-zinc-900 border border-white/15 rounded-lg p-0.5">
 									<button type="button" class="btn-qty-minus w-6 h-6 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer" data-sku="${it.sku}">-</button>
-									<span class="text-xs font-bold text-white px-2 font-mono">${it.cantidad || 1}</span>
-									<button type="button" class="btn-qty-plus w-6 h-6 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer" data-sku="${it.sku}">+</button>
+									<span class="text-xs font-bold text-white px-2 font-mono">${qty}</span>
+									<button 
+										type="button" 
+										class="btn-qty-plus w-6 h-6 flex items-center justify-center rounded text-xs font-bold transition-colors ${isAtMax ? 'opacity-25 cursor-not-allowed bg-white/5 text-slate-600' : 'text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer'}" 
+										data-sku="${it.sku}"
+										${isAtMax ? 'disabled' : ''}
+										title="${isAtMax ? `Stock máximo alcanzado (${maxStock} unidad${maxStock > 1 ? 'es' : ''})` : 'Aumentar cantidad'}"
+									>+</button>
 								</div>
 								<button type="button" class="btn-remove-item text-slate-400 hover:text-red-400 p-1 transition-colors cursor-pointer" data-sku="${it.sku}" title="Eliminar del pedido">
 									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -1460,7 +1590,8 @@ const REGIONES_CHILE = [
 						</div>
 					</div>
 				</div>
-			`).join('');
+				`;
+			}).join('');
 
 			if (itemsCountBadge) {
 				const totalUnits = cartItems.reduce((acc, it) => acc + (it.cantidad || 1), 0);
@@ -1485,7 +1616,30 @@ const REGIONES_CHILE = [
 					if (!sku) return;
 					const currentItem = cartItems.find(i => i.sku === sku);
 					if (currentItem) {
-						updateItemQuantity(sku, (currentItem.cantidad || 1) + 1);
+						const currentQty = currentItem.cantidad || 1;
+						const maxStock = liveStockMap[sku] !== undefined 
+							? liveStockMap[sku] 
+							: currentItem.stock_disponible;
+
+						if (maxStock !== undefined && currentQty >= maxStock) {
+							showSystemNotice({
+								title: 'Stock Máximo Alcanzado',
+								message: `Solo disponemos de ${maxStock} unidad${maxStock > 1 ? 'es' : ''} de "${currentItem.titulo}" en inventario.`,
+								type: 'warning',
+								btnText: 'Entendido'
+							});
+							return;
+						}
+
+						const result = updateItemQuantity(sku, currentQty + 1, maxStock);
+						if (result.clamped) {
+							showSystemNotice({
+								title: 'Límite de Stock',
+								message: `No es posible superar el stock disponible de ${maxStock} unidad${maxStock > 1 ? 'es' : ''}.`,
+								type: 'warning',
+								btnText: 'Entendido'
+							});
+						}
 					}
 				});
 			});
@@ -1528,8 +1682,13 @@ const REGIONES_CHILE = [
 			const title = initialEl.getAttribute('data-title') || '';
 			const price = parseFloat(initialEl.getAttribute('data-price') || '0');
 			const image = initialEl.getAttribute('data-image') || '';
+			const rawStock = initialEl.getAttribute('data-stock');
+			const stockNum = rawStock !== null ? parseInt(rawStock, 10) : undefined;
 			if (sku) {
-				addToCart({ sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image });
+				if (stockNum !== undefined) {
+					liveStockMap[sku] = stockNum;
+				}
+				addToCart({ sku, titulo: title, precio_venta: price, cantidad: 1, imagen: image, stock_disponible: stockNum });
 				const cleanUrl = new URL(window.location.href);
 				cleanUrl.searchParams.delete('sku');
 				cleanUrl.searchParams.delete('id');
@@ -1545,6 +1704,7 @@ const REGIONES_CHILE = [
 	initAuth();
 	syncCartUI();
 	updateTotals();
+	validateAndSyncLiveStock();
 
 	// Manejo de retorno de Mercado Pago cuando el pago falla o es cancelado
 	if (urlParams.get('payment') === 'failure') {
