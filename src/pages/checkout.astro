@@ -132,33 +132,56 @@ const REGIONES_CHILE = [
 						Checkout & Datos de Envío
 					</h1>
 				</div>
+			</div>
 
-				<!-- Auth User Status Chip -->
-				<div id="auth-status-chip" class="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-zinc-900/90 border border-white/10 text-xs">
-					<div class="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" id="user-status-dot"></div>
-					<div class="text-left">
-						<span id="user-status-text" class="text-slate-300 font-medium">Modo Invitado</span>
-						<div id="user-status-sub" class="text-[10px] text-slate-500">Google OAuth requerido para pagar</div>
+			<!-- Google OAuth Optional Persuasion Banner (Modo Invitado Activo) -->
+			<div id="google-login-banner" class="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-cyan/15 via-zinc-950 to-brand-green/10 border border-brand-cyan/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_30px_rgba(0,207,255,0.1)]">
+				<div class="flex items-start sm:items-center gap-3.5">
+					<div class="w-10 h-10 rounded-xl bg-brand-cyan/20 border border-brand-cyan/30 flex items-center justify-center text-lg shrink-0">
+						💡
 					</div>
+					<div>
+						<p class="text-xs sm:text-sm font-bold text-white leading-snug">
+							¿Tienes cuenta? Ingresa con Google para autorellenar tus datos.
+						</p>
+						<p class="text-[11px] sm:text-xs text-slate-300 mt-0.5">
+							Si creas tu cuenta podrás tener y ver el historial de tus compras y hacer seguimiento en vivo.
+						</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
 					<button 
 						type="button" 
 						id="btn-quick-google-login" 
-						class="ml-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+						class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
 					>
-						<svg class="w-3.5 h-3.5" viewBox="0 0 24 24">
+						<svg class="w-4 h-4" viewBox="0 0 24 24">
 							<path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
 							<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
 							<path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/>
 							<path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/>
 						</svg>
-						<span>Acceder</span>
+						<span>Acceder con Google</span>
 					</button>
-					<button 
-						type="button" 
-						id="btn-logout" 
-						class="hidden ml-2 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[11px] font-medium transition-colors"
-					>
-						Salir
+				</div>
+			</div>
+
+			<!-- User Authenticated State Banner (Hidden by default, shown when user logs in) -->
+			<div id="user-logged-banner" class="hidden mb-8 p-4 rounded-2xl bg-brand-green/10 border border-brand-green/30 flex items-center justify-between flex-wrap gap-3">
+				<div class="flex items-center gap-3">
+					<div class="w-8 h-8 rounded-full bg-brand-green/20 border border-brand-green/40 flex items-center justify-center text-sm">
+						✅
+					</div>
+					<div>
+						<span class="text-xs font-bold text-white flex items-center gap-2">
+							Sesión activa: <span id="logged-user-name" class="text-brand-green font-bold">Usuario</span>
+						</span>
+						<p class="text-[10px] text-slate-400">Tus datos quedarán vinculados a tu cuenta para registrar esta compra en tu historial.</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-2">
+					<button type="button" id="btn-logout" class="text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer">
+						Cerrar Sesión
 					</button>
 				</div>
 			</div>
@@ -465,16 +488,16 @@ const REGIONES_CHILE = [
 				</div>
 				<div>
 					<h3 class="text-lg font-extrabold text-white tracking-tight">
-						Identifícate para continuar
+						Accede a tu cuenta de Google
 					</h3>
 					<p class="text-xs text-brand-cyan font-medium">
-						Paso final para emitir tu orden y factura
+						Opcional: Autorellena tus datos y registra tu historial de compras
 					</p>
 				</div>
 			</div>
 
 			<p class="text-xs text-slate-300 leading-relaxed">
-				Para vincular tu compra a tu factura del SII y enviarte el link de pago y seguimiento del flete, ingresa con tu cuenta de Google en un solo clic:
+				Al iniciar sesión con Google podrás precargar tus datos de facturación SII y consultar el historial completo de tus pedidos y despachos en tiempo real:
 			</p>
 
 			<button 
@@ -750,9 +773,9 @@ const REGIONES_CHILE = [
 	const summaryTotal = document.getElementById('summary-total');
 	const summaryShippingNote = document.getElementById('summary-shipping-note');
 
-	const userStatusDot = document.getElementById('user-status-dot');
-	const userStatusText = document.getElementById('user-status-text');
-	const userStatusSub = document.getElementById('user-status-sub');
+	const googleLoginBanner = document.getElementById('google-login-banner');
+	const userLoggedBanner = document.getElementById('user-logged-banner');
+	const loggedUserName = document.getElementById('logged-user-name');
 	const btnQuickGoogleLogin = document.getElementById('btn-quick-google-login');
 	const btnLogout = document.getElementById('btn-logout');
 
@@ -913,7 +936,7 @@ const REGIONES_CHILE = [
 		}
 	});
 
-	// 3. Supabase Auth Management (Google OAuth)
+	// 3. Supabase Auth Management (Google OAuth Opcional)
 	async function initAuth() {
 		try {
 			const { data: { session } } = await supabase.auth.getSession();
@@ -931,18 +954,11 @@ const REGIONES_CHILE = [
 		if (session && session.user) {
 			currentUser = session.user;
 			
-			// Actualizar Badge de Usuario
-			if (userStatusDot) {
-				userStatusDot.className = "w-2.5 h-2.5 rounded-full bg-brand-green shadow-[0_0_8px_rgba(0,255,127,0.8)]";
+			googleLoginBanner?.classList.add('hidden');
+			userLoggedBanner?.classList.remove('hidden');
+			if (loggedUserName) {
+				loggedUserName.textContent = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
 			}
-			if (userStatusText) {
-				userStatusText.textContent = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
-			}
-			if (userStatusSub) {
-				userStatusSub.textContent = "Sesión activa (Google)";
-			}
-			btnQuickGoogleLogin?.classList.add('hidden');
-			btnLogout?.classList.remove('hidden');
 
 			// Pre-rellenar Email y Nombre si están vacíos
 			if (emailInput && !emailInput.value) {
@@ -957,7 +973,8 @@ const REGIONES_CHILE = [
 				const { data: customer } = await supabase
 					.from('customers')
 					.select('*')
-					.eq('id', currentUser.id)
+					.or(`auth_user_id.eq.${currentUser.id},id.eq.${currentUser.id},email.eq.${currentUser.email}`)
+					.limit(1)
 					.maybeSingle();
 
 				if (customer) {
@@ -986,12 +1003,11 @@ const REGIONES_CHILE = [
 
 		} else {
 			currentUser = null;
-			if (userStatusDot) userStatusDot.className = "w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse";
-			if (userStatusText) userStatusText.textContent = "Modo Invitado";
-			if (userStatusSub) userStatusSub.textContent = "Google OAuth requerido para pagar";
-			btnQuickGoogleLogin?.classList.remove('hidden');
-			btnLogout?.classList.add('hidden');
-			if (btnProceedText) btnProceedText.textContent = "Continuar al Pago";
+			googleLoginBanner?.classList.remove('hidden');
+			userLoggedBanner?.classList.add('hidden');
+			if (btnProceedText) {
+				btnProceedText.textContent = "Continuar al Pago";
+			}
 		}
 	}
 
@@ -1171,13 +1187,7 @@ const REGIONES_CHILE = [
 			return;
 		}
 
-		// Si el usuario no ha iniciado sesión con Google, desplegar modal de OAuth
-		if (!currentUser) {
-			openGoogleModal();
-			return;
-		}
-
-		// Validar campos obligatorios
+		// Validar campos obligatorios de Facturación SII (Tanto para Invitado como Registrado)
 		if (!fullNameInput.value.trim()) {
 			fullNameInput.focus();
 			showSystemNotice({
@@ -1261,53 +1271,41 @@ const REGIONES_CHILE = [
 			}
 		}
 
-		// Si todo es válido y el usuario tiene sesión, abrir modal de confirmación final
+		// Si todo es válido (con o sin sesión de Google), abrir modal de confirmación final
 		openConfirmModal();
 	});
 
-	// 5. Guardar datos en `customers` y avanzar hacia el pago
+	// 5. Guardar datos y conectar con Mercado Pago
 	btnFinalSaveAndPay?.addEventListener('click', async () => {
 		try {
-			if (btnFinalText) btnFinalText.textContent = 'Guardando perfil...';
+			if (btnFinalText) btnFinalText.textContent = 'Conectando con Mercado Pago...';
 			btnFinalSpinner?.classList.remove('hidden');
 			btnFinalSaveAndPay.setAttribute('disabled', 'true');
 
 			const communeVal = currentDelivery === 'retiro' 
-				? 'Retiro Oficina' 
+				? 'Retiro en Oficina Técnica' 
 				: (regionSelect.value === 'RM' ? communeSelect.value : communeManual.value.trim());
 
-			const payloadCustomer = {
-				id: currentUser.id,
-				full_name: fullNameInput.value.trim(),
-				email: emailInput.value.trim().toLowerCase(),
-				phone: formatChileanPhone(phoneInput.value) || phoneInput.value.trim(),
-				rut: rutInput.value.trim().toUpperCase(),
-				address: addressInput.value.trim() || 'Retiro en Oficina Técnica',
-				commune: communeVal,
-				region: regionSelect.value || 'RM'
-			};
-
-			// Guardar / actualizar en base de datos public.customers vía API
-			const resCustomer = await fetch('/api/customers/update', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payloadCustomer)
-			});
-
-			const dataCustomer = await resCustomer.json();
-			if (!resCustomer.ok || !dataCustomer.success) {
-				throw new Error(dataCustomer.error || 'Error al persistir datos de cliente');
-			}
-
-			// 6. FASE 2: Invocar creación de preferencia en Mercado Pago
-			if (btnFinalText) btnFinalText.textContent = 'Conectando con Mercado Pago...';
+			const addressVal = currentDelivery === 'retiro'
+				? 'Retiro en Oficina Técnica (Santiago Centro)'
+				: addressInput.value.trim();
 
 			const items = getItems();
 			const payloadPreference = {
-				customer_id: currentUser.id,
-				delivery_type: currentDelivery,
+				customer_id: currentUser ? currentUser.id : null,
+				customer: {
+					full_name: fullNameInput.value.trim(),
+					email: emailInput.value.trim().toLowerCase(),
+					phone: formatChileanPhone(phoneInput.value) || phoneInput.value.trim(),
+					rut: rutInput.value.trim().toUpperCase(),
+					auth_user_id: currentUser ? currentUser.id : null,
+					address: addressVal,
+					commune: communeVal,
+					region: regionSelect.value || 'RM'
+				},
+				delivery_type: currentDelivery === 'retiro' ? 'retiro' : 'envio_nacional',
 				commune: communeVal,
-				address: addressInput.value.trim() || 'Retiro en Oficina Técnica',
+				address: addressVal,
 				items
 			};
 
@@ -1342,6 +1340,7 @@ const REGIONES_CHILE = [
 
 			if (targetPaymentUrl) {
 				if (btnFinalText) btnFinalText.textContent = 'Redirigiendo a Mercado Pago...';
+				clearCart();
 				window.location.href = targetPaymentUrl;
 				return;
 			}

@@ -1,0 +1,533 @@
+---
+export const prerender = false;
+
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout 
+	title="Mis Pedidos & Historial de Compras | SERVITECNOLOGY" 
+	description="Consulta el historial de tus compras de repuestos, estados de despacho en vivo, códigos de seguimiento y respaldos de facturación electrónica SII."
+	keywords="mis pedidos servitecnology, seguimiento repuestos, compras servitecnology, flete starken chilexpress, factura sii repuestos"
+>
+	<Header />
+
+	<main class="relative bg-black min-h-screen py-12 sm:py-16 border-b border-white/5">
+		<!-- Background Ambient Glows -->
+		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[160px] pointer-events-none"></div>
+		<div class="absolute bottom-1/3 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[160px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 w-full">
+			
+			<!-- Breadcrumb / Back Navigation -->
+			<div class="mb-6">
+				<a href="/repuestos" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-brand-cyan transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+					Volver al Catálogo de Repuestos
+				</a>
+			</div>
+
+			<!-- ============================================================ -->
+			<!-- ESTADO 1: USUARIO NO AUTENTICADO (ACCESO CON GOOGLE OAUTH)   -->
+			<!-- ============================================================ -->
+			<div id="unauth-view" class="max-w-xl mx-auto py-8 text-center space-y-8">
+				<div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-brand-cyan/20 to-brand-green/20 border border-brand-cyan/40 flex items-center justify-center text-4xl shadow-[0_0_50px_rgba(0,207,255,0.2)]">
+					📦
+				</div>
+
+				<div class="space-y-3">
+					<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-bold uppercase tracking-wider">
+						<span>Portal de Clientes & Trazabilidad</span>
+					</div>
+					<h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+						Historial de Compras & Despachos
+					</h1>
+					<p class="text-slate-300 text-sm leading-relaxed max-w-md mx-auto">
+						Ingresa con tu cuenta de Google para revisar el estado en vivo de tus pedidos, números de seguimiento y respaldos de facturación electrónica.
+					</p>
+				</div>
+
+				<!-- Google Login Action Card -->
+				<div class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md shadow-2xl space-y-5 text-left">
+					<div class="flex items-start gap-3.5">
+						<div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0 mt-0.5 text-lg">
+							💡
+						</div>
+						<div>
+							<h3 class="text-sm font-bold text-white">Vinculación Automática de Compras</h3>
+							<p class="text-xs text-slate-400 mt-1 leading-relaxed">
+								Si compraste anteriormente como <strong>invitado</strong> con tu correo, al iniciar sesión con Google con esa misma cuenta enlazaremos automáticamente todas tus órdenes pasadas.
+							</p>
+						</div>
+					</div>
+
+					<div class="pt-2">
+						<button 
+							type="button" 
+							id="btn-login-google" 
+							class="w-full py-4 px-6 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl transition-all cursor-pointer group"
+						>
+							<svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+								<path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+								<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+								<path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/>
+								<path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/>
+							</svg>
+							<span>Continuar con Google</span>
+						</button>
+					</div>
+
+					<div class="border-t border-white/5 pt-4 text-center">
+						<p class="text-[11px] text-slate-500">
+							🔒 Autenticación segura mediante protocolo OAuth 2.0 y Supabase Auth.
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================================================ -->
+			<!-- ESTADO 2: USUARIO AUTENTICADO (PORTAL Y LISTA DE PEDIDOS)     -->
+			<!-- ============================================================ -->
+			<div id="auth-view" class="hidden space-y-8">
+				
+				<!-- Customer Header Banner -->
+				<div class="p-6 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+					<div class="flex items-center gap-4">
+						<div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-green/20 to-brand-cyan/20 border border-brand-green/40 flex items-center justify-center text-2xl shrink-0 shadow-[0_0_20px_rgba(0,255,127,0.2)]">
+							👤
+						</div>
+						<div>
+							<div class="flex items-center gap-2 flex-wrap">
+								<h1 class="text-xl sm:text-2xl font-black text-white" id="customer-name">
+									Cargando usuario...
+								</h1>
+								<span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-green/10 text-brand-green border border-brand-green/30 uppercase tracking-wider font-mono">
+									Cliente Verificado
+								</span>
+							</div>
+							<p class="text-xs text-slate-400 font-mono mt-0.5" id="customer-email">---</p>
+						</div>
+					</div>
+
+					<div class="flex items-center gap-3">
+						<a 
+							href="/repuestos" 
+							class="px-4 py-2.5 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,255,127,0.25)] flex items-center gap-2"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+							<span>Comprar Repuestos</span>
+						</a>
+						<button 
+							type="button" 
+							id="btn-portal-logout" 
+							class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 transition-all cursor-pointer"
+						>
+							Cerrar Sesión
+						</button>
+					</div>
+				</div>
+
+				<!-- Search & Filter Bar -->
+				<div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-950/60 border border-white/5">
+					<div class="relative w-full sm:w-80">
+						<input 
+							type="text" 
+							id="order-search-input" 
+							placeholder="Buscar por N° ST-2026 o repuesto..." 
+							class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs placeholder-slate-500 focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+						<svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+					</div>
+
+					<div class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 text-xs" id="filter-pills-container">
+						<button type="button" class="filter-pill px-3 py-1.5 rounded-lg bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 font-bold transition-all cursor-pointer text-[11px]" data-filter="all">Todos</button>
+						<button type="button" class="filter-pill px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition-all cursor-pointer text-[11px]" data-filter="preparacion">En Preparación</button>
+						<button type="button" class="filter-pill px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition-all cursor-pointer text-[11px]" data-filter="despachado">Despachados</button>
+						<button type="button" class="filter-pill px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition-all cursor-pointer text-[11px]" data-filter="listo_retiro">Listos para Retiro</button>
+						<button type="button" class="filter-pill px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition-all cursor-pointer text-[11px]" data-filter="entregado">Entregados</button>
+					</div>
+				</div>
+
+				<!-- Orders List Container -->
+				<div id="orders-container" class="space-y-6">
+					<!-- Skeleton Loading State -->
+					<div id="orders-loading" class="space-y-4 py-8">
+						<div class="p-6 rounded-3xl bg-zinc-950/40 border border-white/5 animate-pulse space-y-4">
+							<div class="h-6 w-1/3 bg-white/10 rounded-lg"></div>
+							<div class="h-16 bg-white/5 rounded-xl"></div>
+							<div class="h-4 w-1/2 bg-white/5 rounded"></div>
+						</div>
+					</div>
+
+					<!-- Empty State -->
+					<div id="orders-empty" class="hidden text-center py-16 p-8 rounded-3xl bg-zinc-950/40 border border-white/5 space-y-4">
+						<div class="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center text-3xl">🛒</div>
+						<h3 class="text-lg font-bold text-white">No tienes compras registradas aún</h3>
+						<p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+							Explora nuestro catálogo universal de componentes y hardware técnico con stock en tiempo real.
+						</p>
+						<a href="/repuestos" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 transition-all">
+							Ir al Catálogo de Repuestos →
+						</a>
+					</div>
+
+					<!-- Real Orders Injected Dynamically -->
+					<div id="orders-list" class="space-y-6"></div>
+				</div>
+
+			</div>
+
+		</div>
+	</main>
+
+	<Footer />
+</Layout>
+
+<script>
+	import { supabase } from '../lib/supabase';
+
+	// DOM Elements
+	const unauthView = document.getElementById('unauth-view');
+	const authView = document.getElementById('auth-view');
+	const btnLoginGoogle = document.getElementById('btn-login-google');
+	const btnPortalLogout = document.getElementById('btn-portal-logout');
+
+	const customerName = document.getElementById('customer-name');
+	const customerEmail = document.getElementById('customer-email');
+
+	const ordersContainer = document.getElementById('orders-container');
+	const ordersLoading = document.getElementById('orders-loading');
+	const ordersEmpty = document.getElementById('orders-empty');
+	const ordersList = document.getElementById('orders-list');
+
+	const orderSearchInput = document.getElementById('order-search-input') as HTMLInputElement;
+	const filterPills = document.querySelectorAll('.filter-pill');
+
+	let globalOrders: any[] = [];
+	let currentFilter = 'all';
+
+	// 1. Inicializar autenticación y sesión
+	async function initPortal() {
+		try {
+			const { data: { session } } = await supabase.auth.getSession();
+			handlePortalSession(session);
+
+			supabase.auth.onAuthStateChange((_event, session) => {
+				handlePortalSession(session);
+			});
+		} catch (e) {
+			console.error('Error inicializando sesión del portal:', e);
+		}
+	}
+
+	async function handlePortalSession(session: any) {
+		if (session && session.user) {
+			unauthView?.classList.add('hidden');
+			authView?.classList.remove('hidden');
+
+			if (customerName) {
+				customerName.textContent = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+			}
+			if (customerEmail) {
+				customerEmail.textContent = session.user.email;
+			}
+
+			await loadCustomerOrders(session.access_token);
+		} else {
+			unauthView?.classList.remove('hidden');
+			authView?.classList.add('hidden');
+		}
+	}
+
+	async function loginGoogle() {
+		try {
+			const { error } = await supabase.auth.signInWithOAuth({
+				provider: 'google',
+				options: {
+					redirectTo: window.location.origin + window.location.pathname
+				}
+			});
+			if (error) throw error;
+		} catch (err: any) {
+			alert('Error al conectar con Google: ' + (err.message || err));
+		}
+	}
+
+	async function logoutPortal() {
+		await supabase.auth.signOut();
+		window.location.reload();
+	}
+
+	btnLoginGoogle?.addEventListener('click', loginGoogle);
+	btnPortalLogout?.addEventListener('click', logoutPortal);
+
+	// 2. Cargar órdenes de compra desde la API
+	async function loadCustomerOrders(accessToken: string) {
+		try {
+			ordersLoading?.classList.remove('hidden');
+			ordersEmpty?.classList.add('hidden');
+			if (ordersList) ordersList.innerHTML = '';
+
+			const res = await fetch('/api/account/orders', {
+				headers: {
+					'Authorization': `Bearer ${accessToken}`
+				}
+			});
+
+			const data = await res.json();
+			ordersLoading?.classList.add('hidden');
+
+			if (!res.ok || !data.success) {
+				throw new Error(data.error || 'Error cargando compras');
+			}
+
+			globalOrders = data.orders || [];
+
+			if (globalOrders.length === 0) {
+				ordersEmpty?.classList.remove('hidden');
+				return;
+			}
+
+			renderOrders();
+
+		} catch (err: any) {
+			ordersLoading?.classList.add('hidden');
+			console.error('Error cargando pedidos:', err);
+			if (ordersList) {
+				ordersList.innerHTML = `
+					<div class="p-6 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs">
+						No pudimos cargar tus compras: ${err.message || 'Error de conexión'}. Por favor recarga la página.
+					</div>
+				`;
+			}
+		}
+	}
+
+	// 3. Renderizar listado de tarjetas de pedidos
+	function renderOrders() {
+		if (!ordersList) return;
+
+		const query = (orderSearchInput?.value || '').trim().toLowerCase();
+
+		const filtered = globalOrders.filter(o => {
+			// Filtro por píldora de estado
+			if (currentFilter !== 'all' && o.order_status !== currentFilter) {
+				return false;
+			}
+
+			// Filtro de búsqueda por texto
+			if (query) {
+				const matchesId = (o.id || '').toLowerCase().includes(query);
+				const matchesItems = Array.isArray(o.items) && o.items.some((it: any) => 
+					(it.titulo || '').toLowerCase().includes(query) || (it.sku || '').toLowerCase().includes(query)
+				);
+				const matchesCourier = (o.courier || '').toLowerCase().includes(query) || (o.tracking_number || '').toLowerCase().includes(query);
+				return matchesId || matchesItems || matchesCourier;
+			}
+
+			return true;
+		});
+
+		if (filtered.length === 0) {
+			ordersList.innerHTML = `
+				<div class="text-center py-12 text-slate-400 text-xs space-y-2">
+					<p class="font-bold text-white">No se encontraron pedidos con el criterio seleccionado</p>
+					<p class="text-[11px] text-slate-500">Prueba ajustando los filtros o el término de búsqueda.</p>
+				</div>
+			`;
+			return;
+		}
+
+		ordersList.innerHTML = filtered.map(order => {
+			const isPaid = order.payment_status === 'aprobado';
+			const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Reciente';
+
+			// Stepper logístico
+			const status = order.order_status || 'preparacion';
+			const isPrep = true;
+			const isShipped = status === 'despachado' || status === 'listo_retiro' || status === 'entregado';
+			const isReadyOrTransit = status === 'despachado' || status === 'listo_retiro' || status === 'entregado';
+			const isDelivered = status === 'entregado';
+
+			const isPickup = order.delivery_type === 'retiro';
+
+			return `
+				<div class="p-6 sm:p-7 rounded-3xl bg-zinc-950/85 border border-white/10 backdrop-blur-md shadow-xl space-y-6 transition-all hover:border-white/20">
+					
+					<!-- Header de la Orden -->
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+						<div>
+							<div class="flex items-center gap-3">
+								<span class="font-mono text-lg sm:text-xl font-black text-white tracking-wider">${order.id}</span>
+								${isPaid ? `
+									<span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 font-mono">
+										<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+										Pago Aprobado
+									</span>
+								` : `
+									<span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 font-mono">
+										<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+										Pendiente de Pago
+									</span>
+								`}
+							</div>
+							<p class="text-xs text-slate-400 mt-1">Fecha de compra: ${dateStr}</p>
+						</div>
+
+						<div class="text-right sm:text-right">
+							<span class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block">Total Pagado en Web</span>
+							<span class="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan font-mono">
+								$${(order.total_amount || 0).toLocaleString('es-CL')} CLP
+							</span>
+						</div>
+					</div>
+
+					<!-- Stepper de Estado Logístico -->
+					<div class="p-4 sm:p-5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-3">
+						<div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-2">
+							<span>Estado del Despacho / Entrega:</span>
+							<span class="font-mono ${status === 'entregado' ? 'text-brand-green' : 'text-brand-cyan'} uppercase">
+								${status === 'preparacion' ? 'En Preparación Técnica' : 
+								  status === 'despachado' ? 'Despachado en Tránsito' : 
+								  status === 'listo_retiro' ? 'Listo para Retiro en Oficina' : 
+								  status === 'entregado' ? 'Entregado con Éxito' : 'Cancelado'}
+							</span>
+						</div>
+
+						<!-- Visual Progress Steps Bar -->
+						<div class="grid grid-cols-4 gap-2 text-center text-[10px] font-semibold">
+							<div class="space-y-1.5">
+								<div class="h-2 rounded-full ${isPrep ? 'bg-brand-green shadow-[0_0_8px_rgba(0,255,127,0.6)]' : 'bg-white/10'}"></div>
+								<span class="${isPrep ? 'text-white' : 'text-slate-500'}">1. Confirmado</span>
+							</div>
+							<div class="space-y-1.5">
+								<div class="h-2 rounded-full ${isPrep ? 'bg-brand-green shadow-[0_0_8px_rgba(0,255,127,0.6)]' : 'bg-white/10'}"></div>
+								<span class="${isPrep ? 'text-white' : 'text-slate-500'}">2. En Taller</span>
+							</div>
+							<div class="space-y-1.5">
+								<div class="h-2 rounded-full ${isReadyOrTransit ? 'bg-brand-cyan shadow-[0_0_8px_rgba(0,207,255,0.6)]' : 'bg-white/10'}"></div>
+								<span class="${isReadyOrTransit ? 'text-white' : 'text-slate-500'}">${isPickup ? '3. Para Retiro' : '3. En Courier'}</span>
+							</div>
+							<div class="space-y-1.5">
+								<div class="h-2 rounded-full ${isDelivered ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-white/10'}"></div>
+								<span class="${isDelivered ? 'text-white' : 'text-slate-500'}">4. Entregado</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Caja Informativa de Transporte o Retiro -->
+					<div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+						<div class="flex items-start gap-3">
+							<div class="text-xl mt-0.5">${isPickup ? '🏢' : '🚚'}</div>
+							<div>
+								<span class="font-bold text-white block">
+									${isPickup ? 'Retiro Presencial en Oficina Técnica' : `Despacho por Pagar (${order.courier || 'Starken / Chilexpress'})`}
+								</span>
+								<p class="text-slate-400 text-[11px] mt-0.5">
+									${isPickup ? 'Santiago Centro — Previa coordinación' : (order.shipping_address || 'Dirección de destino')}
+								</p>
+							</div>
+						</div>
+
+						${!isPickup && order.tracking_number ? `
+							<div class="flex items-center gap-2 shrink-0 bg-black/70 px-3 py-2 rounded-xl border border-white/10">
+								<div>
+									<span class="text-[9px] text-slate-400 uppercase tracking-widest block font-bold">N° Guía / Flete</span>
+									<span class="font-mono text-xs font-black text-brand-cyan">${order.tracking_number}</span>
+								</div>
+								<button 
+									type="button" 
+									class="btn-copy-tracking text-[11px] p-1.5 rounded-lg bg-white/10 hover:bg-brand-cyan/20 text-brand-cyan transition-colors cursor-pointer" 
+									data-tracking="${order.tracking_number}"
+									title="Copiar número de guía"
+								>
+									📋
+								</button>
+							</div>
+						` : ''}
+					</div>
+
+					<!-- Lista de Repuestos Adquiridos -->
+					<div class="space-y-2.5">
+						<h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Repuestos en este Pedido:</h4>
+						<div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+							${(order.items || []).map((it: any) => `
+								<div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/5 border border-white/5 text-xs">
+									<div class="flex items-center gap-3 min-w-0">
+										<img src="${it.imagen || '/imagenes/logost.png'}" alt="" class="w-10 h-10 rounded-lg object-cover bg-zinc-900 border border-white/10 shrink-0" />
+										<div class="min-w-0">
+											<p class="font-bold text-white truncate">${it.titulo || 'Repuesto ST'}</p>
+											<p class="text-[10px] text-slate-400 font-mono">SKU: ${it.sku} • Cant: ${it.cantidad || 1}</p>
+										</div>
+									</div>
+									<span class="font-mono font-bold text-brand-green shrink-0">
+										$${((it.precio_venta || 0) * (it.cantidad || 1)).toLocaleString('es-CL')} CLP
+									</span>
+								</div>
+							`).join('')}
+						</div>
+					</div>
+
+					<!-- Footer de Acciones Rápidas -->
+					<div class="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+						<div class="text-[11px] text-slate-400">
+							🔒 Garantía técnica 3x3 SERVITECNOLOGY y Factura SII.
+						</div>
+
+						<div class="flex items-center gap-2.5 w-full sm:w-auto">
+							<a 
+								href="https://wa.me/56987483660?text=${encodeURIComponent(`Hola SERVITECNOLOGY, consulto por mi pedido ${order.id}`)}" 
+								target="_blank" 
+								rel="noopener noreferrer" 
+								class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-brand-green/10 hover:bg-brand-green/20 text-brand-green border border-brand-green/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+							>
+								💬 <span>WhatsApp</span>
+							</a>
+							<a 
+								href="/pedido/${order.id}" 
+								class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+							>
+								<span>Ver Pedido / Factura →</span>
+							</a>
+						</div>
+					</div>
+
+				</div>
+			`;
+		}).join('');
+
+		// Event listeners para botones de copiado de guía
+		ordersList.querySelectorAll('.btn-copy-tracking').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const tracking = btn.getAttribute('data-tracking');
+				if (tracking) {
+					navigator.clipboard.writeText(tracking);
+					btn.textContent = '✅';
+					setTimeout(() => btn.textContent = '📋', 1500);
+				}
+			});
+		});
+	}
+
+	// 4. Listeners de búsqueda y filtrado
+	orderSearchInput?.addEventListener('input', renderOrders);
+
+	filterPills.forEach(pill => {
+		pill.addEventListener('click', () => {
+			const filterVal = pill.getAttribute('data-filter') || 'all';
+			currentFilter = filterVal;
+
+			filterPills.forEach(p => {
+				p.className = "filter-pill px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition-all cursor-pointer text-[11px]";
+			});
+
+			pill.className = "filter-pill px-3 py-1.5 rounded-lg bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 font-bold transition-all cursor-pointer text-[11px]";
+
+			renderOrders();
+		});
+	});
+
+	// Iniciar
+	initPortal();
+</script>

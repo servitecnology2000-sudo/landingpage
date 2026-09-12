@@ -2,6 +2,66 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Implementación y Certificación Completa: Portal del Cliente 'Mis Pedidos' y Trazabilidad Logística):**
+  - **Portal del Cliente (`src/pages/mis-pedidos.astro`):**
+    - Interfaz dark cyberpunk con acentos fluorescentes (`brand-cyan`, `brand-green`, ámbar y esmeralda) protegida con Supabase Auth (Google OAuth).
+    - Estado no autenticado con pantalla de bienvenida persuasiva y botón de acceso directo con Google.
+    - Estado autenticado con resumen de perfil, selector interactivo de filtros de estado (`Todos`, `En Preparación`, `En Tránsito / Retiro`, `Entregados`), y barra de búsqueda en tiempo real por N° de Orden (`ST-2026-XXXX`) o SKU/nombre del producto.
+    - Componente de Stepper Logístico Visual en 4 fases de cumplimiento:
+      1. Confirmado (Pago verificado)
+      2. En Taller Técnico (Preparando repuesto)
+      3. Despachado / Listo para Retiro (Con número de seguimiento en courier o retiro en local)
+      4. Entregado al Cliente.
+    - Integración con transportistas chilenos (Starken, Chilexpress, CorreosChile, BlueExpress, Delivery RM) con botón de copiado de orden de flete de un solo clic y enlace directo al rastreo oficial.
+    - Soporte tributario para Facturación Electrónica SII: visualización del folio de factura/boleta (`invoice_folio`) y enlace de descarga del documento tributario oficial (`invoice_url`).
+    - Atajos rápidos de atención técnica personalizada vía WhatsApp directo con el equipo de SERVITECNOLOGY.
+  - **Vinculación Inteligente Retroactiva (`src/pages/api/account/orders.ts`):**
+    - Endpoint seguro `GET /api/account/orders` con autenticación mediante token JWT Bearer validado con `supabase.auth.getUser()`.
+    - Algoritmo de enlace retroactivo automático: al iniciar sesión con Google, si el correo electrónico coincide con compras previas realizadas en modo Invitado, el sistema asocia de inmediato su `auth_user_id` y eleva el perfil de cliente a `customer_type = 'registrado'`.
+    - Consulta consolidada de órdenes en orden cronológico descendente y mapeo de items JSONB y datos logísticos.
+  - **Ampliación de Esquema en Base de Datos Supabase (`supabase/migrations/20260912_orders_customer_portal.sql`):**
+    - Migración DDL aplicada directamente en Supabase (`mivsnmvupahgbrjfdyhl`) añadiendo las columnas `invoice_folio` (TEXT), `invoice_url` (TEXT), `delivered_at` (TIMESTAMPTZ) e índice de búsqueda rápida `idx_orders_invoice_folio`.
+  - **Navegación Global (`src/components/Header.astro`):**
+    - Añadido botón "Mis Pedidos" con icono reactivo y pulsación verde indicadora de sesión activa en la barra superior desktop.
+    - Enlace destacado en el menú drawer para dispositivos móviles.
+  - **Aseguramiento de Calidad y Testing Automatizado:**
+    - Suite de pruebas automatizadas `tests/account/customer-orders.test.ts` (5 tests) cubriendo:
+      1. Rechazo por falta de cabecera Authorization (HTTP 401).
+      2. Rechazo por token malformado o sin prefijo Bearer (HTTP 401).
+      3. Rechazo por token inválido o expirado (HTTP 401).
+      4. Consulta exitosa de usuario nuevo sin órdenes registradas (HTTP 200).
+      5. Vinculación retroactiva automática de órdenes previas de invitado y validación de metadatos logísticos (`order_status`, `tracking_number`, `courier`, `invoice_folio`, `invoice_url`).
+    - Actualización de `tests/supabase-orders.test.ts` validando la presencia de las nuevas columnas logísticas y tributarias.
+    - Suite completa del proyecto (56 tests en 10 archivos) aprobada al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) validada con 0 errores en 3.89s.
+
+- **2026-09-12 (Implementación y Certificación: Checkout Pro como Invitado sin Login Obligatorio):**
+  - **Fricción Cero en Checkout (`src/pages/checkout.astro`):**
+    - Se eliminó la restricción obligatoria de inicio de sesión con Google OAuth para avanzar al pago.
+    - Se incorporó un banner superior persuasivo e informativo: *"¿Tienes cuenta? Ingresa con Google para autorellenar tus datos. Si creas tu cuenta podrás tener y ver el historial de tus compras y hacer seguimiento en vivo"*.
+    - Si el usuario decide acceder con Google, sus datos de contacto y facturación se precargan instantáneamente y se muestra un banner de sesión activa con opción de cerrar sesión.
+    - Si el usuario continúa como invitado, completa sus datos de facturación sin ninguna interrupción.
+  - **Validación Condicional de Métodos de Entrega:**
+    - **Retiro en Oficina Técnica ($0 - GRATIS):** Por defecto seleccionada. Omite y no exige región, comuna ni dirección de despacho. Asigna automáticamente retiro en oficina técnica Santiago Centro.
+    - **Envío por Pagar (Cobro en Destino):** Despliega y valida estrictamente región, comuna y dirección completa de despacho o sucursal de Starken / Chilexpress.
+    - **Datos del Comprador & Facturación SII (Obligatorio en ambos casos):** Exige rigurosamente Nombre/Razón Social, RUT con validación de algoritmo Módulo 11 del SII, Correo Electrónico y Teléfono celular chileno (+56 9...).
+  - **Backend y Pasarela de Pago (`src/pages/api/mercadopago/create-preference.ts` & `src/pages/api/customers/update.ts`):**
+    - `create-preference.ts` ahora procesa atómicamente el payload del cliente (invitado o registrado) junto con la orden y la preferencia de Mercado Pago.
+    - Búsqueda y actualización por `rut` o `email` en `public.customers`. Si el cliente no existe, se inserta automáticamente con `customer_type = 'invitado'`, `auth_user_id = NULL` y UUID automático, permitiendo que el taller técnico lo visualice de inmediato en el CRM para emitir la factura electrónica SII.
+    - Normalización de dirección y comuna para la orden `ST-2026-XXXX`.
+    - Generación de preferencia oficial de Checkout Pro con datos del `payer` (nombre, email y RUT chileno).
+  - **Aseguramiento de Calidad y Testing Automatizado:**
+    - Nueva suite de pruebas `tests/checkout/guest-checkout.test.ts` (6 tests) cubriendo:
+      1. Rechazo por carrito vacío (400).
+      2. Rechazo por RUT inválido con Módulo 11 (400).
+      3. Rechazo por campos obligatorios faltantes (400).
+      4. Rechazo por envío por pagar sin dirección o comuna (400).
+      5. Creación exitosa de pedido como invitado en modalidad Retiro en Oficina sin dirección de despacho (200).
+      6. Creación exitosa de pedido como invitado en modalidad Envío por Pagar con validación completa (200).
+    - Suite completa del proyecto (51 tests en 9 archivos) aprobada al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) validada con 0 errores en 4.02s.
+  - **Documentación:** Creación de [`docs/CheckoutInvitado/plan-checkout-invitado.md`](file:///home/angel/Developer/landingpage/docs/CheckoutInvitado/plan-checkout-invitado.md) y [`docs/PortalMisPedidos/plan-portal-mis-pedidos.md`](file:///home/angel/Developer/landingpage/docs/PortalMisPedidos/plan-portal-mis-pedidos.md).
+
 - **2026-09-12 (Unificación Integral de Navegación del Header Administrativo):**
   - **Topbar Global en Dashboard Principal (`src/pages/meson-servitecnology-st/index.astro`):** Se integraron en la barra superior fija todos los accesos directos a los módulos del panel administrativo: 📦 Repuestos (`?tab=inventario`), 🖼️ Galería (`?tab=galeria`), 📋 Pedidos (con badge fluorescente reactivo de pedidos pendientes), 👥 Clientes (`/meson-servitecnology-st/clientes`) y 📊 Métricas (`/meson-servitecnology-st/metricas`).
   - **Coherencia Visual:** Homologación completa con el layout compartido `AdminLayout.astro`, permitiendo navegación instantánea desde cualquier sección y en cualquier resolución de pantalla (soporte desktop y móvil con scroll horizontal).

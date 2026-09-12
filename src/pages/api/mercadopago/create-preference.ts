@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
 import { preferenceClient, isMercadoPagoConfigured, isSandbox } from '../../../lib/mercadopago';
+import { validateRut, formatRut } from '../../../lib/rut';
 
 export const prerender = false;
 
@@ -13,31 +14,178 @@ function generateOrderId(): string {
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		const body = await request.json();
-		const { customer_id, delivery_type, commune, address, items } = body;
+		const { customer_id, customer: customerPayload, delivery_type, commune, address, items } = body;
 
-		if (!customer_id || !items || !Array.isArray(items) || items.length === 0) {
+		if (!items || !Array.isArray(items) || items.length === 0) {
 			return new Response(JSON.stringify({
 				success: false,
-				error: 'Faltan parámetros obligatorios: customer_id y lista de items son requeridos.'
+				error: 'La lista de items en el pedido es obligatoria.'
 			}), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			});
 		}
 
-		// 1. Obtener datos del cliente en Supabase
-		const { data: customer, error: customerErr } = await supabaseAdmin
-			.from('customers')
-			.select('*')
-			.eq('id', customer_id)
-			.single();
+		// 1. Normalización y validación condicional del método de entrega
+		const normDeliveryType = (delivery_type === 'envio_cobro_destino' || delivery_type === 'envio_nacional') 
+			? 'envio_nacional' 
+			: 'retiro';
 
-		if (customerErr || !customer) {
+		if (normDeliveryType === 'envio_nacional') {
+			if (!address || typeof address !== 'string' || !address.trim()) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'La dirección de entrega es obligatoria para la modalidad de envío por pagar.'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+			if (!commune || typeof commune !== 'string' || !commune.trim()) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'La comuna de destino es obligatoria para la modalidad de envío por pagar.'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+		}
+
+		const effectiveAddress = normDeliveryType === 'retiro'
+			? (address?.trim() || 'Retiro en Oficina Técnica (Santiago Centro)')
+			: address.trim();
+
+		const effectiveCommune = normDeliveryType === 'retiro'
+			? (commune?.trim() || 'Santiago Centro')
+			: commune.trim();
+
+		// 2. Obtener o crear perfil de cliente en public.customers (Soporte Invitado & Registrado)
+		let customer: any = null;
+
+		if (customer_id) {
+			const { data: existingById } = await supabaseAdmin
+				.from('customers')
+				.select('*')
+				.eq('id', customer_id)
+				.maybeSingle();
+
+			if (existingById) {
+				customer = existingById;
+			}
+		}
+
+		if (!customer && customerPayload) {
+			const { full_name, email, phone, rut, auth_user_id } = customerPayload;
+
+			if (!full_name || typeof full_name !== 'string' || !full_name.trim()) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'El Nombre y Apellido o Razón Social es obligatorio para la emisión de la factura SII.'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
+			if (!rut || !validateRut(rut)) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'El RUT ingresado no es válido según el algoritmo del SII (Módulo 11).'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
+			if (!email || typeof email !== 'string' || !email.includes('@')) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'El correo electrónico es obligatorio y debe tener un formato válido.'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
+			if (!phone || typeof phone !== 'string' || phone.trim().length < 8) {
+				return new Response(JSON.stringify({
+					success: false,
+					error: 'El teléfono de contacto es obligatorio para la coordinación de despacho/entrega.'
+				}), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
+			const cleanEmail = email.trim().toLowerCase();
+			const formattedRut = formatRut(rut);
+
+			// Buscar si ya existe por RUT o Email
+			const { data: existingCustomer } = await supabaseAdmin
+				.from('customers')
+				.select('*')
+				.or(`rut.eq.${formattedRut},email.eq.${cleanEmail}`)
+				.limit(1)
+				.maybeSingle();
+
+			if (existingCustomer) {
+				const updateFields: any = {
+					full_name: full_name.trim(),
+					email: cleanEmail,
+					phone: phone.trim(),
+					address: effectiveAddress,
+					updated_at: new Date().toISOString()
+				};
+				if (auth_user_id && !existingCustomer.auth_user_id) {
+					updateFields.auth_user_id = auth_user_id;
+					updateFields.customer_type = 'registrado';
+				}
+				const { data: updatedCustomer } = await supabaseAdmin
+					.from('customers')
+					.update(updateFields)
+					.eq('id', existingCustomer.id)
+					.select()
+					.single();
+
+				customer = updatedCustomer || existingCustomer;
+			} else {
+				const { data: newCustomer, error: insertCustomerErr } = await supabaseAdmin
+					.from('customers')
+					.insert({
+						full_name: full_name.trim(),
+						email: cleanEmail,
+						phone: phone.trim(),
+						rut: formattedRut,
+						address: effectiveAddress,
+						customer_type: auth_user_id ? 'registrado' : 'invitado',
+						auth_user_id: auth_user_id || null,
+						created_at: new Date().toISOString(),
+						updated_at: new Date().toISOString()
+					})
+					.select()
+					.single();
+
+				if (insertCustomerErr || !newCustomer) {
+					console.error('Error insertando cliente invitado:', insertCustomerErr);
+					return new Response(JSON.stringify({
+						success: false,
+						error: 'Error al registrar perfil de cliente: ' + (insertCustomerErr?.message || 'Error desconocido')
+					}), {
+						status: 500,
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
+				customer = newCustomer;
+			}
+		}
+
+		if (!customer) {
 			return new Response(JSON.stringify({
 				success: false,
-				error: 'No se encontró el perfil del cliente. Por favor completa tus datos en el paso anterior.'
+				error: 'Faltan datos del comprador. Por favor completa tus datos de facturación SII.'
 			}), {
-				status: 404,
+				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			});
 		}
@@ -129,9 +277,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 			id: orderId,
 			customer_id: customer.id,
 			items: validatedOrderItems,
-			delivery_type: delivery_type === 'retiro' ? 'retiro' : 'envio_nacional',
-			commune: commune || 'Santiago Centro',
-			shipping_address: address || customer.address || 'Retiro en Oficina',
+			delivery_type: normDeliveryType,
+			commune: effectiveCommune,
+			shipping_address: effectiveAddress,
 			shipping_cost: 0, // Cobro en Destino
 			total_amount: totalAmount,
 			payment_status: 'pendiente',

@@ -8,7 +8,7 @@ if (!token && fs.existsSync('.env')) {
   const envContent = fs.readFileSync('.env', 'utf8');
   const match = envContent.match(/^SUPABASE_ACCESS_TOKEN=(.*)$/m);
   if (match) {
-    token = match[1].trim();
+    token = match[1].replace(/['"]/g, '').trim();
   }
 }
 

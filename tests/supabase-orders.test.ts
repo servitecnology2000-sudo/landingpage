@@ -18,6 +18,9 @@ describe('Verificación de Conexión y Esquema de Supabase', () => {
       expect(columns).toContain('shipped_at');
       expect(columns).toContain('ready_pickup_at');
       expect(columns).toContain('admin_notes');
+      expect(columns).toContain('invoice_folio');
+      expect(columns).toContain('invoice_url');
+      expect(columns).toContain('delivered_at');
     }
   });
 });

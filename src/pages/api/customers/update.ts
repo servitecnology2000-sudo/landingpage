@@ -34,10 +34,10 @@ export const POST: APIRoute = async ({ request }) => {
 		const body = await request.json();
 		const { id, full_name, email, phone, rut, address, commune, region } = body;
 
-		if (!id || !full_name || !email || !phone || !rut || !address) {
+		if (!full_name || !email || !phone || !rut) {
 			return new Response(JSON.stringify({
 				success: false,
-				error: 'Faltan campos obligatorios: ID de usuario, Nombre, Email, Teléfono, RUT y Dirección son requeridos.'
+				error: 'Faltan campos obligatorios: Nombre, Email, Teléfono y RUT son requeridos.'
 			}), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
@@ -54,39 +54,74 @@ export const POST: APIRoute = async ({ request }) => {
 			});
 		}
 
-		// Dirección limpia: si ya contiene la comuna/región, no volver a concatenar repetitivamente
+		const baseAddress = (address && address.trim().length > 0) ? address.trim() : 'Retiro en Oficina Técnica (Santiago Centro)';
 		const suffix = commune ? `${commune}${region ? ` (${region})` : ''}` : '';
-		const fullAddress = (suffix && !address.includes(commune)) ? `${address.trim()}, ${suffix}` : address.trim();
+		const fullAddress = (suffix && !baseAddress.includes(commune)) ? `${baseAddress}, ${suffix}` : baseAddress;
 
-		// Actualizar o insertar cliente usando supabaseAdmin para garantizar persistencia y bypass de RLS server-side
-		const { data, error } = await supabaseAdmin
-			.from('customers')
-			.upsert({
-				id,
-				full_name: full_name.trim(),
-				email: email.trim().toLowerCase(),
-				phone: phone.trim(),
-				rut: rut.trim().toUpperCase(),
-				address: fullAddress,
-				updated_at: new Date().toISOString()
-			}, { onConflict: 'id' })
-			.select()
-			.single();
+		const cleanEmail = email.trim().toLowerCase();
+		const formattedRut = rut.trim().toUpperCase();
 
-		if (error) {
-			console.error('Error actualizando perfil de cliente en Supabase:', error);
-			return new Response(JSON.stringify({
-				success: false,
-				error: 'Error al persistir perfil de cliente: ' + error.message
-			}), {
-				status: 500,
-				headers: { 'Content-Type': 'application/json' }
-			});
+		let targetId = id;
+		if (!targetId) {
+			// Buscar si ya existe por RUT o Email
+			const { data: existing } = await supabaseAdmin
+				.from('customers')
+				.select('id')
+				.or(`rut.eq.${formattedRut},email.eq.${cleanEmail}`)
+				.limit(1)
+				.maybeSingle();
+
+			if (existing) {
+				targetId = existing.id;
+			}
+		}
+
+		let resultData = null;
+		if (targetId) {
+			const { data, error } = await supabaseAdmin
+				.from('customers')
+				.update({
+					full_name: full_name.trim(),
+					email: cleanEmail,
+					phone: phone.trim(),
+					rut: formattedRut,
+					address: fullAddress,
+					updated_at: new Date().toISOString()
+				})
+				.eq('id', targetId)
+				.select()
+				.single();
+
+			if (error) {
+				throw error;
+			}
+			resultData = data;
+		} else {
+			const { data, error } = await supabaseAdmin
+				.from('customers')
+				.insert({
+					full_name: full_name.trim(),
+					email: cleanEmail,
+					phone: phone.trim(),
+					rut: formattedRut,
+					address: fullAddress,
+					customer_type: 'invitado',
+					auth_user_id: null,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString()
+				})
+				.select()
+				.single();
+
+			if (error) {
+				throw error;
+			}
+			resultData = data;
 		}
 
 		return new Response(JSON.stringify({
 			success: true,
-			customer: data
+			customer: resultData
 		}), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' }
