@@ -3,7 +3,8 @@ import { supabaseAdmin } from '../../../../lib/supabase';
 import {
 	sendOrderShippedEmail,
 	sendOrderReadyForPickupEmail,
-	sendOrderConfirmationEmail
+	sendOrderConfirmationEmail,
+	sendOrderDeliveredEmail
 } from '../../../../lib/mailer';
 
 export const prerender = false;
@@ -148,6 +149,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 				updatePayload.shipped_at = new Date().toISOString();
 			} else if (order_status === 'listo_retiro') {
 				updatePayload.ready_pickup_at = new Date().toISOString();
+			} else if (order_status === 'entregado') {
+				updatePayload.delivered_at = new Date().toISOString();
 			}
 		}
 
@@ -242,6 +245,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 					});
 				} catch (mailErr) {
 					console.error('Fallo al enviar correo de confirmación de pago manual:', mailErr);
+				}
+			}
+			// D. Notificación de Entrega Satisfactoria / Finalización
+			else if (order_status === 'entregado') {
+				try {
+					emailSent = await sendOrderDeliveredEmail({
+						orderId: updatedOrder.id,
+						customerName,
+						customerEmail,
+						deliveryType: updatedOrder.delivery_type,
+						deliveryAddress: updatedOrder.shipping_address,
+						commune: updatedOrder.commune,
+						adminNotes: updatedOrder.admin_notes,
+						deliveredAt: updatedOrder.delivered_at || new Date().toISOString(),
+						items: updatedOrder.items || []
+					});
+				} catch (mailErr) {
+					console.error('Fallo al enviar correo de entrega finalizada:', mailErr);
 				}
 			}
 		}

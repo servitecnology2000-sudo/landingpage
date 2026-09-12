@@ -3,6 +3,7 @@ import {
   getCourierTrackingUrl,
   sendOrderShippedEmail,
   sendOrderReadyForPickupEmail,
+  sendOrderDeliveredEmail,
   transporter
 } from '../../src/lib/mailer';
 
@@ -93,6 +94,38 @@ describe('Pruebas Unitarias de Notificaciones y Correos (src/lib/mailer.ts)', ()
       expect(mailOptions.html).toContain('Santiago Centro');
       expect(mailOptions.html).toContain('Batería Samsung S21 Ultra');
       expect(mailOptions.html).toContain('ST-2026-RETIRO');
+    });
+  });
+
+  describe('sendOrderDeliveredEmail()', () => {
+    it('debe enviar correo de entrega exitosa con constancia de seguridad y notas de taller', async () => {
+      const sendMailSpy = vi.spyOn(transporter, 'sendMail').mockResolvedValueOnce({ messageId: 'test-delivered-id' } as any);
+
+      const result = await sendOrderDeliveredEmail({
+        orderId: 'ST-2026-9770',
+        customerName: 'Carlos Silva',
+        customerEmail: 'carlos@example.com',
+        deliveryType: 'retiro',
+        adminNotes: 'Se entregó a apoderado con carnet',
+        deliveredAt: '2026-09-12T15:30:00Z',
+        items: [
+          { sku: 'HDMI-001', titulo: 'HDMI Inalámbrico Full HD 1080P', precio_venta: 27990, cantidad: 1 }
+        ]
+      });
+
+      expect(result).toBe(true);
+      expect(sendMailSpy).toHaveBeenCalledTimes(1);
+
+      const mailOptions = sendMailSpy.mock.calls[0][0];
+      expect(mailOptions.to).toBe('carlos@example.com');
+      expect(mailOptions.subject).toContain('ST-2026-9770');
+      expect(mailOptions.subject).toContain('entregado');
+      expect(mailOptions.html).toContain('ST-2026-9770');
+      expect(mailOptions.html).toContain('Carlos Silva');
+      expect(mailOptions.html).toContain('Se entregó a apoderado con carnet');
+      expect(mailOptions.html).toContain('HDMI Inalámbrico Full HD 1080P');
+      expect(mailOptions.html).toContain('Garantía Técnica');
+      expect(mailOptions.html).toContain('Notificación de Seguridad');
     });
   });
 });

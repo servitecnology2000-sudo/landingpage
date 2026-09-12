@@ -2,6 +2,26 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Automatización y Seguridad: Correo de Notificación de Entrega Efectiva y Constancia de Retiro):**
+  - **Función de Correo Transaccional (`src/lib/mailer.ts`):**
+    - Implementación de `sendOrderDeliveredEmail(data: OrderDeliveredEmailData)` para despachar confirmaciones formales e instantáneas al cliente al completarse la entrega.
+    - **Plantilla HTML Dark Cyberpunk:**
+      - Encabezado verde esmeralda con título "🏁 ¡Pedido Entregado y Finalizado!".
+      - Cuadro oficial de constancia de entrega con modalidad (Retiro en Sucursal / Despacho a Domicilio), fecha/hora exacta en hora local de Santiago de Chile y nota/receptor registrado en taller (ej. "Se entregó a apoderado con carnet").
+      - **Bloque Preventivo de Seguridad:** Alerta explícita para que el cliente contacte inmediatamente a soporte vía WhatsApp (+56 9 4867 2300) en caso de no haber retirado o autorizado a un tercero.
+      - Tabla de repuestos entregados (SKU, nombre, cantidad y precio).
+      - Bloque de activación de Garantía Técnica (3 meses de garantía por defectos de fábrica) y botón directo a WhatsApp.
+  - **Integración en Endpoint Backend (`src/pages/api/admin/orders/update-status.ts`):**
+    - Registro automático de timestamp `delivered_at` en Supabase al marcar la orden como `'entregado'`.
+    - Envío condicional de `sendOrderDeliveredEmail` cuando `notify_customer === true` y la orden cuenta con correo del cliente.
+  - **Interfaz de Gestión Logística (`src/pages/meson-servitecnology-st/pedidos/index.astro`):**
+    - Se rediseñó la Sección D con caja de Cierre de Ciclo Logístico y checkbox interactivo: `[x] Enviar correo de confirmación de entrega y constancia de seguridad al cliente`.
+    - Integración con el modal moderno `window.showAdminConfirm`, alertando al administrador si se enviará el correo de entrega junto con la nota del taller registrada.
+  - **Aseguramiento de Calidad y Tests Automatizados:**
+    - Nueva prueba unitaria en `tests/lib/mailer.test.ts` certificando envío de correo de entrega con constancia de receptor y garantía.
+    - 72/72 pruebas unitarias aprobadas al 100% en Vitest (`npm test`).
+    - Compilación de producción exitosa en 4.45s (`npm run build`).
+
 - **2026-09-12 (Estandarización UI/UX: Erradicación de Alerts Nativos e Implementación de Modales Modernos Globales):**
   - **Nueva Regla Obligatoria en `AGENTS.md`:**
     - Prohibición terminante del uso de funciones emergentes nativas del navegador (`window.alert`, `window.confirm`, `window.prompt`) en toda la plataforma SERVITECNOLOGY por atentar contra la estética visual premium del SaaS.

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { formatDateTime } from './dates';
 
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
 
@@ -485,6 +486,185 @@ export async function sendOrderReadyForPickupEmail(data: OrderReadyPickupEmailDa
 		return true;
 	} catch (err) {
 		console.error('Error enviando correo de retiro:', err);
+		return false;
+	}
+}
+
+export interface OrderDeliveredEmailData {
+	orderId: string;
+	customerName: string;
+	customerEmail: string;
+	deliveryType?: string;
+	deliveryAddress?: string;
+	commune?: string;
+	adminNotes?: string;
+	deliveredAt?: string | Date;
+	items?: Array<{
+		sku: string;
+		titulo: string;
+		precio_venta: number;
+		cantidad: number;
+	}>;
+}
+
+export async function sendOrderDeliveredEmail(data: OrderDeliveredEmailData): Promise<boolean> {
+	try {
+		const formattedDate = formatDateTime(data.deliveredAt || new Date());
+		const deliveryMode = data.deliveryType === 'retiro'
+			? 'Retiro en Sucursal Central (Santiago Centro)'
+			: `Despacho a Domicilio / Destino${data.commune ? ` (${data.commune})` : ''}`;
+
+		const itemsHtml = (data.items || []).map(it => `
+			<tr>
+				<td style="padding: 10px 12px; border-bottom: 1px solid #27272a; color: #ffffff; font-size: 13px;">
+					<strong>${it.titulo}</strong><br>
+					<span style="color: #71717a; font-size: 11px; font-family: monospace;">SKU: ${it.sku}</span>
+				</td>
+				<td style="padding: 10px 12px; border-bottom: 1px solid #27272a; color: #a1a1aa; font-size: 13px; text-align: center;">
+					${it.cantidad}
+				</td>
+				<td style="padding: 10px 12px; border-bottom: 1px solid #27272a; color: #00FF7F; font-size: 13px; text-align: right; font-weight: bold; font-family: monospace;">
+					$${(it.precio_venta * it.cantidad).toLocaleString('es-CL')} CLP
+				</td>
+			</tr>
+		`).join('');
+
+		const htmlContent = `
+		<!DOCTYPE html>
+		<html lang="es">
+		<head>
+			<meta charset="utf-8">
+			<title>Tu pedido ${data.orderId} ha sido entregado exitosamente</title>
+		</head>
+		<body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e4e4e7;">
+			<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #000000; padding: 40px 10px;">
+				<tr>
+					<td align="center">
+						<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #09090b; border: 1px solid #27272a; border-radius: 20px; overflow: hidden; max-width: 600px; width: 100%;">
+							
+							<!-- Header -->
+							<tr>
+								<td style="background: linear-gradient(135deg, #09090b 0%, #18181b 100%); padding: 30px; text-align: center; border-bottom: 2px solid #00FF7F;">
+									<h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 900; letter-spacing: 2px;">
+										SERVITECNOLOGY
+									</h1>
+									<p style="margin: 5px 0 0 0; color: #00FF7F; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+										🏁 ¡Pedido Entregado y Finalizado!
+									</p>
+								</td>
+							</tr>
+
+							<!-- Content -->
+							<tr>
+								<td style="padding: 30px 30px 15px 30px;">
+									<p style="margin: 0 0 15px 0; font-size: 14px; color: #d4d4d8;">
+										Hola <strong>${data.customerName}</strong>,
+									</p>
+									<p style="margin: 0 0 20px 0; font-size: 13px; color: #a1a1aa; line-height: 1.6;">
+										Te confirmamos que tu pedido con código <strong style="color: #00CFFF; font-family: monospace;">${data.orderId}</strong> ha sido marcado como <strong>ENTREGADO</strong> y finalizado en nuestros registros oficiales.
+									</p>
+
+									<!-- Delivery Detail Box -->
+									<div style="background-color: #121215; border: 1px solid #27272a; border-left: 4px solid #00FF7F; border-radius: 14px; padding: 20px; margin-bottom: 20px;">
+										<h3 style="margin: 0 0 12px 0; color: #00FF7F; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
+											📋 Constancia Oficial de Entrega
+										</h3>
+										<p style="margin: 0 0 8px 0; font-size: 13px; color: #ffffff;">
+											<strong>Modalidad:</strong> ${deliveryMode}
+										</p>
+										<p style="margin: 0 0 8px 0; font-size: 12px; color: #a1a1aa;">
+											⏰ <strong>Fecha y Hora de Entrega:</strong> ${formattedDate}
+										</p>
+										${data.deliveryAddress ? `
+										<p style="margin: 0 0 8px 0; font-size: 12px; color: #a1a1aa;">
+											📍 <strong>Dirección:</strong> ${data.deliveryAddress}
+										</p>` : ''}
+										${data.adminNotes ? `
+										<div style="margin-top: 12px; padding: 10px 12px; background-color: #18181b; border: 1px solid rgba(0, 255, 127, 0.2); border-radius: 8px;">
+											<span style="font-size: 11px; color: #00FF7F; font-weight: bold; text-transform: uppercase;">Receptor / Nota de Entrega en Taller:</span>
+											<p style="margin: 4px 0 0 0; font-size: 13px; color: #ffffff;">"${data.adminNotes}"</p>
+										</div>` : ''}
+									</div>
+
+									<!-- Security Notice Box -->
+									<div style="background-color: rgba(0, 207, 255, 0.04); border: 1px solid rgba(0, 207, 255, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 25px;">
+										<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+											<span style="font-size: 16px;">🛡️</span>
+											<strong style="color: #00CFFF; font-size: 13px;">Notificación de Seguridad y Protocolo de Retiro:</strong>
+										</div>
+										<p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+											Este correo es un aviso automático de entrega efectiva. Si no realizaste este retiro o no autorizaste a un tercero para recibir tus productos, por favor contáctanos <strong>de manera inmediata</strong> a través de nuestro WhatsApp oficial de soporte para activar el protocolo de seguridad.
+										</p>
+									</div>
+								</td>
+							</tr>
+
+							<!-- Items Table -->
+							${itemsHtml ? `
+							<tr>
+								<td style="padding: 0 30px 20px 30px;">
+									<h4 style="margin: 0 0 10px 0; font-size: 12px; color: #a1a1aa; text-transform: uppercase;">
+										📦 Repuestos Entregados
+									</h4>
+									<table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+										<thead>
+											<tr style="background-color: #18181b;">
+												<th style="padding: 8px 12px; text-align: left; color: #a1a1aa; font-size: 11px; text-transform: uppercase;">Producto</th>
+												<th style="padding: 8px 12px; text-align: center; color: #a1a1aa; font-size: 11px; text-transform: uppercase;">Cant.</th>
+												<th style="padding: 8px 12px; text-align: right; color: #a1a1aa; font-size: 11px; text-transform: uppercase;">Subtotal</th>
+											</tr>
+										</thead>
+										<tbody>
+											${itemsHtml}
+										</tbody>
+									</table>
+								</td>
+							</tr>` : ''}
+
+							<!-- Warranty Box -->
+							<tr>
+								<td style="padding: 0 30px 25px 30px;">
+									<div style="background-color: #121215; border: 1px solid #27272a; border-radius: 12px; padding: 16px; text-align: center;">
+										<h4 style="margin: 0 0 6px 0; color: #ffffff; font-size: 13px;">
+											🔧 Garantía Técnica SERVITECNOLOGY (3 Meses)
+										</h4>
+										<p style="margin: 0 0 12px 0; font-size: 12px; color: #71717a; line-height: 1.5;">
+											Tus componentes y repuestos cuentan con garantía legal por fallas o defectos de fábrica. Conserva este comprobante para cualquier atención técnica o cambio.
+										</p>
+										<a href="https://wa.me/56948672300?text=Hola%20tengo%20una%20consulta%20sobre%20mi%20pedido%20entregado%20${data.orderId}" style="display: inline-block; background: #25D366; color: #000000; font-weight: bold; font-size: 12px; padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+											💬 Contactar a Soporte por WhatsApp
+										</a>
+									</div>
+								</td>
+							</tr>
+
+							<!-- Footer -->
+							<tr>
+								<td style="background-color: #121215; padding: 20px 30px; text-align: center; border-top: 1px solid #27272a; font-size: 11px; color: #71717a;">
+									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY SpA — Santiago Centro, Región Metropolitana, Chile</p>
+									<p style="margin: 0 0 5px 0;">Atención Técnica y Despachos: <a href="mailto:contacto@servitecnology.com" style="color: #00CFFF; text-decoration: none;">contacto@servitecnology.com</a> | WhatsApp: +56 9 4867 2300</p>
+								</td>
+							</tr>
+
+						</table>
+					</td>
+				</tr>
+			</table>
+		</body>
+		</html>
+		`;
+
+		await transporter.sendMail({
+			from: `"Servitecnology Taller" <${senderEmail}>`,
+			to: data.customerEmail,
+			bcc: senderEmail,
+			subject: `🏁 Tu pedido ${data.orderId} ha sido entregado exitosamente — SERVITECNOLOGY`,
+			html: htmlContent
+		});
+
+		return true;
+	} catch (err) {
+		console.error('Error enviando correo de entrega:', err);
 		return false;
 	}
 }
