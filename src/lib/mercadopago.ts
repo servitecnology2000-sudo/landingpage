@@ -2,13 +2,16 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
 
-// Modo de entorno explícito: 'production' o 'sandbox'
+// Modo de entorno explícito: 'production', 'sandbox', 'development', etc.
 // Si MERCADOPAGO_ENV no está definido, se infiere según las credenciales disponibles
 const envSetting = (_env['MERCADOPAGO_ENV'] || import.meta.env.MERCADOPAGO_ENV || '').toLowerCase().trim();
 
-export const isSandbox = envSetting === 'sandbox' 
+const isSandboxExplicit = ['sandbox', 'development', 'dev', 'test', 'testing', 'prueba', 'pruebas'].includes(envSetting);
+const isProductionExplicit = ['production', 'prod', 'produccion', 'live'].includes(envSetting);
+
+export const isSandbox = isSandboxExplicit 
 	? true 
-	: envSetting === 'production' 
+	: isProductionExplicit 
 		? false 
 		: !Boolean(_env['ML_PRODUCCION_ACCESS_TOKEN'] || import.meta.env.ML_PRODUCCION_ACCESS_TOKEN);
 

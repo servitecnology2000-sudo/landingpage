@@ -2,6 +2,12 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Configuración y Normalización de Entorno Mercado Pago):**
+  - **Flexibilidad en `MERCADOPAGO_ENV` (`src/lib/mercadopago.ts`):**
+    - Se amplió la detección de modo Sandbox para aceptar de manera explícita valores como `'development'`, `'dev'`, `'sandbox'`, `'test'`, `'testing'`, `'prueba'`, `'pruebas'`.
+    - Se garantiza que al configurar `MERCADOPAGO_ENV=development` (o `'sandbox'`) en `.env` (local) o en Vercel, el backend fuerce de inmediato el entorno de Sandbox (`isSandbox = true`), utilizando las credenciales de prueba (`ML_PRUEBAS_ACCESS_TOKEN` / `ML_PRUEBAS_PUBLIC_KEY`) e inyectando el pagador de prueba para evitar colisiones con la cuenta productiva de Mercado Libre.
+    - Se mantiene el soporte para valores productivos (`'production'`, `'prod'`, `'produccion'`, `'live'`) y la deducción automática basada en la presencia de credenciales de producción cuando la variable no está definida.
+
 - **2026-09-12 (Implementación y Certificación Completa: Portal del Cliente 'Mis Pedidos' y Trazabilidad Logística):**
   - **Portal del Cliente (`src/pages/mis-pedidos.astro`):**
     - Interfaz dark cyberpunk con acentos fluorescentes (`brand-cyan`, `brand-green`, ámbar y esmeralda) protegida con Supabase Auth (Google OAuth).
