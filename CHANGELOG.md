@@ -2,6 +2,21 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Localización y Zona Horaria Multirregión SaaS con IANA Time Zone Database):**
+  - **Módulo Centralizado de Fechas y Huso Horario (`src/lib/dates.ts`):**
+    - Implementación de motor de localización y formateo temporal basado en la base de datos oficial IANA (`Intl.DateTimeFormat`) para erradicar desfases de hora causados por servidores en UTC (Vercel / Lambda).
+    - Soporte automático para horario de verano (DST) e invierno sin ajustes manuales de offset (ej. en Chile calcula automáticamente UTC-3 en verano y UTC-4 en invierno; en España calcula UTC+1 en invierno y UTC+2 en verano).
+    - Variables de entorno dinámicas configurables por tenant en `.env` y Vercel: `PUBLIC_APP_TIMEZONE` (ej: `America/Santiago`) y `PUBLIC_APP_LOCALE` (ej: `es-CL`), admitiendo despliegues internacionales en Latam (Argentina, Colombia, México, Perú, Uruguay) y España (`Europe/Madrid`).
+    - Funciones auxiliares tipadas: `formatDateTime`, `formatDateOnly`, `formatTimeOnly`, `toValidDate` y catálogo de países `SUPPORTED_REGIONS`.
+  - **Integración en Vistas del Panel y Portal del Cliente:**
+    - **Gestor de Pedidos (`/meson-servitecnology-st/pedidos`):** La columna "Fecha / Hora" y el modal de detalle ahora reflejan la hora local oficial de Santiago en lugar de la hora UTC de Vercel.
+    - **Gestor de Clientes & CRM (`/meson-servitecnology-st/clientes`):** Modal de historial de órdenes del cliente formateado con el huso horario configurado.
+    - **Portal del Cliente (`/mis-pedidos`):** Fechas de compra y trazabilidad logística adaptadas a la zona horaria del tenant.
+  - **Aseguramiento de Calidad y Tests Automatizados:**
+    - Nueva suite de pruebas unitarias `tests/lib/dates.test.ts` (10 tests) certificando precisión en verano/invierno chileno, compatibilidad con España, Colombia, Argentina, México y resiliencia ante inputs corruptos o nulos.
+    - Suite completa del proyecto (71 tests en 11 archivos) aprobada al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) validada con 0 errores en 4.00s.
+
 - **2026-09-12 (Corrección y Optimización del Campo Teléfono Móvil / WhatsApp en Checkout):**
   - **Corrección de Duplicación Recursiva de Prefijo en `src/pages/checkout.astro` y `src/lib/rut.ts`:**
     - Se identificó y resolvió el problema donde ingresar cualquier dígito en el campo "Teléfono Móvil / WhatsApp" multiplicaba el prefijo telefónico en cadena (generando strings erróneos como `+56 56 565 6565`).

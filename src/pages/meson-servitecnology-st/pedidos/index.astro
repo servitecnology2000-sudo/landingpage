@@ -3,6 +3,7 @@ export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { supabaseAdmin } from '../../../lib/supabase';
+import { formatDateTime, APP_TIMEZONE, APP_LOCALE } from '../../../lib/dates';
 
 // 1. Obtención de órdenes con datos del cliente asociado
 let orders: any[] = [];
@@ -47,21 +48,9 @@ function formatCLP(amount: number): string {
 	return `$${(amount || 0).toLocaleString('es-CL')}`;
 }
 
-// Helper para formatear fechas
+// Helper para formatear fechas con zona horaria oficial del SaaS
 function formatDate(dateString: string): string {
-	if (!dateString) return '—';
-	try {
-		const d = new Date(dateString);
-		return d.toLocaleDateString('es-CL', {
-			day: '2-digit',
-			month: 'short',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	} catch {
-		return dateString;
-	}
+	return formatDateTime(dateString);
 }
 ---
 
@@ -695,7 +684,7 @@ function formatDate(dateString: string): string {
 			function populateModal(order) {
 				const customer = order.customers || {};
 				modalOrderId.textContent = order.id;
-				modalOrderDate.textContent = `Registrado el: ${new Date(order.created_at).toLocaleString('es-CL')}`;
+				modalOrderDate.textContent = `Registrado el: ${new Date(order.created_at).toLocaleString('${APP_LOCALE}', { timeZone: '${APP_TIMEZONE}' })}`;
 
 				modalCustomerName.textContent = customer.full_name || 'Cliente Invitado';
 				modalCustomerRut.textContent = customer.rut || 'No informado';
