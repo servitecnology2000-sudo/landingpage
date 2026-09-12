@@ -2,6 +2,10 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Unificación Integral de Navegación del Header Administrativo):**
+  - **Topbar Global en Dashboard Principal (`src/pages/meson-servitecnology-st/index.astro`):** Se integraron en la barra superior fija todos los accesos directos a los módulos del panel administrativo: 📦 Repuestos (`?tab=inventario`), 🖼️ Galería (`?tab=galeria`), 📋 Pedidos (con badge fluorescente reactivo de pedidos pendientes), 👥 Clientes (`/meson-servitecnology-st/clientes`) y 📊 Métricas (`/meson-servitecnology-st/metricas`).
+  - **Coherencia Visual:** Homologación completa con el layout compartido `AdminLayout.astro`, permitiendo navegación instantánea desde cualquier sección y en cualquier resolución de pantalla (soporte desktop y móvil con scroll horizontal).
+
 - **2026-09-12 (Implementación y Certificación Completa Fase 3: Panel de Métricas, Finanzas & Inventario):**
   - **Motor Analítico Desacoplado (`src/lib/analytics.ts`):** Creación del núcleo de inteligencia comercial en TypeScript con tipado estricto. Implementa filtrado temporal (`este_mes`, `ultimos_30`, `trimestre`, `historico`), cálculo de KPIs financieros con discriminación rigurosa de pagos aprobados, desglose de items JSONB de pedidos, generador de tendencias cronológicas para gráficos SVG, distribución porcentual de pasarelas de pago y canales de entrega, detección de clientes destacados y alertas de quiebre de stock.
   - **Vista Integral de Métricas en SSR (`src/pages/meson-servitecnology-st/metricas/index.astro`):**

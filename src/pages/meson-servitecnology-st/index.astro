@@ -234,6 +234,18 @@ const galeriaCategories = [
 	{ id: 'impresoras', label: 'Impresoras' },
 	{ id: 'desarrollo', label: 'Diseño / Desarrollo Web' },
 ];
+
+// 4. Contador de pedidos pendientes para alerta en el navbar
+let pendingOrdersCount = 0;
+try {
+	const { data: pendingOrders } = await supabaseAdmin
+		.from('orders')
+		.select('id, payment_status')
+		.eq('payment_status', 'pendiente');
+	if (pendingOrders) {
+		pendingOrdersCount = pendingOrders.length;
+	}
+} catch (e) {}
 ---
 
 <html lang="es">
@@ -258,6 +270,13 @@ const galeriaCategories = [
 		.btn-outline:hover { border-color: #00CFFF; color: #00CFFF; }
 		.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
 		.btn-danger:hover { background: #ef4444; color: white; }
+		.btn-nav-active { background: rgba(0, 207, 255, 0.15) !important; border: 1px solid #00CFFF !important; color: #00CFFF !important; box-shadow: 0 0 10px rgba(0, 207, 255, 0.2); }
+		.nav-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+		@media (max-width: 960px) {
+			.topbar { flex-direction: column; align-items: stretch; gap: 0.75rem; padding: 0.75rem 1rem; }
+			.nav-group { overflow-x: auto; padding-bottom: 0.25rem; white-space: nowrap; }
+			.topbar-actions { justify-content: flex-end; }
+		}
 		.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
 		.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
 		.stat-card { background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; }
@@ -319,12 +338,56 @@ const galeriaCategories = [
 </head>
 <body>
 	<div class="topbar">
-		<span class="brand">SERVITECNOLOGY Admin</span>
+		<div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+			<a href="/meson-servitecnology-st" class="brand" style="text-decoration: none;">
+				SERVITECNOLOGY Admin
+			</a>
+
+			<!-- Navegación de todos los Módulos -->
+			<nav class="nav-group">
+				<a 
+					href="/meson-servitecnology-st?tab=inventario" 
+					class={`btn ${activeTab === 'inventario' ? 'btn-nav-active' : 'btn-outline'}`}
+				>
+					<span>📦</span> <span>Repuestos</span>
+				</a>
+				<a 
+					href="/meson-servitecnology-st?tab=galeria" 
+					class={`btn ${activeTab === 'galeria' ? 'btn-nav-active' : 'btn-outline'}`}
+				>
+					<span>🖼️</span> <span>Galería</span>
+				</a>
+				<a 
+					href="/meson-servitecnology-st/pedidos" 
+					class="btn btn-outline" 
+					style="border-color: rgba(0,255,127,0.4); color:#00FF7F;"
+				>
+					<span>📋</span> <span>Pedidos</span>
+					{pendingOrdersCount > 0 && (
+						<span style="background: rgba(234,179,8,0.25); color: #fde047; padding: 0.1rem 0.45rem; border-radius: 9999px; font-size: 0.65rem; border: 1px solid rgba(234,179,8,0.4); margin-left: 0.2rem; font-weight: bold;">
+							{pendingOrdersCount}
+						</span>
+					)}
+				</a>
+				<a 
+					href="/meson-servitecnology-st/clientes" 
+					class="btn btn-outline"
+				>
+					<span>👥</span> <span>Clientes</span>
+				</a>
+				<a 
+					href="/meson-servitecnology-st/metricas" 
+					class="btn btn-outline"
+				>
+					<span>📊</span> <span>Métricas</span>
+				</a>
+			</nav>
+		</div>
+
 		<div class="topbar-actions">
-			<a href="/meson-servitecnology-st/pedidos" class="btn btn-outline" style="border-color: rgba(0,255,127,0.4); color:#00FF7F;">📋 Pedidos</a>
 			<a href="/meson-servitecnology-st/nuevo" class="btn btn-primary">+ Nuevo Producto</a>
-			<a href="/" class="btn btn-outline">Ver Sitio</a>
-			<a href="/meson-servitecnology-st/logout" class="btn btn-outline">Cerrar sesión</a>
+			<a href="/" target="_blank" class="btn btn-outline">🌐 Ver Sitio</a>
+			<a href="/meson-servitecnology-st/logout" class="btn btn-danger">Cerrar sesión</a>
 		</div>
 	</div>
 
