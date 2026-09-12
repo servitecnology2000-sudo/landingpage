@@ -658,6 +658,7 @@ const REGIONES_CHILE = [
 <script>
 	import { supabase } from '../lib/supabase';
 	import { getCart, removeFromCart, updateItemQuantity, clearCart, addToCart } from '../lib/cart';
+	import { cleanChileanPhone, isValidChileanPhone, formatChileanPhone } from '../lib/rut';
 
 	// Algoritmo de validación de RUT Chileno (Módulo 11)
 	function isValidChileanRut(rutStr: string): boolean {
@@ -704,51 +705,7 @@ const REGIONES_CHILE = [
 		return `${formatted}-${dv}`;
 	}
 
-	// Algoritmo de limpieza y validación de Teléfonos de Chile (Móviles / Fijos Subtel)
-	function cleanChileanPhone(phoneStr: string): string {
-		if (!phoneStr || typeof phoneStr !== 'string') return '';
-		let clean = phoneStr.replace(/\D/g, '');
-		if (clean.length === 13 && clean.startsWith('0056')) {
-			clean = clean.slice(4);
-		} else if (clean.length === 11 && clean.startsWith('56')) {
-			clean = clean.slice(2);
-		} else if (clean.length === 10 && clean.startsWith('0')) {
-			clean = clean.slice(1);
-		}
-		return clean;
-	}
 
-	function isValidChileanPhone(phoneStr: string): boolean {
-		const clean = cleanChileanPhone(phoneStr);
-		if (clean.length !== 9) return false;
-		// En Chile: celulares empiezan con 9; red fija empieza con 2 (RM) o 3-7 (regiones)
-		return /^[2-9]\d{8}$/.test(clean);
-	}
-
-	// Formateador visual telefónico chileno (+56 9 XXXX XXXX / +56 2 XXXX XXXX / +56 XX XXX XXXX)
-	function formatChileanPhone(phoneStr: string): string {
-		if (!phoneStr) return '';
-		const digits = cleanChileanPhone(phoneStr);
-		if (!digits) return phoneStr.replace(/[^\d+ ]/g, '');
-
-		if (digits.startsWith('9')) {
-			// Celular
-			if (digits.length <= 1) return `+56 ${digits}`;
-			if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
-			return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
-		} else if (digits.startsWith('2')) {
-			// Red Fija Santiago (RM)
-			if (digits.length <= 1) return `+56 ${digits}`;
-			if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
-			return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
-		} else if (/^[3-7]/.test(digits)) {
-			// Red Fija Regiones (código 2 dígitos: 32, 41, etc.)
-			if (digits.length <= 2) return `+56 ${digits}`;
-			if (digits.length <= 5) return `+56 ${digits.slice(0, 2)} ${digits.slice(2)}`;
-			return `+56 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 9)}`;
-		}
-		return `+56 ${digits}`;
-	}
 
 	// Elementos DOM
 	const deliveryOptions = document.querySelectorAll('.delivery-option');
@@ -901,12 +858,72 @@ const REGIONES_CHILE = [
 	});
 
 	// Formateo y validación de Teléfono / Celular en tiempo real
+	function formatPhoneInputWithCursor(input: HTMLInputElement) {
+		const rawVal = input.value;
+		const selStart = input.selectionStart ?? rawVal.length;
+
+		// Contar cuántos dígitos significativos había antes del cursor
+		const rawBeforeCursor = rawVal.slice(0, selStart);
+		const digitsBefore = cleanChileanPhone(rawBeforeCursor).length;
+
+		const formatted = formatChileanPhone(rawVal);
+		input.value = formatted;
+
+		if (selStart >= rawVal.length) {
+			input.setSelectionRange(formatted.length, formatted.length);
+			return;
+		}
+
+		let newPos = formatted.length;
+		if (digitsBefore === 0) {
+			newPos = formatted.startsWith('+56 ') ? 4 : 0;
+		} else {
+			let count = 0;
+			const startSearch = formatted.startsWith('+56 ') ? 4 : 0;
+			for (let i = startSearch; i < formatted.length; i++) {
+				if (/\d/.test(formatted[i])) {
+					count++;
+					if (count === digitsBefore) {
+						newPos = i + 1;
+						break;
+					}
+				}
+			}
+		}
+
+		input.setSelectionRange(newPos, newPos);
+	}
+
+	phoneInput?.addEventListener('keydown', (e) => {
+		if (e.key === 'Backspace') {
+			const start = phoneInput.selectionStart;
+			const end = phoneInput.selectionEnd;
+			if (start !== null && start === end && start > 0) {
+				// Si el cursor está justo después del prefijo "+56 " y el usuario borra, limpiar todo
+				if (phoneInput.value.slice(0, start) === '+56 ' || phoneInput.value.slice(0, start) === '+56') {
+					e.preventDefault();
+					phoneInput.value = '';
+					phoneInput.dispatchEvent(new Event('input'));
+					return;
+				}
+				// Si el carácter previo es un espacio, saltarlo y borrar el dígito anterior
+				if (phoneInput.value[start - 1] === ' ') {
+					e.preventDefault();
+					const newVal = phoneInput.value.slice(0, start - 2) + phoneInput.value.slice(start);
+					phoneInput.value = newVal;
+					const newCursor = Math.max(0, start - 2);
+					phoneInput.setSelectionRange(newCursor, newCursor);
+					phoneInput.dispatchEvent(new Event('input'));
+				}
+			}
+		}
+	});
+
 	phoneInput?.addEventListener('input', () => {
-		const formatted = formatChileanPhone(phoneInput.value);
-		phoneInput.value = formatted;
-		const clean = cleanChileanPhone(formatted);
+		formatPhoneInputWithCursor(phoneInput);
+		const clean = cleanChileanPhone(phoneInput.value);
 		if (clean.length >= 9) {
-			if (isValidChileanPhone(formatted)) {
+			if (isValidChileanPhone(phoneInput.value)) {
 				phoneError?.classList.add('hidden');
 				phoneInput.classList.remove('border-red-500');
 				phoneInput.classList.add('border-brand-green');
@@ -922,9 +939,10 @@ const REGIONES_CHILE = [
 	});
 
 	phoneInput?.addEventListener('blur', () => {
-		if (phoneInput.value.trim().length > 0) {
-			if (isValidChileanPhone(phoneInput.value)) {
-				phoneInput.value = formatChileanPhone(phoneInput.value);
+		const val = phoneInput.value.trim();
+		if (val.length > 0) {
+			if (isValidChileanPhone(val)) {
+				phoneInput.value = formatChileanPhone(val);
 				phoneError?.classList.add('hidden');
 				phoneInput.classList.remove('border-red-500');
 				phoneInput.classList.add('border-brand-green');
@@ -933,6 +951,9 @@ const REGIONES_CHILE = [
 				phoneInput.classList.remove('border-brand-green');
 				phoneInput.classList.add('border-red-500');
 			}
+		} else {
+			phoneError?.classList.add('hidden');
+			phoneInput.classList.remove('border-brand-green', 'border-red-500');
 		}
 	});
 

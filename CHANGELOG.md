@@ -2,6 +2,22 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Corrección y Optimización del Campo Teléfono Móvil / WhatsApp en Checkout):**
+  - **Corrección de Duplicación Recursiva de Prefijo en `src/pages/checkout.astro` y `src/lib/rut.ts`:**
+    - Se identificó y resolvió el problema donde ingresar cualquier dígito en el campo "Teléfono Móvil / WhatsApp" multiplicaba el prefijo telefónico en cadena (generando strings erróneos como `+56 56 565 6565`).
+    - **Causa Raíz:** La función de limpieza anterior `cleanChileanPhone` solo removía el código de país `56` si el string tenía exactamente 11 caracteres (`clean.length === 11 && clean.startsWith('56')`). Durante el tipeo incremental tecla por tecla (cuando la longitud es menor a 11), el prefijo visual `+56 ` no se eliminaba antes del siguiente formateo; al empezar con el dígito `5`, el formateador lo interpretaba falsamente como un código de área regional de Chile, insertando un nuevo `+56 ` en cada pulsación.
+    - **Solución Robusta:** Se centralizaron las funciones `cleanChileanPhone`, `isValidChileanPhone` y `formatChileanPhone` en `src/lib/rut.ts`. Ahora la función detecta y elimina limpiamente el prefijo internacional (`+56`, `+ 56`, `0056` o `56`) en cualquier etapa del tipeo, sin importar la cantidad de dígitos ingresados.
+    - **Preservación de Cursor y Manejo Fluido de Backspace:**
+      - Se implementó `formatPhoneInputWithCursor` para mantener la posición exacta del cursor incluso al editar números intermedios sin que salte al final del campo.
+      - Se añadió escucha de evento `keydown` (Backspace) para evitar que el cursor quede atrapado en los espacios visuales de separación o que no permita borrar el prefijo por completo.
+  - **Aseguramiento de Calidad y Tests Automatizados:**
+    - Se agregaron pruebas unitarias integrales en `tests/lib/rut-validator.test.ts` que certifican:
+      1. Limpieza de teléfonos nacionales e internacionales sin duplicar `56`.
+      2. Tipeo progresivo tecla por tecla (`9` -> `+56 9`, `91` -> `+56 9 1`, etc.).
+      3. Limpieza de números fijos de Santiago y regiones.
+      4. Formateo visual y validación estricta de 9 dígitos chilenos.
+    - Se ejecutó la suite completa de pruebas (`npx vitest run`, 61 tests aprobados) y compilación de producción exitosa (`npm run build`).
+
 - **2026-09-12 (Configuración y Normalización de Entorno Mercado Pago):**
   - **Flexibilidad en `MERCADOPAGO_ENV` (`src/lib/mercadopago.ts`):**
     - Se amplió la detección de modo Sandbox para aceptar de manera explícita valores como `'development'`, `'dev'`, `'sandbox'`, `'test'`, `'testing'`, `'prueba'`, `'pruebas'`.

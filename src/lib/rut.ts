@@ -63,6 +63,87 @@ export function formatRut(rut: string): string {
 }
 
 /**
+ * Extrae los 9 dígitos locales/nacionales chilenos a partir de cualquier formato.
+ * Remueve prefijos internacionales (+56, 0056, 56) y ceros a la izquierda.
+ */
+export function cleanChileanPhone(phoneStr: string): string {
+	if (!phoneStr || typeof phoneStr !== 'string') return '';
+	let str = phoneStr.trim();
+
+	// 1. Quitar prefijo explícito internacional si viene con + o 00
+	if (str.startsWith('+56')) {
+		str = str.slice(3);
+	} else if (str.startsWith('+ 56')) {
+		str = str.slice(4);
+	} else if (str.startsWith('0056')) {
+		str = str.slice(4);
+	}
+
+	// 2. Extraer solo dígitos
+	let clean = str.replace(/\D/g, '');
+
+	// 3. Si empezó sin '+' pero viene con prefijo país 56
+	// En Chile ningún número nacional comienza con 56 (no existe código de área 56).
+	if (clean.length === 11 && clean.startsWith('56')) {
+		clean = clean.slice(2);
+	} else if (clean.startsWith('56') && (clean.startsWith('569') || clean.startsWith('562') || clean.length > 9)) {
+		clean = clean.slice(2);
+	} else if (clean === '56') {
+		clean = '';
+	}
+
+	// 4. Si el usuario ingresó con '0' a la izquierda (ej: 09 1234 5678 o 02 2123 4567)
+	if (clean.startsWith('0') && clean.length > 1) {
+		clean = clean.slice(1);
+	}
+
+	// 5. Los números en Chile tienen un máximo de 9 dígitos nacionales
+	return clean.slice(0, 9);
+}
+
+/**
+ * Valida si un número telefónico corresponde a un teléfono chileno válido (9 dígitos comenzando entre 2 y 9).
+ */
+export function isValidChileanPhone(phoneStr: string): boolean {
+	const clean = cleanChileanPhone(phoneStr);
+	if (clean.length !== 9) return false;
+	return /^[2-9]\d{8}$/.test(clean);
+}
+
+/**
+ * Formateador visual telefónico chileno (+56 9 XXXX XXXX / +56 2 XXXX XXXX / +56 XX XXX XXXX)
+ */
+export function formatChileanPhone(phoneStr: string): string {
+	if (!phoneStr || typeof phoneStr !== 'string') return '';
+	const trimmed = phoneStr.trim();
+
+	// Si el usuario recién está escribiendo el prefijo '+'
+	if (trimmed === '+') return '+';
+
+	const digits = cleanChileanPhone(phoneStr);
+	if (!digits) return '';
+
+	if (digits.startsWith('9')) {
+		// Celular Móvil: 9 XXXX XXXX
+		if (digits.length <= 1) return `+56 ${digits}`;
+		if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
+		return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+	} else if (digits.startsWith('2')) {
+		// Red Fija Santiago (RM): 2 XXXX XXXX
+		if (digits.length <= 1) return `+56 ${digits}`;
+		if (digits.length <= 5) return `+56 ${digits.slice(0, 1)} ${digits.slice(1)}`;
+		return `+56 ${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+	} else if (/^[3-7]/.test(digits)) {
+		// Red Fija Regiones (código 2 dígitos: 32, 41, etc.): XX XXX XXXX
+		if (digits.length <= 2) return `+56 ${digits}`;
+		if (digits.length <= 5) return `+56 ${digits.slice(0, 2)} ${digits.slice(2)}`;
+		return `+56 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 9)}`;
+	}
+
+	return `+56 ${digits}`;
+}
+
+/**
  * Normaliza y valida números telefónicos chilenos (+56 9...)
  */
 export function normalizePhone(phone: string): string {
