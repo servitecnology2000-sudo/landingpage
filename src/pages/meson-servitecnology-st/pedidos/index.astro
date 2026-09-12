@@ -36,6 +36,8 @@ try {
 
 // 2. Cálculo de métricas superiores (KPIs)
 const totalOrders = orders.length;
+const pendingBankTransfers = orders.filter(o => o.payment_status === 'pendiente' && !o.mp_preference_id);
+const pendingMpAttempts = orders.filter(o => o.payment_status === 'pendiente' && Boolean(o.mp_preference_id));
 const pendingPaymentOrders = orders.filter(o => o.payment_status === 'pendiente');
 const inPrepOrders = orders.filter(o => o.payment_status === 'aprobado' && o.order_status === 'preparacion');
 const completedOrders = orders.filter(o => o.order_status === 'entregado');
@@ -106,13 +108,15 @@ function formatDate(dateString: string): string {
 		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-amber-500/20 shadow-lg relative overflow-hidden group">
 			<div class="absolute top-0 left-0 h-1 w-full bg-amber-500"></div>
 			<div class="flex items-center justify-between">
-				<span class="text-xs uppercase font-mono font-semibold text-amber-400">Pendientes Pago</span>
-				<span class="text-lg animate-pulse">⏳</span>
+				<span class="text-xs uppercase font-mono font-semibold text-amber-400">Transferencias Pendientes</span>
+				<span class="text-lg animate-pulse">🏦</span>
 			</div>
 			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-amber-300">
-				{pendingPaymentOrders.length}
+				{pendingBankTransfers.length}
 			</div>
-			<div class="text-[11px] text-amber-400/70 mt-1">Transferencias por validar</div>
+			<div class="text-[11px] text-amber-400/70 mt-1">
+				{pendingMpAttempts.length > 0 ? `+ ${pendingMpAttempts.length} en pasarela MP` : 'Por conciliar en BancoEstado'}
+			</div>
 		</div>
 
 		<!-- Por Despachar / Retirar -->
@@ -287,12 +291,26 @@ function formatDate(dateString: string): string {
 												Aprobado
 											</span>
 										) : order.payment_status === 'pendiente' ? (
-											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 animate-pulse">
-												<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-												Pendiente
+											order.mp_preference_id ? (
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30" title="Iniciado en pasarela Mercado Pago">
+													💳 Intento MP
+												</span>
+											) : (
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 animate-pulse" title="Esperando transferencia bancaria BancoEstado">
+													<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+													Transferencia
+												</span>
+											)
+										) : order.payment_status === 'cancelado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">
+												Cancelado
+											</span>
+										) : order.payment_status === 'rechazado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+												Rechazado
 											</span>
 										) : (
-											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
 												{order.payment_status}
 											</span>
 										)}
@@ -300,7 +318,15 @@ function formatDate(dateString: string): string {
 
 									<!-- Estado Logístico -->
 									<td class="py-3 px-4 whitespace-nowrap">
-										{order.order_status === 'despachado' ? (
+										{order.order_status === 'cancelado' || order.payment_status === 'cancelado' || order.payment_status === 'rechazado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800/80 text-zinc-500 border border-zinc-700/50">
+												❌ No Aplica
+											</span>
+										) : order.payment_status === 'pendiente' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400/80 border border-amber-500/20">
+												⏳ En Espera de Pago
+											</span>
+										) : order.order_status === 'despachado' ? (
 											<div class="flex flex-col">
 												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 w-fit">
 													🚀 Despachado
@@ -318,10 +344,6 @@ function formatDate(dateString: string): string {
 										) : order.order_status === 'entregado' ? (
 											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
 												🏁 Entregado
-											</span>
-										) : order.order_status === 'cancelado' ? (
-											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400">
-												❌ Cancelado
 											</span>
 										) : (
 											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
@@ -367,7 +389,10 @@ function formatDate(dateString: string): string {
 							<span>Pedido</span>
 							<span id="modalOrderId" class="font-mono text-brand-cyan">ST-2026-XXXX</span>
 						</h3>
-						<span id="modalOrderDate" class="text-xs text-slate-400">Fecha de orden</span>
+						<div class="flex items-center gap-2 mt-0.5">
+							<span id="modalOrderDate" class="text-xs text-slate-400">Fecha de orden</span>
+							<span id="modalStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+						</div>
 					</div>
 				</div>
 				<button 
@@ -470,11 +495,17 @@ function formatDate(dateString: string): string {
 						<span>Gestión de Estado y Despacho</span>
 					</h4>
 
+					<!-- Alerta de Pedido Cancelado o Rechazado -->
+					<div id="cancelledAlertBox" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-center gap-2">
+						<span>🚫</span>
+						<span>Este pedido se encuentra cancelado o rechazado. El stock de inventario no está retenido.</span>
+					</div>
+
 					<!-- Sección A: Conciliación de Transferencia (Si está pendiente) -->
 					<div id="transferActionsBox" class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-2.5">
 						<div class="flex items-center gap-2 text-amber-300 text-xs font-semibold">
 							<span>⏳</span>
-							<span>Este pedido está pendiente de confirmación de pago por transferencia.</span>
+							<span id="transferActionText">Este pedido está pendiente de confirmación de pago por transferencia.</span>
 						</div>
 						<div class="flex flex-wrap items-center gap-2">
 							<button 
@@ -768,19 +799,56 @@ function formatDate(dateString: string): string {
 
 				modalTotalAmount.textContent = `$${(Number(order.total_amount) || 0).toLocaleString('es-CL')} CLP`;
 
-				// Visibilidad de cajas de acción
-				if (order.payment_status === 'pendiente') {
-					transferActionsBox.style.display = 'block';
-				} else {
-					transferActionsBox.style.display = 'none';
+				// Visibilidad de cajas de acción y badge de estado
+				const isCancelled = order.order_status === 'cancelado' || order.payment_status === 'cancelado' || order.payment_status === 'rechazado';
+				const cancelledAlertBox = document.getElementById('cancelledAlertBox');
+				const transferActionText = document.getElementById('transferActionText');
+				const modalStatusBadge = document.getElementById('modalStatusBadge');
+
+				if (modalStatusBadge) {
+					if (order.payment_status === 'aprobado') {
+						modalStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+						modalStatusBadge.textContent = 'Pago Aprobado';
+					} else if (isCancelled) {
+						modalStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700';
+						modalStatusBadge.textContent = order.payment_status === 'rechazado' ? 'Rechazado' : 'Cancelado';
+					} else if (order.mp_preference_id) {
+						modalStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30';
+						modalStatusBadge.textContent = 'Intento MP Pendiente';
+					} else {
+						modalStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse';
+						modalStatusBadge.textContent = 'Transferencia Pendiente';
+					}
 				}
 
-				if (order.delivery_type === 'retiro') {
-					shippingFormBox.style.display = 'none';
-					pickupActionsBox.style.display = 'block';
+				if (isCancelled) {
+					if (cancelledAlertBox) cancelledAlertBox.classList.remove('hidden');
+					if (transferActionsBox) transferActionsBox.style.display = 'none';
+					if (shippingFormBox) shippingFormBox.style.display = 'none';
+					if (pickupActionsBox) pickupActionsBox.style.display = 'none';
 				} else {
-					shippingFormBox.style.display = 'block';
-					pickupActionsBox.style.display = 'none';
+					if (cancelledAlertBox) cancelledAlertBox.classList.add('hidden');
+
+					if (order.payment_status === 'pendiente') {
+						if (transferActionsBox) {
+							transferActionsBox.style.display = 'block';
+							if (transferActionText) {
+								transferActionText.textContent = order.mp_preference_id 
+									? 'Intento de Mercado Pago pendiente de conciliación bancaria.' 
+									: 'Este pedido está pendiente de confirmación de pago por transferencia BancoEstado.';
+							}
+						}
+					} else {
+						if (transferActionsBox) transferActionsBox.style.display = 'none';
+					}
+
+					if (order.delivery_type === 'retiro') {
+						if (shippingFormBox) shippingFormBox.style.display = 'none';
+						if (pickupActionsBox) pickupActionsBox.style.display = 'block';
+					} else {
+						if (shippingFormBox) shippingFormBox.style.display = 'block';
+						if (pickupActionsBox) pickupActionsBox.style.display = 'none';
+					}
 				}
 
 				courierSelect.value = order.courier || 'Starken';
@@ -855,7 +923,7 @@ function formatDate(dateString: string): string {
 				});
 				if (confirmed) {
 					updateOrderStatus({
-						payment_status: 'rechazado',
+						payment_status: 'cancelado',
 						order_status: 'cancelado',
 						notify_customer: false
 					});

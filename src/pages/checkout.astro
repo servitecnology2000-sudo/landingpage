@@ -1410,7 +1410,6 @@ const REGIONES_CHILE = [
 
 			if (targetPaymentUrl) {
 				if (btnFinalText) btnFinalText.textContent = 'Redirigiendo a Mercado Pago...';
-				clearCart();
 				window.location.href = targetPaymentUrl;
 				return;
 			}
@@ -1550,6 +1549,27 @@ const REGIONES_CHILE = [
 	// Manejo de retorno de Mercado Pago cuando el pago falla o es cancelado
 	if (urlParams.get('payment') === 'failure') {
 		const failedOrder = urlParams.get('order') || '';
+		
+		// Notificar al backend para cancelar la orden y liberar el stock reservado inmediatamente
+		if (failedOrder) {
+			fetch('/api/mercadopago/cancel-attempt', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ 
+					order_id: failedOrder, 
+					reason: 'Cliente canceló el pago en Mercado Pago (hizo clic en volver)' 
+				})
+			}).catch(err => console.warn('Error cancelando intento en backend:', err));
+		}
+
+		// Limpiar query params de la URL para que no se re-dispare al recargar
+		try {
+			const cleanUrl = new URL(window.location.href);
+			cleanUrl.searchParams.delete('payment');
+			cleanUrl.searchParams.delete('order');
+			window.history.replaceState({}, '', cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ''));
+		} catch (e) {}
+
 		showSystemNotice({
 			title: 'Pago No Completado',
 			message: `No se completó el pago en Mercado Pago${failedOrder ? ` (Orden ${failedOrder})` : ''}.\n\nTus repuestos siguen guardados en el carrito para que puedas revisar tus datos o intentar con otro medio de pago.`,

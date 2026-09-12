@@ -2,6 +2,31 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Resolución de Fuga de Carrito, Cancelación Automática de Intentos y Sincronización Logística en Mesón):**
+  - **Preservación del Carrito de Compras en Checkout (`src/pages/checkout.astro`):**
+    - Se corrigió la eliminación prematura del carrito local (`clearCart()`) antes de redirigir a Mercado Pago Checkout Pro. Ahora los productos permanecen en el carrito si el cliente hace clic en "Volver", cancela o si el pago es rechazado.
+    - El carrito se vacía de forma segura únicamente cuando el pago es confirmado o el pedido es finalizado.
+    - Limpieza automática de los parámetros `?payment=failure&order=ST-2026-XXXX` en la barra del navegador (`window.history.replaceState`) para prevenir re-disparos de avisos al recargar.
+  - **Nuevo Endpoint de Cancelación Inmediata y Liberación de Stock (`/api/mercadopago/cancel-attempt`):**
+    - Creación de `src/pages/api/mercadopago/cancel-attempt.ts` con manejo idempotente y validación de identificador de orden.
+    - Al retornar el cliente desde Mercado Pago tras cancelar el pago, el frontend invoca este endpoint automáticamente, actualizando la orden a `payment_status: 'cancelado'`, `order_status: 'cancelado'` y liberando la reserva de stock expirando `stock_reserved_until: NOW() - interval '1 second'`.
+  - **Sincronización de Webhook y Panel Administrativo (`webhook.ts` y `update-status.ts`):**
+    - En `src/pages/api/mercadopago/webhook.ts`, ante pagos en estado `rejected` o `cancelled`, se sincroniza `order_status: 'cancelado'` y se libera la reserva de inventario.
+    - En `src/pages/api/admin/orders/update-status.ts`, cuando un administrador rechaza o cancela una orden desde el panel, se expira y libera de inmediato la reserva de stock asociada.
+  - **Optimización de Métricas (KPIs) y Estados en el Gestor de Pedidos (`src/pages/meson-servitecnology-st/pedidos/index.astro`):**
+    - **Discriminación en KPIs:** La tarjeta "Transferencias Pendientes" ahora contabiliza exclusivamente transferencias manuales reales por conciliar en BancoEstado, informando de forma secundaria los intentos iniciados en pasarela Mercado Pago.
+    - **Corrección de Estado Logístico / Despacho:**
+      - Se eliminó el falso estado `⚙️ En Preparación` para compras no acreditadas.
+      - Para pedidos con pago pendiente se muestra claramente `⏳ En Espera de Pago`.
+      - Para órdenes canceladas o rechazadas se muestra `❌ No Aplica`.
+      - `⚙️ En Preparación` se reserva estrictamente para pedidos con pago aprobado.
+    - **Distintivo de Estado de Pago:** Se diferencian visualmente las órdenes pendientes según su método (`🏦 Transferencia` vs `💳 Intento MP`).
+    - **Modal de Gestión:** Se incorporó distintivo de estado en cabecera y bloque informativo `#cancelledAlertBox` cuando la orden está cancelada/rechazada, ocultando botones logísticos innecesarios.
+  - **Pruebas Automatizadas y Calidad:**
+    - Creación de suite `tests/checkout/cancel-attempt.test.ts` con 4 pruebas completas (validación de campos, 404, cancelación con liberación de stock e idempotencia).
+    - 101/101 pruebas aprobadas al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) completada con éxito en 4.54s sin errores.
+
 - **2026-09-12 (Experiencia y Cumplimiento: Portabilidad de Datos y Canal ARCOP para Compradores en Modo Invitado):**
   - **Portal del Cliente (`src/pages/mis-pedidos.astro`):**
     - En la vista no autenticada (`unauth-view`), se incorporó un cuadro informativo formal explicando cómo los compradores invitados que no utilicen Google pueden ejercer sus derechos ARCOP (acceso, rectificación, cancelación y portabilidad) escribiendo directamente a `privacidad@servitecnology.com` conforme a la Ley N° 21.719 con plazo de respuesta de 15 días hábiles.

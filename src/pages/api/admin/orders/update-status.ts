@@ -151,11 +151,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 				updatePayload.ready_pickup_at = new Date().toISOString();
 			} else if (order_status === 'entregado') {
 				updatePayload.delivered_at = new Date().toISOString();
+			} else if (order_status === 'cancelado') {
+				updatePayload.stock_reserved_until = new Date(Date.now() - 1000).toISOString();
 			}
 		}
 
 		if (payment_status) {
 			updatePayload.payment_status = payment_status;
+			if (payment_status === 'cancelado' || payment_status === 'rechazado') {
+				updatePayload.stock_reserved_until = new Date(Date.now() - 1000).toISOString();
+			}
 		}
 
 		if (admin_notes !== undefined) {

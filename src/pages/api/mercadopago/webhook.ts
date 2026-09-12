@@ -168,6 +168,8 @@ export const POST: APIRoute = async ({ request }) => {
 				.from('orders')
 				.update({
 					payment_status: status === 'rejected' ? 'rechazado' : 'cancelado',
+					order_status: 'cancelado',
+					stock_reserved_until: new Date(Date.now() - 1000).toISOString(),
 					mp_payment_id: String(paymentId),
 					updated_at: new Date().toISOString()
 				})
