@@ -4,74 +4,309 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Términos y Condiciones | SERVITECNOLOGY" description="Términos y condiciones de uso de la plataforma SERVITECNOLOGY. Conoce nuestras políticas de servicio y despacho.">
+<Layout 
+	title="Términos y Condiciones del Servicio & E-commerce | SERVITECNOLOGY" 
+	description="Términos y condiciones de compraventa electrónica de SERVITECNOLOGY. Conoce nuestras políticas de pago con Mercado Pago, transferencias BancoEstado, despachos por pagar y garantía legal de 6 meses (Ley 21.398)."
+	keywords="terminos y condiciones servitecnology, garantia 6 meses sernac, ley 21398 chile, mercado pago chile, transferencias bancoestado, flete por pagar starken chilexpress"
+>
 	<Header />
 	
-	<main class="relative bg-black min-h-screen py-24 border-b border-white/5">
-		<!-- Background Glow -->
-		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
+	<main class="relative bg-black min-h-screen py-16 sm:py-24 border-b border-white/5 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute top-1/3 left-0 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
 
-		<div class="relative z-10 mx-auto max-w-3xl px-6 w-full">
-			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-8">
-				Términos y Condiciones
-			</h1>
+		<div class="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 w-full">
 			
-			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">1. Plataforma y Módulo E-commerce</h2>
-					<p>
-						Bienvenidos a SERVITECNOLOGY (https://servitecnology.com/). Nuestra plataforma opera como catálogo de servicios IT y tienda de comercio electrónico para componentes, repuestos y hardware computacional e informático.
-					</p>
-				</section>
-
-				<section class="space-y-4 p-6 bg-brand-cyan/5 border border-brand-cyan/20 rounded-xl">
-					<h2 class="text-xl font-bold text-brand-cyan">2. Modalidad de Pago: Transferencia Bancaria (Fase 1)</h2>
-					<p class="text-white">
-						En conformidad con la Fase 1 de nuestra Hoja de Ruta, los pagos de compras electrónicas se procesan <strong>exclusivamente mediante Transferencia Bancaria Directa</strong> a la cuenta corriente corporativa oficial de SERVITECNOLOGY SpA.
-					</p>
-					<ul class="list-disc pl-5 text-white font-medium space-y-1">
-						<li>Cada pedido genera un identificador único con formato <strong>ST-2026-XXXX</strong>.</li>
-						<li>El comprador debe ingresar dicho código en el asunto/glosa de su transferencia para la conciliación administrativa.</li>
-						<li>La acreditación se confirma vía correo electrónico y soporte oficial por WhatsApp (+56948672300).</li>
-					</ul>
-				</section>
-
-				<section class="space-y-4 p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-					<h2 class="text-xl font-bold text-yellow-400">3. Reserva Temporal de Stock por 2 Horas</h2>
-					<p class="text-white">
-						Al generar una orden en nuestro Checkout, el stock de los productos seleccionados queda <strong>reservado automáticamente por un plazo improrrogable de 2 horas</strong>. Si transcurrido dicho período no se ha notificado ni comprobado la transferencia, la reserva caduca y los productos se reintegran al inventario público para otros clientes.
-					</p>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">4. Facturación Electrónica Obligatoria (Normativa SII)</h2>
-					<p>
-						Todas las compras realizadas en SERVITECNOLOGY incluyen <strong>Factura Electrónica legal</strong> conforme a las disposiciones del Servicio de Impuestos Internos (SII) de la República de Chile. Por exigencia tributaria, el ingreso del RUT (persona natural o jurídica) es obligatorio durante el checkout para emitir válidamente el documento y remitirlo al correo electrónico registrado.
-					</p>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">5. Entrega: Retiro en Oficina y Despacho en Región Metropolitana</h2>
-					<p>
-						Disponemos de dos modalidades de entrega:
-					</p>
-					<ul class="list-disc pl-5 space-y-1">
-						<li><strong>Retiro en Oficina Técnica ($0):</strong> Previa validación de la transferencia y coordinación de horario en nuestra sede en Santiago.</li>
-						<li><strong>Despacho a Domicilio RM:</strong> Entrega directa en comunas de la Región Metropolitana con tarifa fija calculada automáticamente según la comuna seleccionada.</li>
-					</ul>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">6. Jurisdicción y Ley Aplicable</h2>
-					<p>
-						Estos Términos y Condiciones se rigen por las leyes de la República de Chile, en particular la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores (SERNAC) y la normativa tributaria del SII. Cualquier controversia será sometida a los tribunales ordinarios de justicia de Santiago de Chile.
-					</p>
-				</section>
-
-				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
-					Última actualización: {new Date().toLocaleDateString('es-CL')} — Versión E-commerce Fase 1
+			<!-- Header de la Página con Badge Comercial -->
+			<div class="space-y-4 mb-12">
+				<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-bold uppercase tracking-wider font-mono">
+					<span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+					<span>Contrato de Compraventa & Garantía Legal 6 Meses (Ley N° 21.398)</span>
 				</div>
+				<h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white">
+					Términos y Condiciones Comerciales
+				</h1>
+				<p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+					El presente contrato regula los términos de compraventa electrónica, medios de pago en línea, despachos a todo Chile, facturación electrónica legal y condiciones de garantía de <strong>SERVITECNOLOGY SpA</strong>, en conformidad con la <strong>Ley N° 19.496 de Protección al Consumidor</strong>, la <strong>Ley N° 21.398 (Ley Pro-Consumidor)</strong> y la normativa tributaria del <strong>Servicio de Impuestos Internos (SII)</strong>.
+				</p>
 			</div>
+
+			<!-- Tabla de Contenidos Rápida (Card Grid) -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-12">
+				<a href="#plataforma" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-cyan/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-cyan flex items-center gap-2">
+						<span>🛒</span> 1. Ámbito & Catálogo
+					</span>
+				</a>
+				<a href="#medios-pago" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-green/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-green flex items-center gap-2">
+						<span>💳</span> 2. Medios de Pago
+					</span>
+				</a>
+				<a href="#reserva-stock" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-amber-500/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-amber-400 flex items-center gap-2">
+						<span>⏱️</span> 3. Reserva 2 Horas
+					</span>
+				</a>
+				<a href="#despachos" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-cyan/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-cyan flex items-center gap-2">
+						<span>🚚</span> 4. Despachos & Retiro
+					</span>
+				</a>
+				<a href="#facturacion-sii" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-green/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-green flex items-center gap-2">
+						<span>🏛️</span> 5. Facturación SII
+					</span>
+				</a>
+				<a href="#garantia-legal" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-emerald-500/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-emerald-400 flex items-center gap-2">
+						<span>🛡️</span> 6. Garantía 6 Meses
+					</span>
+				</a>
+			</div>
+
+			<!-- Cláusulas Contractuales -->
+			<div class="space-y-10 text-slate-300 text-sm sm:text-base leading-relaxed">
+
+				<!-- 1. Ámbito de Aplicación -->
+				<section id="plataforma" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">1</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Ámbito de Aplicación y Catálogo E-commerce</h2>
+					</div>
+					<p>
+						Los presentes Términos y Condiciones regulan la consulta, reserva y adquisición de componentes de hardware computacional, repuestos técnicos y servicios especializados a través del sitio web oficial <strong>https://servitecnology.com/</strong>, de propiedad de <strong>SERVITECNOLOGY SpA</strong>, domiciliada en Santiago Centro, Región Metropolitana de Chile.
+					</p>
+					<p>
+						Toda transacción realizada en esta tienda online implica la aceptación libre, expresa e informada de estos términos por parte del cliente, conforme a las normas de la Ley N° 19.496 y la Ley N° 21.719 de Protección de Datos Personales.
+					</p>
+				</section>
+
+				<!-- 2. Modalidades de Pago Habilitadas -->
+				<section id="medios-pago" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-5">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">2</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Modalidades de Pago Habilitadas</h2>
+					</div>
+					<p>
+						SERVITECNOLOGY pone a disposición de sus clientes dos modalidades oficiales y seguras para el procesamiento de compras:
+					</p>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+						<!-- A. Mercado Pago -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-brand-green/30 space-y-3">
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-bold text-brand-green uppercase tracking-wider flex items-center gap-2">
+									<span>💳</span> Mercado Pago (Checkout Pro)
+								</h3>
+								<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-green/20 text-brand-green font-mono">Inmediato</span>
+							</div>
+							<p class="text-xs text-slate-300">
+								Permite pagar de forma instantánea utilizando:
+							</p>
+							<ul class="text-xs text-slate-300 list-disc pl-4 space-y-1">
+								<li><strong>Tarjetas de Crédito:</strong> Visa, Mastercard, American Express (hasta en cuotas según el banco emisor).</li>
+								<li><strong>Tarjetas de Débito Bancarias:</strong> Redcompra / Webpay Plus.</li>
+								<li><strong>Dinero en Cuenta:</strong> Saldo disponible en cuenta digital Mercado Pago.</li>
+							</ul>
+							<p class="text-[11px] text-slate-400">
+								🔒 La transacción es procesada bajo certificación PCI-DSS Nivel 1. SERVITECNOLOGY nunca tiene acceso a los números ni claves de tus tarjetas.
+							</p>
+						</div>
+
+						<!-- B. Transferencia Bancaria Manual -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-amber-500/30 space-y-3">
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+									<span>🏦</span> Transferencia Directa BancoEstado
+								</h3>
+								<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Manual</span>
+							</div>
+							<p class="text-xs text-slate-300">
+								Transferencia electrónica directa a la cuenta corriente corporativa de SERVITECNOLOGY SpA en BancoEstado.
+							</p>
+							<ul class="text-xs text-slate-300 list-disc pl-4 space-y-1">
+								<li>Cada orden genera un identificador único con formato <strong class="text-white font-mono">ST-2026-XXXX</strong>.</li>
+								<li>El cliente <strong>DEBE</strong> ingresar obligatoriamente dicho código en el asunto/glosa de la transferencia bancaria.</li>
+								<li>La acreditación se confirma contra cartola bancaria y vía correo de confirmación oficial.</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<!-- 3. Reserva Temporal de Stock por 2 Horas -->
+				<section id="reserva-stock" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-amber-500/30 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-base font-bold">3</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Política de Reserva Temporal de Stock (2 Horas)</h2>
+					</div>
+					<p>
+						Para pedidos realizados mediante la modalidad de <strong>Transferencia Bancaria Directa</strong>, el sistema bloquea automáticamente el stock de los productos seleccionados por un plazo improrrogable de <strong>2 horas corridas</strong> desde la emisión de la orden:
+					</p>
+					<ul class="space-y-2 list-disc pl-5 text-xs sm:text-sm">
+						<li>Si dentro del lapso de 2 horas se remite el comprobante y se acredita la transferencia, el stock queda reservado y asignado definitivamente a la orden.</li>
+						<li>Si transcurrido dicho plazo no se acredita el abono bancario, el pedido cambia a estado <strong>Cancelado por Expiración</strong> y los repuestos se liberan automáticamente en el inventario para que otros clientes puedan adquirirlos.</li>
+						<li>Para pagos aprobados vía <strong>Mercado Pago</strong>, la asignación y descuento de stock es atómica e inmediata, por lo que no aplica temporizador de espera.</li>
+					</ul>
+				</section>
+
+				<!-- 4. Modalidades de Despacho y Entrega -->
+				<section id="despachos" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-5">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">4</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Modalidades de Entrega y Despacho a Todo Chile</h2>
+					</div>
+					<p>
+						En nuestro checkout, el cobro por flete se muestra como <strong>$0 CLP en la web</strong> para evitar sobreprecios arbitrarios. Las modalidades de entrega operan del siguiente modo:
+					</p>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+						<!-- Retiro en Sucursal -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-bold text-brand-green uppercase tracking-wider flex items-center gap-2">
+									<span>🏢</span> Retiro en Oficina Técnica ($0 CLP)
+								</h3>
+								<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-green/20 text-brand-green">Gratis</span>
+							</div>
+							<p class="text-xs text-slate-300">
+								Disponible en nuestra oficina técnica ubicada en Santiago Centro, previa acreditación del pago y coordinación de horario.
+							</p>
+							<div class="p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-slate-400 space-y-1">
+								<p><strong>Requisitos de Retiro:</strong></p>
+								<p>1. Exhibir Cédula de Identidad física del titular de la compra.</p>
+								<p>2. Mostrar el código de orden <span class="font-mono text-brand-green">ST-2026-XXXX</span>.</p>
+								<p>3. En caso de retiro por un tercero, presentar poder simple y copia de la cédula del titular.</p>
+							</div>
+						</div>
+
+						<!-- Envíos por Pagar a Todo Chile -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-bold text-brand-cyan uppercase tracking-wider flex items-center gap-2">
+									<span>🚚</span> Envíos por Pagar (Cobro en Destino)
+								</h3>
+								<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan">A Todo Chile</span>
+							</div>
+							<p class="text-xs text-slate-300">
+								Despachos diarios a todo el territorio nacional continental mediante <strong>Starken o Chilexpress</strong>.
+							</p>
+							<div class="p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-slate-400 space-y-1">
+								<p><strong>Condiciones del Flete:</strong></p>
+								<p>1. El costo del transporte es cancelado directamente por el cliente al courier al recibir su encomienda o retirar en sucursal.</p>
+								<p>2. Al despachar, el cliente recibe por correo y en su portal <a href="/mis-pedidos" class="text-brand-cyan underline">Mis Pedidos</a> el número de guía de seguimiento y el courier correspondiente.</p>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- 5. Facturación Electrónica Legal (Normativa SII) -->
+				<section id="facturacion-sii" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">5</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Facturación Electrónica Obligatoria ante el SII</h2>
+					</div>
+					<p>
+						En conformidad con las resoluciones y normativas tributarias vigentes dictadas por el <strong>Servicio de Impuestos Internos (SII)</strong> de la República de Chile:
+					</p>
+					<ul class="space-y-2 list-disc pl-5 text-xs sm:text-sm">
+						<li>Todas las compras realizadas en SERVITECNOLOGY generan una <strong>Boleta o Factura Electrónica timbrada digitalmente ante el SII</strong>.</li>
+						<li>El suministro de un <strong>RUT chileno válido</strong> (Persona Natural o Jurídica) es un requisito técnico y legal obligatorio e ineludible en el proceso de checkout.</li>
+						<li>El documento tributario definitivo es remitido de manera automática al correo electrónico proporcionado por el comprador una vez aprobado el pago.</li>
+						<li>En estricto cumplimiento del <strong>Artículo 17 del Código Tributario</strong>, los respaldos contables y fiscales de las operaciones electrónicas se conservarán durante el período legal obligatorio de <strong>6 años</strong>.</li>
+					</ul>
+				</section>
+
+				<!-- 6. Garantía Legal de 6 Meses (Ley N° 21.398 Pro-Consumidor) -->
+				<section id="garantia-legal" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-emerald-500/30 backdrop-blur-md space-y-4 shadow-[0_0_40px_rgba(16,185,129,0.08)]">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-base font-bold">6</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Garantía Legal de 6 Meses (Ley N° 21.398 y SERNAC)</h2>
+					</div>
+					<div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2">
+						<p class="text-xs sm:text-sm font-bold text-white">
+							🛡️ Nueva Protección Legal de 6 Meses para el Consumidor:
+						</p>
+						<p class="text-xs text-slate-300 leading-relaxed">
+							En cumplimiento de la <strong>Ley N° 21.398 (Ley Pro-Consumidor)</strong>, todo componente o repuesto nuevo comercializado cuenta con una garantía legal de <strong>6 meses corridos</strong> contados desde la recepción física del producto.
+						</p>
+					</div>
+					<p class="text-xs sm:text-sm">
+						Si el producto presenta fallas técnicas, defectos de fabricación o no resulta apto para el uso convenido dentro del plazo legal de 6 meses, el consumidor tendrá derecho a elegir libremente entre:
+					</p>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/10 text-center">
+							<span class="text-lg block mb-1">🛠️</span>
+							<strong class="text-white block mb-1">Reparación Gratuita</strong>
+							<span class="text-slate-400">Servicio técnico en taller especializado sin costo de mano de obra.</span>
+						</div>
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/10 text-center">
+							<span class="text-lg block mb-1">🔄</span>
+							<strong class="text-white block mb-1">Reposición del Repuesto</strong>
+							<span class="text-slate-400">Cambio inmediato por un componente nuevo de idénticas características.</span>
+						</div>
+						<div class="p-3.5 rounded-xl bg-white/5 border border-white/10 text-center">
+							<span class="text-lg block mb-1">💵</span>
+							<strong class="text-white block mb-1">Devolución del Dinero</strong>
+							<span class="text-slate-400">Reintegro íntegro del monto efectivamente pagado en la orden.</span>
+						</div>
+					</div>
+
+					<div class="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
+						<strong class="text-amber-400 block uppercase tracking-wider font-mono">Exclusiones Expresas de Garantía:</strong>
+						<p class="text-slate-400 leading-relaxed">
+							La garantía legal no cubre fallas, deterioros o daños derivados de:
+						</p>
+						<ul class="list-disc pl-5 space-y-1 text-slate-400">
+							<li>Manipulación negligente, fracturas de pines o pistas, roturas físicas de zócalos o conectores.</li>
+							<li>Sobretensiones eléctricas o descargas atmosféricas atribuibles a fuentes de poder defectuosas de terceros.</li>
+							<li>Instalación incorrecta o incompatibilidad de hardware ajena a las especificaciones técnicas del repuesto.</li>
+							<li>Sellos de garantía del fabricante vulnerados o rotos.</li>
+						</ul>
+					</div>
+				</section>
+
+				<!-- 7. Derecho a Retracto -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">7</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Derecho a Retracto en Compras Online</h2>
+					</div>
+					<p class="text-xs sm:text-sm">
+						De conformidad con el <strong>Artículo 3 bis letra b de la Ley N° 19.496</strong>, el comprador goza de un plazo de <strong>10 días corridos</strong> desde la recepción del producto para retractarse de la compra efectuada por medios electrónicos, siempre que el producto se encuentre sellado en su empaque original de fábrica, sin signos de manipulación, uso ni alteración, con todos sus accesorios, manuales y boleta o factura de venta.
+					</p>
+				</section>
+
+				<!-- 8. Condiciones del Portal Mis Pedidos y Cuentas de Usuario -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">8</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Condiciones del Portal 'Mis Pedidos' y Cuentas de Usuario</h2>
+					</div>
+					<p class="text-xs sm:text-sm">
+						El portal <a href="/mis-pedidos" class="text-brand-green underline font-bold">Mis Pedidos</a> permite consultar compras pasadas, descargar facturas, visualizar el avance logístico en tiempo real y ejercer el derecho de portabilidad de datos personales (exportación en JSON conforme a la Ley N° 21.719). El acceso se efectúa mediante autenticación delegada de Google Identity (OAuth 2.0). Es responsabilidad exclusiva del usuario resguardar la seguridad y confidencialidad de su cuenta personal de Google.
+					</p>
+				</section>
+
+				<!-- 9. Jurisdicción y Legislación Aplicable -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">9</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Jurisdicción y Ley Aplicable</h2>
+					</div>
+					<p class="text-xs sm:text-sm">
+						Estos Términos y Condiciones se rigen en todas sus partes por las leyes vigentes en la República de Chile. Para todos los efectos legales y jurisdiccionales que de ellos pudieren emanar, las partes fijan su domicilio en la comuna y ciudad de Santiago de Chile, sometiéndose a la competencia de sus tribunales ordinarios de justicia.
+					</p>
+
+					<div class="pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 font-mono">
+						<span>Versión 2.0 — Adaptada a Ley N° 21.398, Ley N° 21.719 y Mercado Pago</span>
+						<span>Última revisión: 12 de Septiembre de 2026</span>
+					</div>
+				</section>
+
+			</div>
+
 		</div>
 	</main>
 

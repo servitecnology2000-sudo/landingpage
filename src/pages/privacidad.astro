@@ -4,68 +4,337 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Política de Privacidad | SERVITECNOLOGY" description="Política de privacidad de SERVITECNOLOGY conforme a la Ley N° 19.628 sobre Protección de la Vida Privada.">
+<Layout 
+	title="Política de Privacidad y Tratamiento de Datos Personales | SERVITECNOLOGY" 
+	description="Política de privacidad de SERVITECNOLOGY conforme a la Ley N° 21.719 de Protección de Datos Personales, Código Tributario Art. 17 ante el SII y estándares GDPR."
+	keywords="privacidad servitecnology, ley 21719 chile, proteccion datos personales, derechos arcop, sii codigo tributario art 17, gdpr e-commerce"
+>
 	<Header />
 	
-	<main class="relative bg-black min-h-screen py-24 border-b border-white/5">
-		<!-- Background Glow -->
-		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-green/5 rounded-full blur-[120px] pointer-events-none"></div>
+	<main class="relative bg-black min-h-screen py-16 sm:py-24 border-b border-white/5 overflow-hidden">
+		<!-- Background Glows -->
+		<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute top-1/3 right-0 w-[500px] h-[500px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
 
-		<div class="relative z-10 mx-auto max-w-3xl px-6 w-full">
-			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-8">
-				Política de Privacidad
-			</h1>
+		<div class="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 w-full">
 			
-			<div class="prose prose-invert prose-slate max-w-none space-y-8 text-slate-300 leading-relaxed">
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">1. Compromiso de Privacidad</h2>
-					<p>
-						En SERVITECNOLOGY estamos comprometidos con la protección de tus datos. La presente Política de Privacidad se rige estrictamente por lo dispuesto en la <strong>Ley N° 19.628 sobre Protección de la Vida Privada (Ley de Protección de Datos)</strong> de la República de Chile.
-					</p>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">2. Sistema de Analíticas Interno</h2>
-					<p>
-						Informamos de manera transparente a nuestros visitantes que esta plataforma utiliza un sistema de <strong>analíticas propio y liviano</strong>. Este sistema tiene como única finalidad registrar métricas de interacción básicas (tales como visitas a la página y clics en botones).
-					</p>
-					<p>
-						La información recopilada mediante estas métricas es de carácter estadístico anónimo y se emplea de forma exclusiva para:
-					</p>
-					<ul class="list-disc pl-5">
-						<li>Mejorar la experiencia de usuario y la interfaz del sitio.</li>
-						<li>Medir el interés general en nuestros componentes y repuestos.</li>
-						<li>Garantizar el correcto funcionamiento de nuestra plataforma.</li>
-					</ul>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">3. Tratamiento Exclusivo de Datos para Checkout y Facturación SII</h2>
-					<p>
-						Para las compras efectuadas en nuestra tienda virtual Ecommerce, recopilamos de forma segura únicamente los datos indispensables para cumplir con la normativa legal chilena y la logística de entrega:
-					</p>
-					<ul class="list-disc pl-5 space-y-1">
-						<li><strong>RUT (Persona Natural o Jurídica):</strong> Requerido por exigencia legal para la emisión de Factura Electrónica conforme a las disposiciones del Servicio de Impuestos Internos (SII).</li>
-						<li><strong>Nombre Completo o Razón Social:</strong> Titular de la compra y del documento tributario.</li>
-						<li><strong>Correo Electrónico:</strong> Envío de confirmación de orden, datos bancarios para transferencia y la Factura Electrónica timbrada por el SII.</li>
-						<li><strong>Teléfono y Dirección de Despacho (si aplica):</strong> Coordinación exclusiva de entrega en Región Metropolitana o citación para retiro en oficina.</li>
-					</ul>
-					<p>
-						<strong>Garantía de Confidencialidad:</strong> SERVITECNOLOGY jamás comercializa, arrienda, transfiere ni cede datos a terceros, agencias de publicidad o redes externas. No almacenamos tarjetas bancarias ni datos financieros sensibles.
-					</p>
-				</section>
-
-				<section class="space-y-4">
-					<h2 class="text-2xl font-bold text-white">4. Coordinación y Canales Oficiales</h2>
-					<p>
-						Las notificaciones de transferencia y soporte técnico directo se canalizan a través de nuestros canales oficiales (WhatsApp +56948672300 y correo contacto@servitecnology.com). Las comunicaciones están protegidas bajo estrictos principios de secreto comercial y confidencialidad técnica.
-					</p>
-				</section>
-
-				<div class="pt-8 text-sm text-slate-500 border-t border-white/10 mt-12">
-					Última actualización: {new Date().toLocaleDateString('es-CL')} — Versión E-commerce Fase 1
+			<!-- Header de la Página con Badge de Cumplimiento -->
+			<div class="space-y-4 mb-12">
+				<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold uppercase tracking-wider font-mono">
+					<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+					<span>Cumplimiento Normativo Ley N° 21.719 & GDPR</span>
 				</div>
+				<h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white">
+					Política de Privacidad y Protección de Datos
+				</h1>
+				<p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+					En <strong>SERVITECNOLOGY SpA</strong> protegemos tu información personal y financiera bajo los más estrictos estándares de la <strong>Ley N° 21.719 sobre Protección de Datos Personales de Chile</strong>, las exigencias tributarias del <strong>Servicio de Impuestos Internos (SII)</strong> y los principios de seguridad de la OCDE y el GDPR europeo.
+				</p>
 			</div>
+
+			<!-- Tabla de Contenidos Rápida (Card Grid) -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-12">
+				<a href="#responsable" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-green/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-green flex items-center gap-2">
+						<span>🏢</span> 1. Responsable Legal
+					</span>
+				</a>
+				<a href="#marco-legal" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-cyan/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-cyan flex items-center gap-2">
+						<span>⚖️</span> 2. Ley 21.719 & Licitud
+					</span>
+				</a>
+				<a href="#datos-recopilados" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-green/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-green flex items-center gap-2">
+						<span>📋</span> 3. Datos & Finalidades
+					</span>
+				</a>
+				<a href="#seguridad-pagos" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-cyan/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-cyan flex items-center gap-2">
+						<span>💳</span> 4. Pagos & Mercado Pago
+					</span>
+				</a>
+				<a href="#derechos-arcop" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-green/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-green flex items-center gap-2">
+						<span>🛡️</span> 5. Derechos ARCOP
+					</span>
+				</a>
+				<a href="#conservacion-sii" class="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 hover:border-brand-cyan/40 transition-all group">
+					<span class="text-xs font-bold text-white group-hover:text-brand-cyan flex items-center gap-2">
+						<span>⏳</span> 6. Plazos SII & 6 Años
+					</span>
+				</a>
+			</div>
+
+			<!-- Cuerpo del Documento Legal -->
+			<div class="space-y-10 text-slate-300 text-sm sm:text-base leading-relaxed">
+
+				<!-- 1. Identificación del Responsable -->
+				<section id="responsable" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">1</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Identificación del Responsable del Tratamiento</h2>
+					</div>
+					<p>
+						El responsable del tratamiento de los datos recopilados a través de esta plataforma digital (https://servitecnology.com/) es:
+					</p>
+					<div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2 font-mono text-xs sm:text-sm text-slate-200">
+						<p><strong class="text-white">Razón Social:</strong> SERVITECNOLOGY SpA</p>
+						<p><strong class="text-white">Actividad:</strong> Servicios integrales de tecnología, soporte computacional y venta e-commerce de componentes y repuestos de hardware.</p>
+						<p><strong class="text-white">Domicilio Legal:</strong> Santiago Centro, Región Metropolitana, República de Chile.</p>
+						<p><strong class="text-white">Contacto de Privacidad y Oficial de Protección de Datos (DPO):</strong> <a href="mailto:privacidad@servitecnology.com" class="text-brand-cyan hover:underline font-bold">privacidad@servitecnology.com</a></p>
+						<p><strong class="text-white">Atención Comercial y Técnica:</strong> <a href="mailto:contacto@servitecnology.com" class="text-brand-green hover:underline">contacto@servitecnology.com</a> | WhatsApp: +56 9 8748 3660</p>
+					</div>
+				</section>
+
+				<!-- 2. Marco Normativo y Principios Rectores -->
+				<section id="marco-legal" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">2</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Marco Normativo y Principios de la Ley N° 21.719</h2>
+					</div>
+					<p>
+						La presente Política se rige por la <strong>Ley N° 21.719 sobre Protección de Datos Personales</strong> (que moderniza integralmente la Ley N° 19.628), la normativa de protección de la vida privada, los lineamientos de la <strong>Agencia Nacional de Protección de Datos Personales (ANPD)</strong> y los estándares internacionales del Reglamento General de Protección de Datos (GDPR UE 2016/679).
+					</p>
+					<p>
+						Nuestra plataforma aplica estrictamente los siguientes principios rectores:
+					</p>
+					<ul class="space-y-2 list-disc pl-5 text-xs sm:text-sm">
+						<li><strong>Principio de Licitud y Lealtad:</strong> El tratamiento se sustenta únicamente en bases jurídicas legítimas (consentimiento libre, expreso e informado, ejecución contractual de compraventa o cumplimiento de obligaciones legales).</li>
+						<li><strong>Fin del Consentimiento Tácito:</strong> No utilizamos casillas premarcadas ni deducimos la aceptación de cláusulas por la mera navegación pasiva. Todo consentimiento se recolecta mediante acción afirmativa.</li>
+						<li><strong>Minimización de Datos:</strong> Solo recopilamos los datos estrictamente pertinentes y necesarios para la venta, el despacho físico de componentes y el cumplimiento tributario ante el SII.</li>
+						<li><strong>Confidencialidad y Seguridad:</strong> Aplicamos cifrado en tránsito (TLS 1.3) y en reposo (AES-256), controles de acceso criptográficos y aislamiento por Row Level Security (RLS) en base de datos.</li>
+					</ul>
+				</section>
+
+				<!-- 3. Datos Recopilados y Finalidades -->
+				<section id="datos-recopilados" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">3</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Bases Legales y Datos Personales Tratados</h2>
+					</div>
+					<p>
+						Discriminamos el tratamiento de datos según su finalidad específica y base de licitud:
+					</p>
+					
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+						<!-- A. Finalidad Contractual -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+							<h3 class="text-sm font-bold text-brand-green uppercase tracking-wider flex items-center gap-2">
+								<span>📦</span> Finalidad Contractual y Despacho
+							</h3>
+							<p class="text-xs text-slate-300">
+								<strong>Datos:</strong> Nombre y apellido, correo electrónico, teléfono móvil / WhatsApp, dirección física de entrega o sucursal de encomienda.
+							</p>
+							<p class="text-xs text-slate-400">
+								<strong>Base Jurídica:</strong> Ejecución de contrato de compraventa y gestión de entrega (retiro en tienda o envío por pagar vía Starken / Chilexpress).
+							</p>
+						</div>
+
+						<!-- B. Finalidad Tributaria SII -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+							<h3 class="text-sm font-bold text-brand-cyan uppercase tracking-wider flex items-center gap-2">
+								<span>🏛️</span> Obligación Tributaria Legal SII
+							</h3>
+							<p class="text-xs text-slate-300">
+								<strong>Datos:</strong> Rol Único Tributario (RUT chileno), Razón Social o Nombre Legal, detalle de productos facturados.
+							</p>
+							<p class="text-xs text-slate-400">
+								<strong>Base Jurídica:</strong> Exigencia legal obligatoria del Servicio de Impuestos Internos (SII) para emisión de Boleta o Factura Electrónica timbrada.
+							</p>
+						</div>
+
+						<!-- C. Autenticación y Seguridad -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+							<h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+								<span>🔐</span> Autenticación & Cuenta de Cliente
+							</h3>
+							<p class="text-xs text-slate-300">
+								<strong>Datos:</strong> Google OAuth ID (sub), email verificado y nombre de perfil público proporcionado por Google LLC.
+							</p>
+							<p class="text-xs text-slate-400">
+								<strong>Base Jurídica:</strong> Consentimiento del usuario al conectar con Google para consultar su historial de compras en el portal "Mis Pedidos".
+							</p>
+						</div>
+
+						<!-- D. Analítica Interna Liviana -->
+						<div class="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+							<h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+								<span>📊</span> Métricas Internas Anónimas
+							</h3>
+							<p class="text-xs text-slate-300">
+								<strong>Datos:</strong> Conteo agregado y anonimizado de visitas a repuestos y clics de navegación interna.
+							</p>
+							<p class="text-xs text-slate-400">
+								<strong>Compromiso:</strong> NO utilizamos cookies de terceros, píxeles invasivos de Facebook/TikTok ni perfilamiento publicitario para comercialización de datos.
+							</p>
+						</div>
+					</div>
+				</section>
+
+				<!-- 4. Seguridad Financiera y Pasarela Mercado Pago -->
+				<section id="seguridad-pagos" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-brand-cyan/30 backdrop-blur-md space-y-4 shadow-[0_0_40px_rgba(0,207,255,0.08)]">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">4</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Tratamiento de Pagos y Seguridad Financiera PCI-DSS</h2>
+					</div>
+					<div class="p-4 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/25 space-y-2">
+						<p class="text-xs sm:text-sm font-bold text-white">
+							🛡️ Declaración Expresa de Cero Almacenamiento Financiero:
+						</p>
+						<p class="text-xs text-slate-300 leading-relaxed">
+							<strong>SERVITECNOLOGY SpA NO almacena, no tiene acceso ni procesa números de tarjetas de crédito, débito, cuentas bancarias ni códigos de seguridad (CVV/CVC).</strong>
+						</p>
+					</div>
+					<p>
+						Cuando el cliente opta por pagar mediante Checkout Pro, la transacción es gestionada exclusivamente por los servidores seguros de <strong>Mercado Pago Chile (MercadoLibre Chile Ltda.)</strong>, entidad auditada y certificada bajo el estándar internacional de seguridad de la industria de tarjetas de pago <strong>PCI-DSS Nivel 1 (Payment Card Industry Data Security Standard)</strong>.
+					</p>
+					<p>
+						Para pagos mediante <strong>Transferencia Bancaria Directa</strong>, la operación se efectúa dentro del entorno privado y cifrado del portal bancario del usuario (BancoEstado u otro banco emisor). SERVITECNOLOGY únicamente recibe la comprobación del monto y el identificador de orden <span class="font-mono text-brand-green font-bold">ST-2026-XXXX</span> para su acreditación manual en bodega.
+					</p>
+				</section>
+
+				<!-- 5. Proveedores Tecnológicos y Transferencia Internacional -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">5</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Proveedores Tecnológicos y Transferencia Internacional de Datos</h2>
+					</div>
+					<p>
+						Para prestar un servicio de alta fidelidad, velocidad y disponibilidad continua, SERVITECNOLOGY contrata los servicios de infraestructura cloud de proveedores de clase mundial que cumplen estrictamente con estándares de seguridad ISO/IEC 27001, SOC 2 Tipo II y cláusulas contractuales tipo:
+					</p>
+					<ul class="space-y-3 list-none pl-0 text-xs sm:text-sm">
+						<li class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3">
+							<span class="font-bold text-brand-cyan">▲ Vercel Inc. (EE.UU.):</span>
+							<span>Alojamiento de la plataforma web en servidores Edge con cifrado forzado TLS 1.3 y protección contra ataques distribuidos (DDoS).</span>
+						</li>
+						<li class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3">
+							<span class="font-bold text-brand-green">⚡ Supabase Inc. / AWS:</span>
+							<span>Gestión de base de datos PostgreSQL alojada en centros de datos seguros con cifrado de datos en reposo (AES-256) y políticas de aislamiento RLS.</span>
+						</li>
+						<li class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3">
+							<span class="font-bold text-amber-300">🔑 Google LLC (EE.UU.):</span>
+							<span>Proveedor de autenticación federada mediante Google Identity Services (OAuth 2.0) para el portal de clientes.</span>
+						</li>
+						<li class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3">
+							<span class="font-bold text-emerald-400">📦 Starken / Chilexpress:</span>
+							<span>Couriers nacionales a quienes se les comunica exclusivamente el nombre, teléfono y dirección de despacho para efectuar la entrega física del paquete.</span>
+						</li>
+					</ul>
+				</section>
+
+				<!-- 6. Catálogo de Derechos ARCOP -->
+				<section id="derechos-arcop" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">6</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Catálogo de Derechos ARCOP y Procedimiento de Ejercicio</h2>
+					</div>
+					<p>
+						De conformidad con los Artículos 5 al 9 de la <strong>Ley N° 21.719</strong> y la normativa internacional, todo titular de datos personales cuenta con los siguientes derechos exigibles ante SERVITECNOLOGY:
+					</p>
+
+					<div class="space-y-3 pt-2 text-xs sm:text-sm">
+						<div class="p-4 rounded-xl bg-white/5 border border-white/10">
+							<strong class="text-brand-green block text-sm mb-1">1. Derecho de Acceso (Art. 5):</strong>
+							Conocer qué datos personales tuyos están siendo tratados por SERVITECNOLOGY, su origen, las finalidades del tratamiento y las comunicaciones realizadas.
+						</div>
+						<div class="p-4 rounded-xl bg-white/5 border border-white/10">
+							<strong class="text-brand-cyan block text-sm mb-1">2. Derecho de Rectificación (Art. 6):</strong>
+							Modificar o actualizar datos inexactos, incompletos, desactualizados o engañosos.
+						</div>
+						<div class="p-4 rounded-xl bg-white/5 border border-white/10">
+							<strong class="text-amber-300 block text-sm mb-1">3. Derecho de Cancelación / Supresión (Art. 7):</strong>
+							Solicitar la eliminación o borrado de tus datos personales cuando haya vencido el plazo legal de retención, su tratamiento carezca de base jurídica o hayas revocado tu consentimiento.
+						</div>
+						<div class="p-4 rounded-xl bg-white/5 border border-white/10">
+							<strong class="text-red-400 block text-sm mb-1">4. Derecho de Oposición (Art. 8):</strong>
+							Oponerse al tratamiento de datos para fines no contractuales o cuando afecte derechos y libertades fundamentales.
+						</div>
+						<div class="p-4 rounded-xl bg-white/5 border border-white/10">
+							<strong class="text-emerald-400 block text-sm mb-1">5. Derecho de Portabilidad (Art. 9):</strong>
+							Obtener una copia digital de tus datos personales en formato estructurado, genérico y legible por máquina (formato JSON), disponible directamente en nuestro portal <a href="/mis-pedidos" class="text-brand-green underline font-bold">Mis Pedidos</a> o mediante solicitud directa.
+						</div>
+					</div>
+
+					<div class="p-5 rounded-2xl bg-zinc-900 border border-brand-green/30 mt-4 space-y-3">
+						<h3 class="text-sm font-bold text-white flex items-center gap-2">
+							<span>📩</span> ¿Cómo ejercer tus derechos ARCOP?
+						</h3>
+						<p class="text-xs text-slate-300">
+							Para ejercer cualquiera de tus derechos ARCOP, puedes enviar un correo electrónico formal a:
+						</p>
+						<div class="flex items-center gap-3 flex-wrap">
+							<a 
+								href="mailto:privacidad@servitecnology.com?subject=Solicitud%20Derechos%20ARCOP%20Ley%2021719&body=Estimado%20Oficial%20de%20Privacidad%20SERVITECNOLOGY,%0A%0ASolicito%20ejercer%20mi%20derecho%20de%20[Acceso%20/%20Rectificaci%C3%B3n%20/%20Cancelaci%C3%B3n%20/%20Oposici%C3%B3n%20/%20Portabilidad].%0A%0AMis%20datos%20son:%0ANombre%20Completo:%0ARUT:%0ACorreo%20electr%C3%B3nico%20registrado:" 
+								class="px-4 py-2.5 rounded-xl bg-brand-green text-black text-xs font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,255,127,0.3)] inline-flex items-center gap-2"
+							>
+								<span>Solicitar Ejercicio de Derechos ARCOP</span>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+							</a>
+							<span class="text-xs text-slate-400 font-mono">privacidad@servitecnology.com</span>
+						</div>
+						<p class="text-[11px] text-slate-400">
+							<strong>Plazo Legal de Respuesta:</strong> SERVITECNOLOGY responderá formalmente a tu solicitud dentro del plazo legal máximo de <strong>15 días hábiles</strong> desde su recepción, sin costo alguno para el titular.
+						</p>
+					</div>
+				</section>
+
+				<!-- 7. Conservación de Datos y Armonización con el SII (Código Tributario Art. 17) -->
+				<section id="conservacion-sii" class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-amber-500/30 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-base font-bold">7</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Plazo de Conservación y Excepción Tributaria del SII (6 Años)</h2>
+					</div>
+					<p>
+						En estricto cumplimiento con la <strong>Ley N° 21.719</strong> y el <strong>Artículo 17 del Código Tributario de Chile</strong>, el derecho a cancelación o supresión de datos conoce una excepción legal de orden público:
+					</p>
+					<div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2 text-xs sm:text-sm">
+						<p class="font-bold text-amber-200">
+							⚖️ Mandato Tributario del Código Tributario (Art. 17):
+						</p>
+						<p class="text-amber-100/90 leading-relaxed">
+							Toda empresa comercializadora en Chile está obligada por ley a conservar los libros de contabilidad, registros auxiliares, boletas y facturas electrónicas timbradas por un <strong>plazo mínimo de 6 años</strong> para fines de fiscalización por el Servicio de Impuestos Internos (SII).
+						</p>
+					</div>
+					<p class="text-xs sm:text-sm">
+						Por lo tanto, si un cliente solicita la cancelación total de su perfil, SERVITECNOLOGY procederá a eliminar o disociar sus datos de contacto (WhatsApp, preferencias de navegación y Google OAuth), pero <strong>mantendrá bloqueados y resguardados los registros contables y tributarios (RUT, nombre/razón social y detalle de venta)</strong> durante el período legal de 6 años exigido por el Fisco.
+					</p>
+				</section>
+
+				<!-- 8. Notificación de Incidentes de Seguridad -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green flex items-center justify-center text-base font-bold">8</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Notificación de Brechas de Seguridad (72 Horas)</h2>
+					</div>
+					<p>
+						En caso de que ocurra una vulneración o incidente de seguridad que comprometa la integridad, disponibilidad o confidencialidad de datos personales no anonimizados, SERVITECNOLOGY asume el compromiso legal de:
+					</p>
+					<ul class="space-y-1.5 list-disc pl-5 text-xs sm:text-sm">
+						<li>Notificar a la <strong>Agencia Nacional de Protección de Datos Personales (ANPD)</strong> dentro de las <strong>72 horas</strong> siguientes de haber tomado conocimiento certero del incidente.</li>
+						<li>Comunicar de inmediato a los titulares afectados mediante correo electrónico si la vulneración reviste un alto riesgo para sus derechos o patrimonio financiero.</li>
+						<li>Adoptar de forma inmediata las medidas correctivas técnicas y de aislamiento en nuestros servidores Supabase y Vercel.</li>
+					</ul>
+				</section>
+
+				<!-- 9. Actualizaciones y Vigencia -->
+				<section class="p-6 sm:p-8 rounded-3xl bg-zinc-950/80 border border-white/10 backdrop-blur-md space-y-4">
+					<div class="flex items-center gap-3">
+						<span class="w-8 h-8 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan flex items-center justify-center text-base font-bold">9</span>
+						<h2 class="text-xl sm:text-2xl font-black text-white">Vigencia y Actualización de la Política</h2>
+					</div>
+					<p class="text-xs sm:text-sm">
+						SERVITECNOLOGY SpA se reserva el derecho de modificar o actualizar la presente Política de Privacidad para adecuarla a nuevas instrucciones de la ANPD, cambios regulatorios del SII o incorporaciones de nuevas funcionalidades en el SaaS. Toda actualización sustancial será comunicada a través de un aviso destacado en nuestro sitio web.
+					</p>
+					
+					<div class="pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 font-mono">
+						<span>Versión 2.0 — Adaptada a Ley N° 21.719, SII y GDPR</span>
+						<span>Última revisión: 12 de Septiembre de 2026</span>
+					</div>
+				</section>
+
+			</div>
+
 		</div>
 	</main>
 

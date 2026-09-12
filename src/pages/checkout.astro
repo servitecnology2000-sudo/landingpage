@@ -451,6 +451,24 @@ const REGIONES_CHILE = [
 
 						<!-- Dynamic Action Button based on Auth -->
 						<div class="space-y-3 pt-2">
+							<!-- Checkbox de Consentimiento Obligatorio Ley N° 21.719 -->
+							<div id="terms-container" class="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
+								<label class="flex items-start gap-3 cursor-pointer select-none">
+									<input 
+										type="checkbox" 
+										id="accept-terms-checkbox" 
+										name="accept_terms" 
+										class="mt-0.5 w-4 h-4 rounded border-white/20 bg-black/60 text-brand-green focus:ring-brand-green focus:ring-offset-black accent-brand-green shrink-0 cursor-pointer"
+									/>
+									<span class="text-xs text-slate-300 leading-relaxed">
+										He leído y acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer" class="text-brand-cyan hover:underline font-bold">Términos y Condiciones</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:underline font-bold">Política de Privacidad</a> conforme a la <strong>Ley N° 21.719</strong> y normativa del SII.
+									</span>
+								</label>
+								<p id="terms-error-msg" class="hidden text-[11px] text-red-400 mt-2 font-medium flex items-center gap-1.5">
+									<span>⚠️</span> Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar con la compra.
+								</p>
+							</div>
+
 							<button 
 								type="button" 
 								id="btn-proceed-checkout"
@@ -461,7 +479,7 @@ const REGIONES_CHILE = [
 							</button>
 
 							<p class="text-center text-[10px] text-slate-400">
-								🔒 Datos protegidos bajo normativa del SII y Ley N° 19.496.
+								🔒 Datos protegidos bajo normativa del SII y Ley N° 21.719.
 							</p>
 						</div>
 					</div>
@@ -735,6 +753,10 @@ const REGIONES_CHILE = [
 	const loggedUserName = document.getElementById('logged-user-name');
 	const btnQuickGoogleLogin = document.getElementById('btn-quick-google-login');
 	const btnLogout = document.getElementById('btn-logout');
+
+	const termsContainer = document.getElementById('terms-container');
+	const acceptTermsCheckbox = document.getElementById('accept-terms-checkbox') as HTMLInputElement;
+	const termsErrorMsg = document.getElementById('terms-error-msg');
 
 	const btnProceedCheckout = document.getElementById('btn-proceed-checkout');
 	const btnProceedText = document.getElementById('btn-proceed-text');
@@ -1195,6 +1217,17 @@ const REGIONES_CHILE = [
 
 	btnCloseConfirmModal?.addEventListener('click', closeConfirmModal);
 
+	// Limpiar alerta de términos al marcar checkbox
+	acceptTermsCheckbox?.addEventListener('change', () => {
+		if (acceptTermsCheckbox.checked) {
+			termsErrorMsg?.classList.add('hidden');
+			termsContainer?.classList.remove('border-red-500/50', 'bg-red-500/5');
+			termsContainer?.classList.add('border-brand-green/40');
+		} else {
+			termsContainer?.classList.remove('border-brand-green/40');
+		}
+	});
+
 	// 4. Click en "Continuar al Pago" (Validación de Flujo)
 	btnProceedCheckout?.addEventListener('click', () => {
 		const items = getItems();
@@ -1204,6 +1237,20 @@ const REGIONES_CHILE = [
 				message: 'Debes tener al menos un repuesto en tu carrito para continuar con la compra.',
 				type: 'warning',
 				btnText: 'Aceptar'
+			});
+			return;
+		}
+
+		// Validar aceptación obligatoria de Términos y Condiciones y Privacidad (Ley N° 21.719)
+		if (!acceptTermsCheckbox?.checked) {
+			termsErrorMsg?.classList.remove('hidden');
+			termsContainer?.classList.add('border-red-500/50', 'bg-red-500/5');
+			acceptTermsCheckbox?.focus();
+			showSystemNotice({
+				title: 'Consentimiento Requerido',
+				message: 'Conforme a la Ley N° 21.719 sobre Protección de Datos Personales y la normativa del SII, debes leer y aceptar expresamente los Términos y Condiciones y la Política de Privacidad antes de continuar con tu compra.',
+				type: 'warning',
+				btnText: 'Entendido'
 			});
 			return;
 		}
@@ -1327,7 +1374,9 @@ const REGIONES_CHILE = [
 				delivery_type: currentDelivery === 'retiro' ? 'retiro' : 'envio_nacional',
 				commune: communeVal,
 				address: addressVal,
-				items
+				items,
+				terms_accepted: true,
+				privacy_accepted: true
 			};
 
 			const resPreference = await fetch('/api/mercadopago/create-preference', {

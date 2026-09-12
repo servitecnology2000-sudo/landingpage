@@ -2,6 +2,33 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Cumplimiento Legal Integral: Ley N° 21.719 de Protección de Datos Personales, GDPR, SII y Términos Comerciales):**
+  - **Reforma Integral de la Política de Privacidad (`src/pages/privacidad.astro`):**
+    - Adecuación a los mandatos de la **Ley N° 21.719** y principios de la OCDE/GDPR, erradicando el consentimiento tácito.
+    - Catálogo íntegro de **Derechos ARCOP** (Acceso, Rectificación, Cancelación, Oposición y Portabilidad) con canal formal (`privacidad@servitecnology.com`) y plazo legal de respuesta de 15 días hábiles.
+    - Armonización con el **Artículo 17 del Código Tributario**: Transparencia sobre el plazo legal obligatorio de 6 años para conservación de facturas y registros ante el SII.
+    - Declaración de no almacenamiento de tarjetas de crédito/débito ni CVV, procesadas bajo certificación **PCI-DSS Nivel 1** por Mercado Pago Chile.
+    - Transparencia en proveedores cloud internacionales (Vercel Inc. SOC 2, Supabase Inc./AWS con cifrado AES-256 y políticas RLS, Google OAuth 2.0).
+    - Protocolo de notificación de brechas de seguridad dentro del plazo legal de 72 horas ante la ANPD y usuarios afectados.
+  - **Reforma Integral de Términos y Condiciones (`src/pages/terminos.astro`):**
+    - Consagración de la **Garantía Legal de 6 Meses** conforme a la **Ley N° 21.398 (Ley Pro-Consumidor - SERNAC)** con triple opción (reparación gratuita, reposición o devolución de dinero) y detalle de exclusiones técnicas.
+    - Actualización de medios de pago: **Mercado Pago Checkout Pro** (tarjetas de crédito en cuotas, débito Redcompra/Webpay y dinero en cuenta) y **Transferencia Directa BancoEstado** con temporizador de reserva de stock de 2 horas y código de orden `ST-2026-XXXX`.
+    - Despachos a todo Chile por pagar vía Starken o Chilexpress y retiro gratuito en oficina técnica de Santiago Centro.
+    - Facturación electrónica legal ante el SII con exigencia obligatoria de RUT chileno válido.
+    - Derecho a Retracto de 10 días para compras online conforme a la Ley N° 19.496.
+  - **Ajustes de Software en el Checkout (`src/pages/checkout.astro`):**
+    - Incorporación de casilla de verificación interactiva `#accept-terms-checkbox` con enlaces directos a `/terminos` y `/privacidad`.
+    - Validación en tiempo real que bloquea el avance al pago si el usuario no ha otorgado su consentimiento expreso, con notificación visual moderna (`showSystemNotice`) sin alertas nativas.
+    - Inclusión de banderas de consentimiento (`terms_accepted: true`, `privacy_accepted: true`) en el payload de preferencia de compra.
+  - **Portabilidad y Derechos ARCOP en el Portal del Cliente (`src/pages/mis-pedidos.astro`):**
+    - Implementación del módulo interactivo de Privacidad y Portabilidad de Datos (Art. 9 Ley N° 21.719).
+    - Botón **"📥 Exportar mis Datos (JSON)"** (`#btn-export-data`) que genera y descarga al instante el archivo estructurado `servitecnology-mis-datos.json` con perfil, RUT tributario e historial de órdenes.
+    - Acceso directo para solicitud formal de derechos ARCOP vía correo con asunto preconfigurado.
+  - **Suite de Pruebas Automatizadas y Calidad:**
+    - Creación de `tests/legal-compliance.test.ts` con 20 pruebas unitarias específicas validando todas las cláusulas normativas, enlaces, interactividad y portabilidad.
+    - 92/92 pruebas unitarias aprobadas al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) completada sin errores en 4.81s con prerenderizado estático de rutas legales.
+
 - **2026-09-12 (Automatización y Seguridad: Correo de Notificación de Entrega Efectiva y Constancia de Retiro):**
   - **Función de Correo Transaccional (`src/lib/mailer.ts`):**
     - Implementación de `sendOrderDeliveredEmail(data: OrderDeliveredEmailData)` para despachar confirmaciones formales e instantáneas al cliente al completarse la entrega.
