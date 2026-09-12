@@ -298,6 +298,46 @@ try {
 		>
 		</div>
 
+		<!-- Modal Global Moderno de Confirmación y Alerta -->
+		<div 
+			id="adminConfirmModal" 
+			class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+			role="dialog"
+			aria-modal="true"
+		>
+			<div 
+				id="adminConfirmCard"
+				class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-200 space-y-4"
+			>
+				<div class="flex items-start gap-4">
+					<div id="adminConfirmIconWrap" class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border border-white/10 bg-white/5">
+						<span id="adminConfirmIcon">⚠️</span>
+					</div>
+					<div class="flex-1 min-w-0">
+						<h3 id="adminConfirmTitle" class="font-outfit text-base font-bold text-white tracking-tight">Confirmar Acción</h3>
+						<p id="adminConfirmMessage" class="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">¿Estás seguro de realizar esta acción?</p>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-end gap-2.5 pt-2 border-t border-white/5" id="adminConfirmActions">
+					<button 
+						type="button" 
+						id="adminConfirmCancelBtn"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button 
+						type="button" 
+						id="adminConfirmAcceptBtn"
+						class="px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+					>
+						Confirmar
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<script is:inline>
 			window.showAdminToast = function (message, type = "success") {
 				const container = document.getElementById(
@@ -329,6 +369,169 @@ try {
 					toast.classList.add("translate-y-4", "opacity-0");
 					setTimeout(() => toast.remove(), 300);
 				}, 4000);
+			};
+
+			window.showAdminConfirm = function (options = {}) {
+				return new Promise((resolve) => {
+					const modal = document.getElementById('adminConfirmModal');
+					const card = document.getElementById('adminConfirmCard');
+					const iconWrap = document.getElementById('adminConfirmIconWrap');
+					const iconEl = document.getElementById('adminConfirmIcon');
+					const titleEl = document.getElementById('adminConfirmTitle');
+					const messageEl = document.getElementById('adminConfirmMessage');
+					const cancelBtn = document.getElementById('adminConfirmCancelBtn');
+					const acceptBtn = document.getElementById('adminConfirmAcceptBtn');
+
+					if (!modal || !card || !acceptBtn || !cancelBtn) {
+						resolve(true);
+						return;
+					}
+
+					cancelBtn.style.display = '';
+
+					const title = options.title || 'Confirmar Acción';
+					const message = options.message || '¿Deseas continuar con esta acción?';
+					const confirmText = options.confirmText || 'Confirmar';
+					const cancelText = options.cancelText || 'Cancelar';
+					const type = options.type || 'warning'; // 'warning' | 'danger' | 'success' | 'info'
+					const icon = options.icon || (type === 'danger' ? '🗑️' : type === 'success' ? '✅' : type === 'info' ? 'ℹ️' : '⚠️');
+
+					titleEl.textContent = title;
+					messageEl.textContent = message;
+					acceptBtn.textContent = confirmText;
+					cancelBtn.textContent = cancelText;
+					iconEl.textContent = icon;
+
+					// Aplicar estilos temáticos según el tipo
+					card.className = "bg-[#121215] border rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-200 space-y-4";
+					acceptBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer";
+					iconWrap.className = "w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border";
+
+					if (type === 'danger') {
+						card.classList.add('border-red-500/40', 'shadow-[0_0_30px_rgba(239,68,68,0.25)]');
+						iconWrap.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+						acceptBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'shadow-red-500/25');
+					} else if (type === 'success') {
+						card.classList.add('border-emerald-500/40', 'shadow-[0_0_30px_rgba(16,185,129,0.25)]');
+						iconWrap.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+						acceptBtn.classList.add('bg-gradient-to-r', 'from-brand-cyan', 'to-brand-green', 'text-black', 'hover:opacity-90', 'shadow-brand-green/25');
+					} else if (type === 'info') {
+						card.classList.add('border-brand-cyan/40', 'shadow-[0_0_30px_rgba(0,207,255,0.25)]');
+						iconWrap.classList.add('bg-brand-cyan/10', 'border-brand-cyan/30', 'text-brand-cyan');
+						acceptBtn.classList.add('bg-brand-cyan', 'hover:bg-brand-cyan/90', 'text-black', 'shadow-brand-cyan/25');
+					} else { // warning
+						card.classList.add('border-amber-500/40', 'shadow-[0_0_30px_rgba(245,158,11,0.25)]');
+						iconWrap.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
+						acceptBtn.classList.add('bg-amber-400', 'hover:bg-amber-300', 'text-black', 'shadow-amber-400/25');
+					}
+
+					function cleanup(result) {
+						modal.classList.add('opacity-0', 'pointer-events-none');
+						card.classList.add('scale-95');
+						card.classList.remove('scale-100');
+						cancelBtn.removeEventListener('click', onCancel);
+						acceptBtn.removeEventListener('click', onAccept);
+						modal.removeEventListener('click', onBackdrop);
+						document.removeEventListener('keydown', onKeyDown);
+						resolve(result);
+					}
+
+					function onCancel() { cleanup(false); }
+					function onAccept() { cleanup(true); }
+					function onBackdrop(e) { if (e.target === modal) cleanup(false); }
+					function onKeyDown(e) { if (e.key === 'Escape') cleanup(false); }
+
+					cancelBtn.addEventListener('click', onCancel);
+					acceptBtn.addEventListener('click', onAccept);
+					modal.addEventListener('click', onBackdrop);
+					document.addEventListener('keydown', onKeyDown);
+
+					modal.classList.remove('opacity-0', 'pointer-events-none');
+					requestAnimationFrame(() => {
+						card.classList.remove('scale-95');
+						card.classList.add('scale-100');
+						acceptBtn.focus();
+					});
+				});
+			};
+
+			window.showAdminAlert = function (options = {}) {
+				return new Promise((resolve) => {
+					const modal = document.getElementById('adminConfirmModal');
+					const card = document.getElementById('adminConfirmCard');
+					const iconWrap = document.getElementById('adminConfirmIconWrap');
+					const iconEl = document.getElementById('adminConfirmIcon');
+					const titleEl = document.getElementById('adminConfirmTitle');
+					const messageEl = document.getElementById('adminConfirmMessage');
+					const cancelBtn = document.getElementById('adminConfirmCancelBtn');
+					const acceptBtn = document.getElementById('adminConfirmAcceptBtn');
+
+					if (!modal || !card || !acceptBtn) {
+						resolve();
+						return;
+					}
+
+					if (cancelBtn) cancelBtn.style.display = 'none';
+
+					const title = options.title || 'Aviso';
+					const message = options.message || '';
+					const buttonText = options.buttonText || 'Entendido';
+					const type = options.type || 'warning';
+					const icon = options.icon || (type === 'danger' ? '❌' : type === 'success' ? '✅' : type === 'info' ? 'ℹ️' : '⚠️');
+
+					titleEl.textContent = title;
+					messageEl.textContent = message;
+					acceptBtn.textContent = buttonText;
+					iconEl.textContent = icon;
+
+					card.className = "bg-[#121215] border rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-200 space-y-4";
+					acceptBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer";
+					iconWrap.className = "w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border";
+
+					if (type === 'danger') {
+						card.classList.add('border-red-500/40', 'shadow-[0_0_30px_rgba(239,68,68,0.25)]');
+						iconWrap.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+						acceptBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
+					} else if (type === 'success') {
+						card.classList.add('border-emerald-500/40', 'shadow-[0_0_30px_rgba(16,185,129,0.25)]');
+						iconWrap.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+						acceptBtn.classList.add('bg-gradient-to-r', 'from-brand-cyan', 'to-brand-green', 'text-black');
+					} else if (type === 'info') {
+						card.classList.add('border-brand-cyan/40', 'shadow-[0_0_30px_rgba(0,207,255,0.25)]');
+						iconWrap.classList.add('bg-brand-cyan/10', 'border-brand-cyan/30', 'text-brand-cyan');
+						acceptBtn.classList.add('bg-brand-cyan', 'hover:bg-brand-cyan/90', 'text-black');
+					} else {
+						card.classList.add('border-amber-500/40', 'shadow-[0_0_30px_rgba(245,158,11,0.25)]');
+						iconWrap.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
+						acceptBtn.classList.add('bg-amber-400', 'hover:bg-amber-300', 'text-black');
+					}
+
+					function cleanup() {
+						modal.classList.add('opacity-0', 'pointer-events-none');
+						card.classList.add('scale-95');
+						card.classList.remove('scale-100');
+						if (cancelBtn) cancelBtn.style.display = '';
+						acceptBtn.removeEventListener('click', onAccept);
+						modal.removeEventListener('click', onBackdrop);
+						document.removeEventListener('keydown', onKeyDown);
+						resolve();
+					}
+
+					function onAccept() { cleanup(); }
+					function onBackdrop(e) { if (e.target === modal) cleanup(); }
+					function onKeyDown(e) { if (e.key === 'Escape' || e.key === 'Enter') cleanup(); }
+
+					acceptBtn.addEventListener('click', onAccept);
+					modal.addEventListener('click', onBackdrop);
+					document.addEventListener('keydown', onKeyDown);
+
+					modal.classList.remove('opacity-0', 'pointer-events-none');
+					requestAnimationFrame(() => {
+						card.classList.remove('scale-95');
+						card.classList.add('scale-100');
+						acceptBtn.focus();
+					});
+				});
 			};
 		</script>
 	</body>

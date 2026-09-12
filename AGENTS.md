@@ -68,6 +68,16 @@ Consult these guides before working on related tasks:
 - **Simulación de Estados:** En las pruebas con tarjetas sandbox (`5416 7526 0258 2580`), el nombre del titular controla el resultado: `APRO` (aprobado), `FUND` (fondos insuficientes), `CONT` (pendiente/autorización), `SECU` (código de seguridad inválido), etc.
 - **Aislamiento de Sesión:** En modo sandbox, el backend inyecta automáticamente el email del comprador de pruebas (`ML_PRUEBAS_COMPRADOR_EMAIL`) en el payer de la preferencia para evitar conflictos con la cuenta real de Mercado Libre del vendedor.
 
+## 🎨 Regla Obligatoria de UI/UX: Modales Modernos y Cero Alerts Nativos
+- **Prohibición Estricta de Alertas Nativas:** En todo el SaaS y la plataforma SERVITECNOLOGY está **ESTRICTAMENTE PROHIBIDO** usar las funciones nativas arcaicas del navegador: `window.alert()`, `window.confirm()` y `window.prompt()`. Estas ventanas emergentes rompen la inmersión visual, degradan la estética premium del SaaS y transmiten sensación anticuada.
+- **Uso Obligatorio de Modales y Toasts Modernos:** CADA confirmación de acción (p. ej., marcar como entregado, rechazar pedido, eliminar registros), aviso de advertencia o notificación interactiva DEBE utilizar:
+  - **Modales de Confirmación y Alerta:** El sistema global de modales oscuros con glassmorphism (`window.showAdminConfirm({ title, message, type, icon, confirmText, cancelText })` y `window.showAdminAlert({ title, message, type, icon })`).
+  - **Notificaciones Toast:** Para retroalimentación inmediata no bloqueante (`window.showAdminToast(message, 'success' | 'error' | 'warning')`).
+- **Lineamientos Estéticos de los Modales:**
+  - Fondo oscuro de alto contraste (`#121215` / `bg-zinc-950`) con telón desenfocado (`backdrop-blur-md bg-black/80`).
+  - Bordes brillantes y sutiles según la semántica de la acción (`border-emerald-500/40` para éxito, `border-red-500/40` para acciones destructivas/peligro, `border-amber-500/40` para advertencias y `border-brand-cyan/40` para información).
+  - Tipografía moderna `Outfit` e `Inter` con botones redondeados (`rounded-xl`), microanimaciones de entrada/salida y cierre accesible (tecla `Escape` y clic fuera en el telón).
+
 ## 🧪 Regla Obligatoria de Pruebas y Testing
 - **Pruebas en Todo Desarrollo o Fix:** CADA VEZ que se implemente una nueva característica, módulo, endpoint o se aplique una corrección de bugs (fix), DEBE agregarse y/o ejecutarse la suite de pruebas correspondiente (unitarias, integración o scripts de verificación automatizada) para certificar que el código funciona y que no se introducen regresiones antes de dar la tarea por concluida.
 - **Criterio de Validación:** Ninguna tarea se considera finalizada sin verificar que los tests pasen exitosamente y que la compilación de producción (`npm run build`) no arroje errores de tipos ni de sintaxis.

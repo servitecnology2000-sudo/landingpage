@@ -778,7 +778,16 @@ function formatDate(dateString: string): string {
 					const name = btn.getAttribute('data-customer-name');
 					if (!id) return;
 
-					if (confirm(`¿Estás seguro de eliminar al cliente "${name}"? Sus órdenes históricas se conservarán sin asociar.`)) {
+					const confirmed = await window.showAdminConfirm({
+						title: 'Eliminar Cliente del Directorio',
+						message: `¿Estás seguro de eliminar al cliente "${name}"? Sus órdenes históricas se conservarán sin asociar.`,
+						confirmText: 'Sí, Eliminar Cliente',
+						cancelText: 'Cancelar',
+						type: 'danger',
+						icon: '🗑️'
+					});
+
+					if (confirmed) {
 						try {
 							const res = await fetch('/api/admin/customers/delete', {
 								method: 'POST',

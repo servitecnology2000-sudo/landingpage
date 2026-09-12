@@ -2,6 +2,31 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Estandarización UI/UX: Erradicación de Alerts Nativos e Implementación de Modales Modernos Globales):**
+  - **Nueva Regla Obligatoria en `AGENTS.md`:**
+    - Prohibición terminante del uso de funciones emergentes nativas del navegador (`window.alert`, `window.confirm`, `window.prompt`) en toda la plataforma SERVITECNOLOGY por atentar contra la estética visual premium del SaaS.
+    - Mandato de uso del sistema de modales modernos oscuros (`#121215`, `backdrop-blur-md`, bordes temáticos brillantes y botones ergonómicos `rounded-xl`) y sistema de toasts.
+  - **Sistema Global de Modales de Confirmación y Alerta (`src/layouts/AdminLayout.astro`):**
+    - Implementación de `#adminConfirmModal` con z-index prioritario (`z-[100]`), compatibilidad con atajo `Escape`, clic en telón de fondo y animación de escala.
+    - Exposición global de `window.showAdminConfirm({ title, message, confirmText, cancelText, type, icon }): Promise<boolean>` con variantes estilizadas (`success`, `danger`, `warning`, `info`).
+    - Exposición global de `window.showAdminAlert({ title, message, buttonText, type, icon }): Promise<void>`.
+  - **Reemplazo y Modernización de Todas las Interacciones en el SaaS:**
+    - **Gestor de Pedidos (`/meson-servitecnology-st/pedidos`):**
+      - "Marcar como Entregado / Finalizado": Se reemplazó el `confirm` arcaico por un modal moderno verde esmeralda con icono `🏁` y confirmación explícita.
+      - "Aprobar Pago Bancario": Modal moderno con acento financiero `💰` para validación de fondos en cuenta bancaria.
+      - "Rechazar / Cancelar Pedido": Modal moderno carmesí `🚫` con aviso de liberación de stock.
+      - Validaciones de Courier y Número de Seguimiento: Reemplazo de alerts bloqueantes por toasts informativos ámbar `window.showAdminToast(..., 'warning')`.
+    - **Gestor de Clientes (`/meson-servitecnology-st/clientes`):**
+      - Eliminación de cliente: Reemplazo de `confirm` por `window.showAdminConfirm` con estilo destructivo `danger` e icono `🗑️`.
+    - **Dashboard de Repuestos y Galería (`/meson-servitecnology-st`):**
+      - Eliminación de repuesto y eliminación de foto en galería: Integración de modal moderno de confirmación con CSS personalizado y backdrop blur.
+    - **Portal del Cliente (`/mis-pedidos`):**
+      - Errores de inicio de sesión con Google: Reemplazo de `alert` nativo por toast flotante moderno oscuro.
+  - **Aseguramiento de Calidad y Pruebas Automatizadas:**
+    - Ajuste de `hookTimeout: 25000` en `vitest.config.ts` para tolerar latencias de red con Supabase en hooks de preparación.
+    - 71 pruebas automatizadas pasando exitosamente en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) completada con 0 errores en 4.60s.
+
 - **2026-09-12 (Localización y Zona Horaria Multirregión SaaS con IANA Time Zone Database):**
   - **Módulo Centralizado de Fechas y Huso Horario (`src/lib/dates.ts`):**
     - Implementación de motor de localización y formateo temporal basado en la base de datos oficial IANA (`Intl.DateTimeFormat`) para erradicar desfases de hora causados por servidores en UTC (Vercel / Lambda).

@@ -807,8 +807,16 @@ function formatDate(dateString: string): string {
 			}
 
 			// A. Confirmar Pago Aprobado Manual
-			btnApprovePayment?.addEventListener('click', () => {
-				if (confirm('¿Confirmas que el pago de este pedido fue recibido en la cuenta bancaria?')) {
+			btnApprovePayment?.addEventListener('click', async () => {
+				const confirmed = await window.showAdminConfirm({
+					title: 'Aprobar Pago Bancario',
+					message: '¿Confirmas que los fondos de este pedido fueron acreditados efectivamente en la cuenta bancaria?',
+					confirmText: 'Sí, Aprobar Pago',
+					cancelText: 'Cancelar',
+					type: 'success',
+					icon: '💰'
+				});
+				if (confirmed) {
 					updateOrderStatus({
 						payment_status: 'aprobado',
 						notify_customer: true
@@ -817,8 +825,16 @@ function formatDate(dateString: string): string {
 			});
 
 			// B. Rechazar / Cancelar Pedido
-			btnRejectOrder?.addEventListener('click', () => {
-				if (confirm('¿Deseas rechazar o cancelar este pedido? Se liberará la reserva de stock.')) {
+			btnRejectOrder?.addEventListener('click', async () => {
+				const confirmed = await window.showAdminConfirm({
+					title: 'Rechazar o Cancelar Pedido',
+					message: '¿Deseas rechazar o cancelar este pedido? Se liberará automáticamente la reserva de stock.',
+					confirmText: 'Sí, Cancelar Pedido',
+					cancelText: 'No cancelar',
+					type: 'danger',
+					icon: '🚫'
+				});
+				if (confirmed) {
 					updateOrderStatus({
 						payment_status: 'rechazado',
 						order_status: 'cancelado',
@@ -833,13 +849,13 @@ function formatDate(dateString: string): string {
 				const tracking = trackingInput.value.trim();
 
 				if (!courier) {
-					alert('Por favor selecciona una empresa de transporte (Courier).');
+					window.showAdminToast('Por favor selecciona una empresa de transporte (Courier).', 'warning');
 					courierSelect.focus();
 					return;
 				}
 
 				if (!tracking) {
-					alert('Por favor ingresa el Número de Seguimiento (Tracking / N° de Flete).');
+					window.showAdminToast('Por favor ingresa el Número de Seguimiento (Tracking / N° de Flete).', 'warning');
 					trackingInput.focus();
 					return;
 				}
@@ -861,8 +877,16 @@ function formatDate(dateString: string): string {
 			});
 
 			// E. Marcar como Entregado
-			btnMarkDelivered?.addEventListener('click', () => {
-				if (confirm('¿Confirmas que el cliente ya recibió o retiró sus repuestos satisfactoriamente?')) {
+			btnMarkDelivered?.addEventListener('click', async () => {
+				const confirmed = await window.showAdminConfirm({
+					title: 'Confirmar Entrega de Repuestos',
+					message: '¿Confirmas que el cliente ya recibió o retiró sus repuestos satisfactoriamente?',
+					confirmText: 'Sí, Confirmar Entrega',
+					cancelText: 'Volver',
+					type: 'success',
+					icon: '🏁'
+				});
+				if (confirmed) {
 					updateOrderStatus({
 						order_status: 'entregado',
 						notify_customer: false

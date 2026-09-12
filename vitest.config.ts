@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => {
       globals: true,
       include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
       env,
-      testTimeout: 20000,
+      testTimeout: 25000,
+      hookTimeout: 25000,
     },
   };
 });

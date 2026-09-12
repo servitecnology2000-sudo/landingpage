@@ -334,6 +334,109 @@ try {
 			.hide-mobile { display: none; }
 			td, th { padding: 0.5rem; font-size: 0.7rem; }
 		}
+
+		/* Modal Moderno Confirm */
+		.modern-modal-backdrop {
+			position: fixed;
+			inset: 0;
+			z-index: 9999;
+			background: rgba(0, 0, 0, 0.85);
+			backdrop-filter: blur(12px);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 1rem;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.2s ease;
+		}
+		.modern-modal-backdrop.open {
+			opacity: 1;
+			pointer-events: auto;
+		}
+		.modern-modal-card {
+			background: #121215;
+			border: 1px solid rgba(239, 68, 68, 0.4);
+			border-radius: 1rem;
+			width: 100%;
+			max-width: 440px;
+			padding: 1.5rem;
+			box-shadow: 0 0 35px rgba(239, 68, 68, 0.25);
+			transform: scale(0.95);
+			transition: transform 0.2s ease;
+			display: flex;
+			flex-direction: column;
+			gap: 1.25rem;
+		}
+		.modern-modal-backdrop.open .modern-modal-card {
+			transform: scale(1);
+		}
+		.modern-modal-header {
+			display: flex;
+			align-items: flex-start;
+			gap: 1rem;
+		}
+		.modern-modal-icon-wrap {
+			width: 44px;
+			height: 44px;
+			border-radius: 0.75rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.25rem;
+			flex-shrink: 0;
+			background: rgba(239, 68, 68, 0.1);
+			border: 1px solid rgba(239, 68, 68, 0.3);
+		}
+		.modern-modal-title {
+			font-family: 'Outfit', sans-serif;
+			font-size: 1.05rem;
+			font-weight: 700;
+			color: white;
+		}
+		.modern-modal-desc {
+			font-size: 0.825rem;
+			color: #94a3b8;
+			margin-top: 0.35rem;
+			line-height: 1.45;
+		}
+		.modern-modal-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0.65rem;
+			padding-top: 0.75rem;
+			border-top: 1px solid rgba(255, 255, 255, 0.06);
+		}
+		.modern-modal-btn-cancel {
+			padding: 0.5rem 1rem;
+			border-radius: 0.65rem;
+			background: rgba(255, 255, 255, 0.05);
+			color: #cbd5e1;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			font-size: 0.775rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+		.modern-modal-btn-cancel:hover {
+			background: rgba(255, 255, 255, 0.1);
+			color: white;
+		}
+		.modern-modal-btn-confirm {
+			padding: 0.5rem 1.15rem;
+			border-radius: 0.65rem;
+			background: #ef4444;
+			color: white;
+			border: none;
+			font-size: 0.775rem;
+			font-weight: 700;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+		}
+		.modern-modal-btn-confirm:hover {
+			background: #dc2626;
+		}
 	</style>
 </head>
 <body>
@@ -529,10 +632,11 @@ try {
 										<td>
 											<div class="actions-cell">
 												<a href={`/meson-servitecnology-st/editar/${p.id}`} class="btn btn-outline" style="padding:0.35rem 0.6rem;">Editar</a>
-												<form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este producto?');">
+												<form method="POST" style="display:inline;" class="form-delete-product">
 													<input type="hidden" name="action" value="delete" />
 													<input type="hidden" name="id" value={p.id} />
-													<button type="submit" class="btn btn-danger" style="padding:0.35rem 0.6rem;">Eliminar</button>
+													<input type="hidden" name="product_title" value={p.titulo} />
+													<button type="button" class="btn btn-danger btn-trigger-delete-product" style="padding:0.35rem 0.6rem;">Eliminar</button>
 												</form>
 											</div>
 										</td>
@@ -652,11 +756,12 @@ try {
 												{item.activo ? 'Ocultar' : 'Mostrar'}
 											</button>
 										</form>
-										<form method="POST" style="margin:0;" onsubmit="return confirm('¿Eliminar esta foto permanentemente del almacenamiento y la base de datos?');">
+										<form method="POST" style="margin:0;" class="form-delete-galeria">
 											<input type="hidden" name="action" value="delete_galeria" />
 											<input type="hidden" name="id" value={item.id} />
 											<input type="hidden" name="storage_path" value={item.storage_path} />
-											<button type="submit" class="btn btn-danger" style="padding:0.3rem 0.6rem;">
+											<input type="hidden" name="photo_title" value={item.titulo} />
+											<button type="button" class="btn btn-danger btn-trigger-delete-galeria" style="padding:0.3rem 0.6rem;">
 												Eliminar
 											</button>
 										</form>
@@ -814,6 +919,110 @@ try {
 				}
 			});
 		});
+
+		// Modal Global Moderno de Confirmación
+		window.showAdminConfirm = function(options = {}) {
+			return new Promise((resolve) => {
+				const modal = document.getElementById('adminModernConfirmModal');
+				const iconEl = document.getElementById('adminModernConfirmIcon');
+				const titleEl = document.getElementById('adminModernConfirmTitle');
+				const msgEl = document.getElementById('adminModernConfirmMsg');
+				const cancelBtn = document.getElementById('adminModernConfirmCancelBtn');
+				const acceptBtn = document.getElementById('adminModernConfirmAcceptBtn');
+
+				if (!modal || !acceptBtn || !cancelBtn) {
+					resolve(true);
+					return;
+				}
+
+				titleEl.textContent = options.title || 'Confirmar Acción';
+				msgEl.textContent = options.message || '¿Estás seguro de continuar?';
+				acceptBtn.textContent = options.confirmText || 'Confirmar';
+				cancelBtn.textContent = options.cancelText || 'Cancelar';
+				iconEl.textContent = options.icon || '🗑️';
+
+				function cleanup(val) {
+					modal.classList.remove('open');
+					cancelBtn.removeEventListener('click', onCancel);
+					acceptBtn.removeEventListener('click', onAccept);
+					modal.removeEventListener('click', onBackdrop);
+					document.removeEventListener('keydown', onKeyDown);
+					resolve(val);
+				}
+				function onCancel() { cleanup(false); }
+				function onAccept() { cleanup(true); }
+				function onBackdrop(e) { if (e.target === modal) cleanup(false); }
+				function onKeyDown(e) { if (e.key === 'Escape') cleanup(false); }
+
+				cancelBtn.addEventListener('click', onCancel);
+				acceptBtn.addEventListener('click', onAccept);
+				modal.addEventListener('click', onBackdrop);
+				document.addEventListener('keydown', onKeyDown);
+
+				modal.classList.add('open');
+				acceptBtn.focus();
+			});
+		};
+
+		// Triggers de Eliminación con Modal Moderno
+		document.querySelectorAll('.btn-trigger-delete-product').forEach(btn => {
+			btn.addEventListener('click', async () => {
+				const form = btn.closest('form');
+				const title = form?.querySelector('input[name="product_title"]')?.value || 'este producto';
+				const confirmed = await window.showAdminConfirm({
+					title: 'Eliminar Producto del Inventario',
+					message: `¿Estás seguro de eliminar permanentemente "${title}"? Esta acción no se puede revertir.`,
+					confirmText: 'Sí, Eliminar Producto',
+					cancelText: 'Cancelar',
+					type: 'danger',
+					icon: '🗑️'
+				});
+				if (confirmed && form) {
+					form.submit();
+				}
+			});
+		});
+
+		document.querySelectorAll('.btn-trigger-delete-galeria').forEach(btn => {
+			btn.addEventListener('click', async () => {
+				const form = btn.closest('form');
+				const title = form?.querySelector('input[name="photo_title"]')?.value || 'esta foto';
+				const confirmed = await window.showAdminConfirm({
+					title: 'Eliminar Foto de la Galería',
+					message: `¿Estás seguro de eliminar permanentemente "${title}" del almacenamiento y la base de datos?`,
+					confirmText: 'Sí, Eliminar Foto',
+					cancelText: 'Cancelar',
+					type: 'danger',
+					icon: '🗑️'
+				});
+				if (confirmed && form) {
+					form.submit();
+				}
+			});
+		});
 	</script>
+
+	<!-- Modal Moderno Global de Confirmación -->
+	<div id="adminModernConfirmModal" class="modern-modal-backdrop" role="dialog" aria-modal="true">
+		<div id="adminModernConfirmCard" class="modern-modal-card">
+			<div class="modern-modal-header">
+				<div class="modern-modal-icon-wrap">
+					<span id="adminModernConfirmIcon">🗑️</span>
+				</div>
+				<div>
+					<h3 id="adminModernConfirmTitle" class="modern-modal-title">Confirmar Eliminación</h3>
+					<p id="adminModernConfirmMsg" class="modern-modal-desc">¿Estás seguro de continuar?</p>
+				</div>
+			</div>
+			<div class="modern-modal-actions">
+				<button type="button" id="adminModernConfirmCancelBtn" class="modern-modal-btn-cancel">
+					Cancelar
+				</button>
+				<button type="button" id="adminModernConfirmAcceptBtn" class="modern-modal-btn-confirm">
+					Sí, Eliminar
+				</button>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
