@@ -2,6 +2,18 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Experiencia y Cumplimiento: Portabilidad de Datos y Canal ARCOP para Compradores en Modo Invitado):**
+  - **Portal del Cliente (`src/pages/mis-pedidos.astro`):**
+    - En la vista no autenticada (`unauth-view`), se incorporó un cuadro informativo formal explicando cómo los compradores invitados que no utilicen Google pueden ejercer sus derechos ARCOP (acceso, rectificación, cancelación y portabilidad) escribiendo directamente a `privacidad@servitecnology.com` conforme a la Ley N° 21.719 con plazo de respuesta de 15 días hábiles.
+  - **Detalle de Pedido Individual (`src/pages/pedido/[id].astro`):**
+    - Se agregó el módulo de Privacidad y Portabilidad accesible para cualquier comprador invitado o registrado desde el enlace directo permanente de su orden.
+    - Botón interactivo `#btn-export-order-data` ("Descargar Constancia de Datos (JSON)") que compila y descarga al instante `servitecnology-constancia-pedido-ST-2026-XXXX.json` con los metadatos normativos, datos del titular y detalle de productos/precios sin exigir registro.
+    - Canal de solicitud directa de derechos ARCOP preconfigurado con el código de orden puntual.
+  - **Pruebas Automatizadas:**
+    - Ampliación de `tests/legal-compliance.test.ts` con cobertura específica para las constancias de invitado y textos legales (25/25 pruebas aprobadas).
+    - 97/97 pruebas unitarias aprobadas al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) completada con éxito en 4.31s.
+
 - **2026-09-12 (Cumplimiento Legal Integral: Ley N° 21.719 de Protección de Datos Personales, GDPR, SII y Términos Comerciales):**
   - **Reforma Integral de la Política de Privacidad (`src/pages/privacidad.astro`):**
     - Adecuación a los mandatos de la **Ley N° 21.719** y principios de la OCDE/GDPR, erradicando el consentimiento tácito.

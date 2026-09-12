@@ -139,5 +139,35 @@ describe('Cumplimiento Normativo Ley N° 21.719, GDPR, SII y Términos Comercial
     it('debe proveer un enlace directo para solicitar Derechos ARCOP a privacidad@servitecnology.com', () => {
       expect(content).toContain('mailto:privacidad@servitecnology.com?subject=Solicitud%20Derechos%20ARCOP%20Ley%2021719');
     });
+
+    it('debe informar en la vista no autenticada a compradores invitados cómo ejercer derechos ARCOP sin Google', () => {
+      expect(content).toContain('¿Compraste como invitado y no usas Google?');
+      expect(content).toContain('privacidad@servitecnology.com');
+    });
+  });
+
+  describe('Cobertura para Compradores Invitados en Detalle de Pedido (src/pages/pedido/[id].astro)', () => {
+    const pedidoPath = path.join(rootDir, 'src/pages/pedido/[id].astro');
+    const content = fs.readFileSync(pedidoPath, 'utf-8');
+
+    it('debe existir el archivo src/pages/pedido/[id].astro', () => {
+      expect(fs.existsSync(pedidoPath)).toBe(true);
+    });
+
+    it('debe incluir botón de descarga de constancia JSON con ID btn-export-order-data', () => {
+      expect(content).toContain('id="btn-export-order-data"');
+      expect(content).toContain('Descargar Constancia de Datos (JSON)');
+    });
+
+    it('debe enlazar a solicitud formal de Derechos ARCOP para el pedido puntual', () => {
+      expect(content).toContain('mailto:privacidad@servitecnology.com?subject=');
+      expect(content).toContain('Solicitud Derechos ARCOP Ley 21719');
+      expect(content).toContain('Ley N° 21.719');
+    });
+
+    it('debe generar archivo estructurado servitecnology-constancia-pedido en formato JSON', () => {
+      expect(content).toContain('servitecnology-constancia-pedido-');
+      expect(content).toContain('application/json');
+    });
   });
 });
