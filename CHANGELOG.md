@@ -2,6 +2,10 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-11 (Autenticación Directa Panel Administrativo con Clave Maestra):**
+  - **Diagnóstico y Eliminación de Bloqueo por Certificado Autofirmado:** Se identificó que Supabase Auth Cloud rechaza conexiones SMTP a servidores con certificados SSL autofirmados (como `mail.whagil.com`, error SSL 18), provocando el fallo `500 Internal Server Error: Error sending magic link email`.
+  - **Acceso Robusto con Clave Maestra (`src/pages/meson-servitecnology-st/login.astro`):** Se refactorizó la vista de inicio de sesión para autenticar directamente contra la clave maestra secreta (`ADMIN_SECRET` = `20181860`) configurada en el entorno, emitiendo de inmediato la cookie segura `admin_session` con validez de 24 horas y redirigiendo al dashboard `/meson-servitecnology-st` sin depender de servicios externos de correo ni retrasos de OTP.
+
 - **2026-09-11 (Corrección Bug de Eliminación del Último Item en Carrito Checkout):**
   - **Detección y Causa Raíz (`src/pages/checkout.astro`):** Se identificó que la función `syncCartUI()` intentaba leer el DOM (`itemsListEl.querySelector('[data-sku]')`) para respaldar productos de SSR cuando `cartItems.length === 0`. Al hacer click en eliminar el único producto o reducir su cantidad a 0, el contenedor HTML aún contenía el elemento del DOM previo a actualizarse, lo que provocaba que el script lo detectara y lo volviera a reinsertar inmediatamente en el `localStorage` mediante `addToCart()`, haciendo imposible vaciar el carrito o eliminar el último producto.
   - **Unificación de Fuente de la Verdad:** Se eliminó la re-inserción automática reactiva dentro de `syncCartUI()` y se simplificó `getItems()` para que retorne directamente `getCart()`.
