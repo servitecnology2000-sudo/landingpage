@@ -31,12 +31,12 @@ let ordersInPrepCount = 0;
 try {
 	const { data: pendingOrders } = await supabaseAdmin
 		.from("orders")
-		.select("id, payment_status, order_status")
+		.select("id, payment_status, order_status, mp_preference_id")
 		.in("payment_status", ["pendiente", "aprobado"]);
 
 	if (pendingOrders) {
 		pendingOrdersCount = pendingOrders.filter(
-			(o) => o.payment_status === "pendiente",
+			(o) => o.payment_status === "pendiente" && !o.mp_preference_id,
 		).length;
 		ordersInPrepCount = pendingOrders.filter(
 			(o) =>
