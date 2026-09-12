@@ -64,4 +64,8 @@ Consult these guides before working on related tasks:
 - **Aislamiento de Sesión:** En modo sandbox, el backend inyecta automáticamente el email del comprador de pruebas (`ML_PRUEBAS_COMPRADOR_EMAIL`) en el payer de la preferencia para evitar conflictos con la cuenta real de Mercado Libre del vendedor.
 
 ## 📋 Regla de Actualización Obligatoria para el Agente
-- CADA VEZ que realice un cambio, actualización de código, refactorización o despliegue en este proyecto, DEBO actualizar inmediatamente el archivo 'CHANGELOG.md' antes de finalizar la tarea, registrando los cambios en el historial de versiones.
+- **Actualización Inmediata de 'CHANGELOG.md':** CADA VEZ que realice un cambio, actualización de código, refactorización o despliegue en este proyecto, DEBO actualizar inmediatamente el archivo `CHANGELOG.md` antes de finalizar la tarea, registrando los cambios en el historial de versiones.
+- **Orden del CHANGELOG.md (Estándar de la Industria):** El archivo debe mantener un **Orden Cronológico Inverso estricto (Reverse Chronological Order)**:
+  - **Lo más NUEVO SIEMPRE va ARRIBA (al principio del archivo)**, inmediatamente debajo del título `# Historial de Versiones`.
+  - Lo más ANTIGUO permanece abajo (al final del archivo).
+  - Nunca agregar entradas nuevas al final del archivo; siempre insertarlas como el primer elemento de la lista.
