@@ -2,6 +2,91 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Implementación y Certificación Completa Fase 3: Panel de Métricas, Finanzas & Inventario):**
+  - **Motor Analítico Desacoplado (`src/lib/analytics.ts`):** Creación del núcleo de inteligencia comercial en TypeScript con tipado estricto. Implementa filtrado temporal (`este_mes`, `ultimos_30`, `trimestre`, `historico`), cálculo de KPIs financieros con discriminación rigurosa de pagos aprobados, desglose de items JSONB de pedidos, generador de tendencias cronológicas para gráficos SVG, distribución porcentual de pasarelas de pago y canales de entrega, detección de clientes destacados y alertas de quiebre de stock.
+  - **Vista Integral de Métricas en SSR (`src/pages/meson-servitecnology-st/metricas/index.astro`):**
+    - Integración con `AdminLayout.astro` manteniendo consistencia estética dark y protección por cookie `admin_session`.
+    - Selector dinámico de rango temporal tipo pastillas interactivas con recálculo instantáneo en el servidor.
+    - Tablero de 4 KPIs principales: Facturación Aprobada (CLP), Ticket Promedio, Repuestos Despachados / Fletes y Tasa de Efectividad/Conversión.
+    - Gráfico de barras SVG nativo para evolución cronológica de ingresos con tooltips interactivos al hover y gradientes fluorescentes `brand-green`.
+    - Paneles de distribución con barras de progreso para Pasarelas de Pago (Mercado Pago vs Transferencia BancoEstado) y Modalidades de Entrega (Retiro en Sucursal vs Delivery RM vs Couriers Nacionales).
+    - Módulo de Alertas de Reabastecimiento Crítico: Identifica automáticamente repuestos vendidos que presentan stock crítico ($\le 2$ unidades o $\le \text{stock\_minimo}$) o agotamiento con enlace de reposición inmediata.
+    - Tabla de Top Repuestos Más Vendidos con miniaturas, SKU, unidades colocadas, facturación generada y badges de semáforo de inventario.
+    - Ranking de Compradores VIP del período con monto aportado, atajo directo a WhatsApp Web (`wa.me/569...`) y enlace a su ficha en el CRM.
+  - **Aseguramiento de Calidad y Testing Automatizado:**
+    - Suite unitaria `tests/lib/analytics.test.ts` (11 tests) cubriendo casos borde (0 órdenes), sumatorias de órdenes aprobadas, desglose de arrays JSONB, cálculo de períodos, cronología y alertas.
+    - Suite completa del proyecto (45 tests en 8 archivos) aprobada al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) validada con 0 errores en 3.55s.
+  - **Documentación:** Actualización de [`docs/ModulosAdmin/fase-3-metricas-kpis.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/fase-3-metricas-kpis.md) y [`docs/ModulosAdmin/plan-maestro-fase1.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/plan-maestro-fase1.md) marcando la Fase 3 como completada y certificada.
+
+- **2026-09-12 (Implementación y Certificación Completa Fase 2: Gestor de Clientes & CRM Directorio):**
+  - **Migración DDL en Supabase (`supabase/migrations/20260912_customers_crm.sql`):** Aplicada exitosamente en el proyecto Supabase en vivo `servitecnology2000` (`mivsnmvupahgbrjfdyhl`) mediante Management API. Se eliminó la restricción foránea estricta `customers_id_fkey` hacia `auth.users(id)` y se configuró `id DEFAULT gen_random_uuid()` para admitir clientes híbridos: registrados vía Google OAuth (`auth_user_id`), compradores invitados de checkout (`invitado`) y registros manuales en mesón de taller (`manual`). Se agregaron columnas de facturación electrónica SII (`razon_social`, `giro`) y notas de CRM (`notes`).
+  - **Biblioteca de Validación de Identidad y Contacto (`src/lib/rut.ts`):** Utilidades universales con algoritmo oficial Módulo 11 del SII para validación y formateo de RUT chileno (`cleanRut`, `validateRut`, `formatRut`), normalización de números móviles Subtel (`normalizePhone`) y generador de enlaces directos a WhatsApp Web con mensajes de cortesía (`getWhatsAppUrl`).
+  - **Vista Centralizada del CRM (`src/pages/meson-servitecnology-st/clientes/index.astro`):**
+    - Integración sobre `AdminLayout.astro` con protección de guardia SSR mediante cookie `admin_session`.
+    - Agregación SSR de métricas de fidelización y valor del cliente: Total Directorio, Compradores Activos, Clientes Recurrentes (2+ pedidos) y Gasto Promedio LTV (Lifetime Value en CLP).
+    - Buscador reactivo multicriterio en vivo (nombre, RUT, email, teléfono, razón social, comuna o tipo) y píldoras de filtrado instantáneo ("Todos", "Con Compras", "Sin Compras", "Empresas").
+    - Tabla responsiva con badges fluorescentes, enlaces de un solo clic a WhatsApp Web, modal de historial de órdenes (`ST-2026-XXXX`) con detalle de despacho y modales dinámicos para alta y edición de perfiles.
+  - **Endpoints API Administrativos:**
+    - `src/pages/api/admin/customers/save.ts`: Creación y actualización (upsert) de clientes con verificación de autenticación de administrador, validación de RUT y normalización de contacto.
+    - `src/pages/api/admin/customers/delete.ts`: Borrado seguro con desvinculación previa de órdenes (`orders.customer_id = NULL`) preservando el historial financiero y de auditoría contable.
+  - **Aseguramiento de Calidad y Testing Automatizado:**
+    - Suite unitaria `tests/lib/rut-validator.test.ts` (9 tests) cubriendo RUTs válidos (incluyendo dígito `K`), formatos erróneos y normalización de teléfonos Subtel.
+    - Suite de integración `tests/admin/customers-api.test.ts` (8 tests) verificando rechazo 401 por falta de sesión, rechazo 400 por RUT inválido, creación exitosa de cliente manual, actualización de datos y borrado seguro.
+    - Suite completa del proyecto (34 tests en 7 archivos) aprobada al 100% en Vitest (`npm test`).
+    - Compilación de producción (`npm run build`) validada con 0 errores en 3.6s.
+  - **Documentación:** Actualización de [`docs/ModulosAdmin/fase-2-gestion-clientes.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/fase-2-gestion-clientes.md) y [`docs/ModulosAdmin/plan-maestro-fase1.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/plan-maestro-fase1.md) marcando la Fase 2 como completada y certificada.
+
+- **2026-09-12 (Plan de Implementación Fase 2: Gestor de Clientes & CRM Completo):**
+  - **Estructuración Arquitectónica Modular:** Creación del plan de implementación detallado en [`docs/ModulosAdmin/fase-2-gestion-clientes.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/fase-2-gestion-clientes.md) correspondiente al segundo hito de la suite administrativa.
+  - **Alcance Definido:**
+    1. *Flexibilización de Base de Datos:* Migración `supabase/migrations/20260912_customers_crm.sql` para soportar clientes registrados (Google Auth), invitados web y altas manuales de mesón, incorporando columnas de facturación SII (`razon_social`, `giro`) y notas de CRM.
+    2. *Métricas y Agregación LTV:* Cálculo SSR del gasto acumulado histórico (`orders.total_amount` aprobadas), frecuencia de compra y KPIs comerciales del cliente.
+    3. *Directorio CRM Interactivo (`/meson-servitecnology-st/clientes`):* Tabla responsiva con buscador en tiempo real, atajos instantáneos a WhatsApp Web (`wa.me/569...`) y modales para historial de órdenes y CRUD de datos.
+    4. *Endpoints Administrativos:* Endpoints seguros `/api/admin/customers/save.ts` y `/api/admin/customers/delete.ts` con validación estricta de RUT (Módulo 11 SII) y teléfonos Subtel.
+    5. *Suite de Testing:* Plan de pruebas unitarias e integración en Vitest para validar algoritmos de RUT, operaciones CRUD y control de acceso.
+  - **Indexación:** Actualización de [`docs/ModulosAdmin/plan-maestro-fase1.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/plan-maestro-fase1.md) marcando la Fase 2 como lista para ejecución.
+
+- **2026-09-12 (Implementación Completa Fase 1: Layout Unificado, Gestor de Pedidos & Logística):**
+  - **Layout Administrativo Unificado (`src/layouts/AdminLayout.astro`):** Creación del contenedor maestro para la suite administrativa con guardia SSR (`admin_session` vs `ADMIN_SECRET`), barra de navegación responsive (Repuestos, Galería, Pedidos, Clientes, Métricas), contadores reactivos de pedidos pendientes en el navbar y sistema global de notificaciones Toast.
+  - **Gestor de Pedidos & Despacho (`src/pages/meson-servitecnology-st/pedidos/index.astro`):**
+    - Vista centralizada de órdenes con cruce SSR hacia `customers` (RUT, teléfono, email, dirección).
+    - Tarjetas de KPIs en tiempo real: Total Pedidos, Pendientes de Pago, En Preparación y Total Recaudado en CLP.
+    - Filtros dinámicos multicriterio (búsqueda en vivo por código, RUT, courier o cliente) y píldoras rápidas por estado.
+    - Tabla responsiva con badges fluorescentes (`brand-green`, `brand-cyan`, ámbar, rojo).
+  - **Modal Interactivo de Gestión y Logística:**
+    - Desglose de repuestos con fotos, SKU, cantidad y subtotales.
+    - Atajos rápidos de contacto directo con el comprador vía WhatsApp Web (`wa.me/569...`) con mensaje precargado y enlace de correo.
+    - Formulario de despacho para couriers nacionales (Starken, Chilexpress, CorreosChile, Blue Express) con validación estricta de número de seguimiento.
+    - Acciones rápidas: Conciliación manual de transferencias BancoEstado, marcado de pedidos listos para retiro en sucursal, confirmación de entrega y notas internas de taller.
+  - **Endpoint API de Transiciones de Estado (`src/pages/api/admin/orders/update-status.ts`):** Endpoint autenticado para actualizar atómicamente estados en Supabase (`shipped_at`, `ready_pickup_at`, courier, tracking) y disparar notificaciones condicionales.
+  - **Plantillas Transaccionales en Nodemailer (`src/lib/mailer.ts`):** Funciones `sendOrderShippedEmail` (con enlace de rastreo en línea del courier) y `sendOrderReadyForPickupEmail` (con ubicación del taller en Santiago Centro, horarios y requisitos).
+  - **Certificación de Calidad:** 17 pruebas automatizadas con Vitest ejecutadas y aprobadas en 1.6s, y build de producción (`npm run build`) validado con 0 errores.
+
+- **2026-09-12 (Aplicación Exitosa de Migración en Supabase & Memoria en AGENTS.md):**
+  - **Ejecución Directa de Migración (`supabase/migrations/20260912_orders_logistics.sql`):** Aplicación exitosa en vivo en el proyecto Supabase `servitecnology2000` (`mivsnmvupahgbrjfdyhl`) mediante la API de base de datos con `SUPABASE_ACCESS_TOKEN`. Se añadieron las columnas `tracking_number`, `courier`, `shipped_at`, `ready_pickup_at`, `admin_notes` y se actualizó la restricción de estados de orden.
+  - **Verificación Automatizada (`tests/supabase-orders.test.ts`):** Certificación mediante Vitest de la presencia física de los nuevos campos logísticos en la base de datos remota con tiempo de respuesta de 540ms.
+  - **Actualización de Memoria del Agente (`AGENTS.md`):** Se formalizó en las reglas permanentes del proyecto la capacidad y obligación del agente de aplicar migraciones SQL autónomamente vía Supabase Management API (`scripts/apply-migration.mjs`) o servidor MCP, manteniendo trazabilidad en `supabase/migrations/`.
+
+- **2026-09-12 (Instalación de Vitest & Migración SQL Logística de Pedidos):**
+  - **Instalación y Configuración de Vitest (`vitest.config.ts`, `package.json`):** Integración nativa del runner de pruebas de Vite con soporte TypeScript, inyección de variables de entorno mediante `loadEnv` y scripts de ejecución rápida (`npm test`, `npm run test:watch`).
+  - **Suites de Pruebas Iniciales (`tests/sanity.test.ts`, `tests/supabase-orders.test.ts`):** Verificación exitosa de aserciones lógicas y test de conectividad en vivo con Supabase consultando la tabla `orders` en 900ms.
+  - **Migración SQL de Soporte Logístico ([`supabase/migrations/20260912_orders_logistics.sql`](file:///home/angel/Developer/landingpage/supabase/migrations/20260912_orders_logistics.sql)):** Creación del script DDL para agregar a `orders` los campos `tracking_number`, `courier`, `shipped_at`, `ready_pickup_at`, `admin_notes`, actualización de la restricción de estados (`preparacion`, `despachado`, `listo_retiro`, `entregado`, `cancelado`) e índices de búsqueda rápida.
+
+- **2026-09-12 (Incorporación de Regla Obligatoria de Pruebas & Testing en AGENTS.md):**
+  - **Normativa de Aseguramiento de Calidad:** Se agregó a [`AGENTS.md`](file:///home/angel/Developer/landingpage/AGENTS.md) la directriz obligatoria que exige que todo nuevo desarrollo, módulo o corrección de bugs (fix) cuente con su respectiva suite o scripts de pruebas automatizadas y pase exitosamente la compilación (`npm run build`) antes de darse por completada la tarea.
+  - **Estrategia para Fase 1 Administrativa:** Definición en [`docs/ModulosAdmin/fase-1-layout-y-pedidos.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/fase-1-layout-y-pedidos.md) de la suite con Vitest para pruebas unitarias de plantillas de correo (`src/lib/mailer.ts`), control de acceso y transiciones de estado en el endpoint `/api/admin/orders/update-status`.
+
+- **2026-09-12 (Plan de Implementación Fase 1: Panel de Pedidos & Layout Administrativo Unificado):**
+  - **Estructuración Arquitectónica Modular:** Creación del plan de implementación detallado en [`docs/ModulosAdmin/fase-1-layout-y-pedidos.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/fase-1-layout-y-pedidos.md) como primer hito del Plan Maestro administrativo.
+  - **Alcance Definido:**
+    1. *Layout Administrativo Base (`AdminLayout.astro`):* Abstracción de navegación horizontal unificada (Repuestos, Galería, Pedidos, Clientes, Métricas) y guardia SSR de autenticación con `admin_session` / `ADMIN_SECRET`.
+    2. *Gestor de Pedidos (`/meson-servitecnology-st/pedidos`):* Consulta SSR contra `orders` y `customers`, KPIs superiores (total pedidos, pendientes, despachos), filtros rápidos por píldoras y tabla con badges de estado de pago y entrega.
+    3. *Logística de Despacho y Retiro:* Soporte para couriers nacionales (Starken, Chilexpress, CorreosChile) con número de seguimiento obligatorio y atajos para retiros en taller técnico.
+    4. *Notificaciones Transaccionales:* Integración en `src/lib/mailer.ts` de plantillas HTML para aviso de despacho con tracking y confirmación de retiro en sucursal.
+    5. *Migración Supabase:* Script SQL para agregar campos `tracking_number`, `courier`, `shipped_at`, `ready_pickup_at` y ampliar la restricción de estados en la tabla `orders`.
+  - **Indexación:** Actualización de [`docs/ModulosAdmin/plan-maestro-fase1.md`](file:///home/angel/Developer/landingpage/docs/ModulosAdmin/plan-maestro-fase1.md) enlazando el plan detallado de Fase 1.
+
 - **2026-09-11 (Validación y Formateo de Teléfonos Chilenos en Checkout):**
   - **Validación Normativa Subtel (`src/pages/checkout.astro`):** Implementación de validación estricta para números telefónicos de Chile (9 dígitos nacionales tras el código país). Soporte exhaustivo para Celulares / WhatsApp (`+56 9 XXXX XXXX`), telefonía fija de la Región Metropolitana (`+56 2 XXXX XXXX`) y telefonía fija de regiones (`+56 XX XXX XXXX`).
   - **Formateador y Feedback en Tiempo Real:** Formateo automático progresivo con prefijo internacional `+56`, detección y descarte de ceros iniciales accidentales, feedback visual con bordes esmeralda/rojo, mensaje de error en línea (`#phone-error`) y bloqueo preventivo con alerta del sistema si el número es inválido al intentar proceder al pago.

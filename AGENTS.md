@@ -31,10 +31,15 @@ Consult these guides before working on related tasks:
 - **Base de Datos & Autenticación:** Supabase (ID de referencia: `mivsnmvupahgbrjfdyhl`).
   - `repuestos_productos`: Inventario con SKU, stock numérico (`stock_cantidad`), precios de venta/costo, imágenes, slugs y metadatos SEO.
   - `customers`: Perfiles de clientes sincronizados con `auth.users`, campos de contacto, RUT para facturación electrónica y direcciones de despacho.
-  - `orders`: Órdenes de compra con identificador único legible (`ST-2026-XXXX`), items JSONB, tipos de entrega (`retiro`, `envio_nacional`), costos de flete, estados de pago (`pendiente`, `aprobado`, `rechazado`, `cancelado`), estados de orden (`preparacion`, `despachado`, `entregado`) y referencias de Mercado Pago (`mp_preference_id`, `mp_payment_id`).
+  - `orders`: Órdenes de compra con identificador único legible (`ST-2026-XXXX`), items JSONB, tipos de entrega (`retiro`, `delivery_rm`, `envio_nacional`), costos de flete, estados de pago (`pendiente`, `aprobado`, `rechazado`, `cancelado`), ciclo logístico completo (`preparacion`, `despachado`, `listo_retiro`, `entregado`, `cancelado`), control de seguimiento (`tracking_number`, `courier`, `shipped_at`, `ready_pickup_at`, `admin_notes`) y referencias de Mercado Pago (`mp_preference_id`, `mp_payment_id`).
   - `metricas_eventos`: Tracking analítico de clics y visitas.
   - `trabajos_galeria`: Portafolio dinámico de trabajos realizados por categoría técnica.
 - **Storage:** Buckets públicos en Supabase: `imagenes-repuestos` y `trabajos_galeria`.
+- **Gestión y Ejecución Directa de Migraciones en Supabase (MCP & Management API):**
+  - **ID del Proyecto:** `mivsnmvupahgbrjfdyhl` (`servitecnology2000`).
+  - **Token de Acceso Personal:** Configurado en `.agents/mcp_config.json` y `~/.gemini/config/mcp_config.json` (`SUPABASE_ACCESS_TOKEN`).
+  - **Aplicación Autónoma de Migraciones DDL/SQL:** El agente DEBE aplicar directamente las migraciones de base de datos a Supabase en vivo utilizando el script de Management API (`node scripts/apply-migration.mjs <archivo.sql>`) o el servidor MCP de Supabase.
+  - **Trazabilidad:** Todo cambio DDL debe guardarse en `supabase/migrations/YYYYMMDD_nombre.sql`, ejecutarse directamente en Supabase y certificarse con la suite de pruebas (`npm test`).
 - **Pasarela de Pagos (Mercado Pago Chile MLC):**
   - Checkout Pro mediante SDK oficial `@mercadopago/sdk-nodejs` (`Preference` y conciliación de `Payment`).
   - Servidor MCP oficial de Mercado Pago (`https://mcp.mercadopago.com/mcp`) integrado en `.agents/mcp_config.json`.
@@ -62,6 +67,10 @@ Consult these guides before working on related tasks:
 - **Documento del Titular en Formularios:** En el selector desplegable de documento de Checkout Pro en Chile, debe seleccionarse siempre **`Otro`** (no `RUT`) e ingresar **`123456789`**. Ingresar un RUT con tarjetas de prueba activa validaciones bancarias reales y genera el error `UNDEFINED SOURCE` o rechazo de tarjeta.
 - **Simulación de Estados:** En las pruebas con tarjetas sandbox (`5416 7526 0258 2580`), el nombre del titular controla el resultado: `APRO` (aprobado), `FUND` (fondos insuficientes), `CONT` (pendiente/autorización), `SECU` (código de seguridad inválido), etc.
 - **Aislamiento de Sesión:** En modo sandbox, el backend inyecta automáticamente el email del comprador de pruebas (`ML_PRUEBAS_COMPRADOR_EMAIL`) en el payer de la preferencia para evitar conflictos con la cuenta real de Mercado Libre del vendedor.
+
+## 🧪 Regla Obligatoria de Pruebas y Testing
+- **Pruebas en Todo Desarrollo o Fix:** CADA VEZ que se implemente una nueva característica, módulo, endpoint o se aplique una corrección de bugs (fix), DEBE agregarse y/o ejecutarse la suite de pruebas correspondiente (unitarias, integración o scripts de verificación automatizada) para certificar que el código funciona y que no se introducen regresiones antes de dar la tarea por concluida.
+- **Criterio de Validación:** Ninguna tarea se considera finalizada sin verificar que los tests pasen exitosamente y que la compilación de producción (`npm run build`) no arroje errores de tipos ni de sintaxis.
 
 ## 📋 Regla de Actualización Obligatoria para el Agente
 - **Actualización Inmediata de 'CHANGELOG.md':** CADA VEZ que realice un cambio, actualización de código, refactorización o despliegue en este proyecto, DEBO actualizar inmediatamente el archivo `CHANGELOG.md` antes de finalizar la tarea, registrando los cambios en el historial de versiones.

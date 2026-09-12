@@ -1,0 +1,642 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../../lib/supabase';
+import {
+	filterOrdersByPeriod,
+	calculateFinancialKPIs,
+	aggregateTopProducts,
+	aggregateTimeline,
+	aggregateMethodDistribution,
+	aggregateTopCustomers,
+	detectInventoryAlerts,
+	type PeriodKey,
+	type AnalyticsOrder
+} from '../../../lib/analytics';
+
+// 1. Obtener período seleccionado desde la URL (Default: 'este_mes')
+const url = new URL(Astro.request.url);
+const validPeriods: PeriodKey[] = ['este_mes', 'ultimos_30', 'trimestre', 'historico'];
+const rawPeriod = url.searchParams.get('period') as PeriodKey;
+const selectedPeriod: PeriodKey = validPeriods.includes(rawPeriod) ? rawPeriod : 'este_mes';
+
+// 2. Cargar datos en paralelo desde Supabase
+let allOrders: AnalyticsOrder[] = [];
+let catalogProducts: any[] = [];
+let customersMap = new Map<string, any>();
+
+try {
+	const [ordersRes, catalogRes, customersRes] = await Promise.all([
+		supabaseAdmin
+			.from('orders')
+			.select('id, total_amount, shipping_cost, shipping_method, payment_method, payment_status, order_status, items, customer_id, created_at')
+			.order('created_at', { ascending: false }),
+		supabaseAdmin
+			.from('repuestos_productos')
+			.select('id, sku, titulo, stock_cantidad, stock_minimo, imagenes, categoria'),
+		supabaseAdmin
+			.from('customers')
+			.select('id, full_name, rut, phone, email, razon_social')
+	]);
+
+	allOrders = (ordersRes.data || []) as AnalyticsOrder[];
+	catalogProducts = catalogRes.data || [];
+
+	if (customersRes.data) {
+		for (const c of customersRes.data) {
+			customersMap.set(c.id, c);
+		}
+	}
+} catch (e) {
+	console.error('Error cargando datos de analítica en Supabase:', e);
+}
+
+// 3. Procesar datos con el motor analítico
+const filteredOrders = filterOrdersByPeriod(allOrders, selectedPeriod);
+const kpis = calculateFinancialKPIs(filteredOrders);
+const topProducts = aggregateTopProducts(filteredOrders, catalogProducts);
+const timeline = aggregateTimeline(filteredOrders, selectedPeriod);
+const distribution = aggregateMethodDistribution(filteredOrders);
+const topCustomers = aggregateTopCustomers(filteredOrders, customersMap, 5);
+const inventoryAlerts = detectInventoryAlerts(topProducts, 4);
+
+// 4. Parámetros de renderizado para el gráfico de barras SVG
+const maxRevenue = Math.max(...timeline.map(t => t.revenue), 100000);
+const chartHeight = 180;
+const chartWidth = 700;
+const barSpacing = chartWidth / Math.max(timeline.length, 1);
+const barWidth = Math.max(6, Math.min(24, barSpacing * 0.65));
+
+// Labels y descripciones de período
+const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
+	este_mes: {
+		title: 'Mes en Curso',
+		desc: 'Ventas y rendimiento registrados durante el mes actual.'
+	},
+	ultimos_30: {
+		title: 'Últimos 30 Días',
+		desc: 'Rendimiento comercial acumulado de los últimos 30 días móviles.'
+	},
+	trimestre: {
+		title: 'Último Trimestre (90d)',
+		desc: 'Balance consolidado del trimestre móvil (últimos 90 días).'
+	},
+	historico: {
+		title: 'Histórico Total',
+		desc: 'Métricas consolidadas de todas las transacciones históricas registradas.'
+	}
+};
+---
+
+<AdminLayout title="Panel de Métricas y Ventas — SERVITECNOLOGY Admin" activeSection="metricas">
+	<div class="space-y-8 pb-12">
+		<!-- Encabezado y Selector de Período -->
+		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
+			<div>
+				<div class="flex items-center gap-3">
+					<span class="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase bg-brand-green/20 text-brand-green border border-brand-green/30">
+						Métricas & Rendimiento
+					</span>
+					<span class="text-xs text-slate-500 font-mono">
+						Actualizado en tiempo real (SSR)
+					</span>
+				</div>
+				<h1 class="font-outfit text-2xl sm:text-3xl font-black text-white mt-2 tracking-tight flex items-center gap-2">
+					<span>📊</span>
+					<span>Finanzas, Ventas & Inventario</span>
+				</h1>
+				<p class="text-xs sm:text-sm text-slate-400 mt-1">
+					{periodLabels[selectedPeriod].desc} ({filteredOrders.length} pedidos analizados)
+				</p>
+			</div>
+
+			<!-- Selector de Rango Temporal -->
+			<div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#121215] border border-white/10 overflow-x-auto">
+				<a
+					href="/meson-servitecnology-st/metricas?period=este_mes"
+					class={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+						selectedPeriod === 'este_mes'
+							? 'bg-brand-green text-black shadow-[0_0_15px_rgba(0,229,153,0.3)]'
+							: 'text-slate-400 hover:text-white hover:bg-white/5'
+					}`}
+				>
+					Mes en Curso
+				</a>
+				<a
+					href="/meson-servitecnology-st/metricas?period=ultimos_30"
+					class={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+						selectedPeriod === 'ultimos_30'
+							? 'bg-brand-green text-black shadow-[0_0_15px_rgba(0,229,153,0.3)]'
+							: 'text-slate-400 hover:text-white hover:bg-white/5'
+					}`}
+				>
+					Últimos 30d
+				</a>
+				<a
+					href="/meson-servitecnology-st/metricas?period=trimestre"
+					class={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+						selectedPeriod === 'trimestre'
+							? 'bg-brand-green text-black shadow-[0_0_15px_rgba(0,229,153,0.3)]'
+							: 'text-slate-400 hover:text-white hover:bg-white/5'
+					}`}
+				>
+					Trimestre (90d)
+				</a>
+				<a
+					href="/meson-servitecnology-st/metricas?period=historico"
+					class={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap ${
+						selectedPeriod === 'historico'
+							? 'bg-brand-green text-black shadow-[0_0_15px_rgba(0,229,153,0.3)]'
+							: 'text-slate-400 hover:text-white hover:bg-white/5'
+					}`}
+				>
+					Histórico Total
+				</a>
+			</div>
+		</div>
+
+		<!-- Grid de KPIs Superiores -->
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+			<!-- 1. Ingresos Netos Aprobados -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group hover:border-brand-green/30 transition-all">
+				<div class="flex items-center justify-between">
+					<span class="text-xs uppercase font-mono text-slate-500">Facturación Aprobada</span>
+					<span class="w-8 h-8 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center text-sm border border-brand-green/20">
+						💰
+					</span>
+				</div>
+				<div class="font-outfit text-2xl sm:text-3xl font-black text-brand-green mt-3 tracking-tight">
+					${kpis.totalRevenue.toLocaleString('es-CL')} CLP
+				</div>
+				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
+					<span>{kpis.approvedOrdersCount} pedidos pagados</span>
+					<span class="font-mono text-emerald-400">100% conciliado</span>
+				</div>
+			</div>
+
+			<!-- 2. Ticket Promedio -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group hover:border-brand-cyan/30 transition-all">
+				<div class="flex items-center justify-between">
+					<span class="text-xs uppercase font-mono text-slate-500">Ticket Promedio</span>
+					<span class="w-8 h-8 rounded-xl bg-brand-cyan/10 text-brand-cyan flex items-center justify-center text-sm border border-brand-cyan/20">
+						💳
+					</span>
+				</div>
+				<div class="font-outfit text-2xl sm:text-3xl font-black text-brand-cyan mt-3 tracking-tight">
+					${kpis.averageTicket.toLocaleString('es-CL')} CLP
+				</div>
+				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
+					<span>Promedio por pedido pagado</span>
+					<span class="font-mono text-slate-500">{kpis.approvedOrdersCount > 0 ? 'activo' : 'sin datos'}</span>
+				</div>
+			</div>
+
+			<!-- 3. Repuestos Vendidos & Fletes -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all">
+				<div class="flex items-center justify-between">
+					<span class="text-xs uppercase font-mono text-slate-500">Repuestos Despachados</span>
+					<span class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm border border-amber-500/20">
+						📦
+					</span>
+				</div>
+				<div class="font-outfit text-2xl sm:text-3xl font-black text-amber-400 mt-3 tracking-tight">
+					{kpis.totalUnitsSold} unidades
+				</div>
+				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
+					<span>Fletes: ${kpis.shippingRevenue.toLocaleString('es-CL')} CLP</span>
+					<span class="font-mono text-amber-400/80">logística</span>
+				</div>
+			</div>
+
+			<!-- 4. Tasa de Efectividad -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition-all">
+				<div class="flex items-center justify-between">
+					<span class="text-xs uppercase font-mono text-slate-500">Tasa de Efectividad</span>
+					<span class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-sm border border-purple-500/20">
+						📈
+					</span>
+				</div>
+				<div class="font-outfit text-2xl sm:text-3xl font-black text-purple-400 mt-3 tracking-tight">
+					{kpis.approvalRate}%
+				</div>
+				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
+					<span>{kpis.totalOrdersCount} órdenes generadas</span>
+					<span class="font-mono text-purple-300">conversión</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Gráfico de Tendencia Cronológica (SVG Nativo) -->
+		<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 space-y-4">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+				<div>
+					<h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
+						<span>📈</span>
+						<span>Tendencia Cronológica de Ingresos</span>
+					</h3>
+					<p class="text-xs text-slate-400">
+						Evolución de facturación aprobada en el período ({periodLabels[selectedPeriod].title})
+					</p>
+				</div>
+				<div class="flex items-center gap-4 text-xs font-mono text-slate-400">
+					<div class="flex items-center gap-1.5">
+						<span class="w-3 h-3 rounded-full bg-brand-green inline-block"></span>
+						<span>Ventas Aprobadas (CLP)</span>
+					</div>
+					<div class="text-slate-500">
+						Pico: ${maxRevenue.toLocaleString('es-CL')} CLP
+					</div>
+				</div>
+			</div>
+
+			<!-- Canvas SVG Responsivo -->
+			<div class="relative w-full overflow-x-auto pt-4 pb-2">
+				<div class="min-w-[650px]">
+					<svg viewBox={`0 0 ${chartWidth} ${chartHeight + 40}`} class="w-full h-48 sm:h-56 overflow-visible">
+						<defs>
+							<linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color="#00E599" stop-opacity="0.95" />
+								<stop offset="100%" stop-color="#00E599" stop-opacity="0.15" />
+							</linearGradient>
+							<linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color="#00CFFF" stop-opacity="1" />
+								<stop offset="100%" stop-color="#00CFFF" stop-opacity="0.3" />
+							</linearGradient>
+						</defs>
+
+						<!-- Líneas guía de fondo -->
+						<line x1="0" y1={chartHeight * 0.25} x2={chartWidth} y2={chartHeight * 0.25} stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4" />
+						<line x1="0" y1={chartHeight * 0.5} x2={chartWidth} y2={chartHeight * 0.5} stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4" />
+						<line x1="0" y1={chartHeight * 0.75} x2={chartWidth} y2={chartHeight * 0.75} stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4" />
+						<line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="rgba(255,255,255,0.15)" />
+
+						<!-- Barras de datos -->
+						{timeline.map((pt, i) => {
+							const barH = pt.revenue > 0 ? Math.max(4, Math.round((pt.revenue / maxRevenue) * chartHeight)) : 2;
+							const x = i * barSpacing + (barSpacing - barWidth) / 2;
+							const y = chartHeight - barH;
+							return (
+								<g class="group cursor-pointer">
+									<rect
+										x={x}
+										y={y}
+										width={barWidth}
+										height={barH}
+										rx="3"
+										fill={pt.revenue > 0 ? 'url(#barGrad)' : 'rgba(255,255,255,0.05)'}
+										class="transition-all duration-300 group-hover:fill-[url(#barGradHover)]"
+									/>
+									<!-- Etiqueta eje X (muestra alternas si son muchos puntos) -->
+									{(timeline.length <= 15 || i % Math.ceil(timeline.length / 12) === 0 || i === timeline.length - 1) && (
+										<text
+											x={x + barWidth / 2}
+											y={chartHeight + 18}
+											text-anchor="middle"
+											class="text-[10px] font-mono fill-slate-500 select-none group-hover:fill-brand-cyan transition-colors"
+										>
+											{pt.label}
+										</text>
+									)}
+
+									<!-- Tooltip SVG al hover -->
+									<g class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+										<rect
+											x={Math.max(10, Math.min(chartWidth - 110, x - 50))}
+											y={Math.max(0, y - 35)}
+											width="100"
+											height="28"
+											rx="6"
+											fill="#18181b"
+											stroke="#00CFFF"
+											stroke-width="1"
+										/>
+										<text
+											x={Math.max(10, Math.min(chartWidth - 110, x - 50)) + 50}
+											y={Math.max(0, y - 35) + 18}
+											text-anchor="middle"
+											class="text-[10px] font-mono font-bold fill-white"
+										>
+											${pt.revenue.toLocaleString('es-CL')}
+										</text>
+									</g>
+								</g>
+							);
+						})}
+					</svg>
+				</div>
+			</div>
+		</div>
+
+		<!-- Paneles de Distribución: Medios de Pago y Logística -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<!-- Medios de Pago -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 space-y-4">
+				<div class="flex items-center justify-between border-b border-white/5 pb-3">
+					<h3 class="font-outfit text-base font-bold text-white flex items-center gap-2">
+						<span>💳</span>
+						<span>Distribución por Pasarela de Pago</span>
+					</h3>
+					<span class="text-xs font-mono text-slate-500">Órdenes Aprobadas</span>
+				</div>
+
+				{distribution.byPayment.length === 0 ? (
+					<div class="py-8 text-center text-xs text-slate-500 font-mono">
+						Sin transacciones aprobadas en el período seleccionado.
+					</div>
+				) : (
+					<div class="space-y-4 pt-1">
+						{distribution.byPayment.map(p => (
+							<div class="space-y-1.5">
+								<div class="flex items-center justify-between text-xs">
+									<span class="font-bold text-slate-200 flex items-center gap-2">
+										<span class={`w-2 h-2 rounded-full ${p.method === 'mercadopago' ? 'bg-brand-cyan' : 'bg-brand-green'}`}></span>
+										<span>{p.label}</span>
+									</span>
+									<span class="font-mono text-slate-400">
+										<strong class="text-white">${p.revenue.toLocaleString('es-CL')} CLP</strong> ({p.count} pedidos · {p.percentage}%)
+									</span>
+								</div>
+								<div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+									<div
+										class={`h-full rounded-full transition-all duration-500 ${p.method === 'mercadopago' ? 'bg-brand-cyan' : 'bg-brand-green'}`}
+										style={`width: ${p.percentage}%`}
+									></div>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
+
+			<!-- Modalidades de Entrega -->
+			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 space-y-4">
+				<div class="flex items-center justify-between border-b border-white/5 pb-3">
+					<h3 class="font-outfit text-base font-bold text-white flex items-center gap-2">
+						<span>🚚</span>
+						<span>Canales de Entrega y Despacho</span>
+					</h3>
+					<span class="text-xs font-mono text-slate-500">Total Pedidos</span>
+				</div>
+
+				{distribution.byShipping.length === 0 ? (
+					<div class="py-8 text-center text-xs text-slate-500 font-mono">
+						Sin pedidos registrados en este período.
+					</div>
+				) : (
+					<div class="space-y-4 pt-1">
+						{distribution.byShipping.map(s => (
+							<div class="space-y-1.5">
+								<div class="flex items-center justify-between text-xs">
+									<span class="font-bold text-slate-200 flex items-center gap-2">
+										<span class="text-slate-400">
+											{s.method === 'retiro' ? '🏬' : s.method === 'delivery_rm' ? '🛵' : '📦'}
+										</span>
+										<span>{s.label}</span>
+									</span>
+									<span class="font-mono text-slate-400">
+										<strong class="text-white">{s.count} pedidos</strong> ({s.percentage}%)
+									</span>
+								</div>
+								<div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+									<div
+										class={`h-full rounded-full transition-all duration-500 ${
+											s.method === 'retiro'
+												? 'bg-amber-400'
+												: s.method === 'delivery_rm'
+												? 'bg-emerald-400'
+												: 'bg-blue-400'
+										}`}
+										style={`width: ${s.percentage}%`}
+									></div>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+
+		<!-- Alertas de Reabastecimiento de Inventario (Si aplica) -->
+		{inventoryAlerts.length > 0 && (
+			<div class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2 text-amber-400 font-outfit font-bold text-sm sm:text-base">
+						<span>⚠️</span>
+						<span>Alerta de Reabastecimiento: Repuestos Vendidos con Stock Crítico</span>
+					</div>
+					<a
+						href="/meson-servitecnology-st"
+						class="text-xs font-mono font-bold text-amber-400 hover:text-amber-300 underline"
+					>
+						Gestionar Inventario →
+					</a>
+				</div>
+				<p class="text-xs text-slate-400">
+					Los siguientes repuestos han tenido ventas activas en el período seleccionado y se encuentran en stock crítico o agotados:
+				</p>
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+					{inventoryAlerts.map(alert => (
+						<div class="p-3 rounded-xl bg-[#121215] border border-amber-500/30 flex items-center gap-3">
+							<div class="w-10 h-10 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+								{alert.imagen ? (
+									<img src={alert.imagen} alt={alert.sku} class="w-full h-full object-cover" />
+								) : (
+									<span class="text-xs text-slate-500">⚙️</span>
+								)}
+							</div>
+							<div class="min-w-0 flex-1">
+								<div class="font-mono text-xs font-bold text-white truncate">{alert.sku}</div>
+								<div class="text-[11px] text-slate-400 truncate">{alert.titulo}</div>
+								<div class="flex items-center justify-between text-[10px] font-mono mt-1">
+									<span class="text-slate-500">Vendidos: {alert.unitsSold}</span>
+									<span class={`font-bold ${alert.currentStock === 0 ? 'text-red-400' : 'text-amber-400'}`}>
+										{alert.currentStock === 0 ? 'AGOTADO' : `Quedan ${alert.currentStock}`}
+									</span>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		)}
+
+		<!-- Ranking Top Repuestos Más Vendidos -->
+		<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 space-y-4">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+				<div>
+					<h3 class="font-outfit text-base font-bold text-white flex items-center gap-2">
+						<span>🏆</span>
+						<span>Top Repuestos Más Vendidos del Período</span>
+					</h3>
+					<p class="text-xs text-slate-400">
+						Ranking de productos ordenado por volumen de facturación desglosado desde pedidos aprobados.
+					</p>
+				</div>
+				<span class="text-xs font-mono text-slate-500">
+					{topProducts.length} repuestos activos
+				</span>
+			</div>
+
+			{topProducts.length === 0 ? (
+				<div class="py-12 text-center text-xs text-slate-500 font-mono">
+					No hay ventas de repuestos aprobadas en este rango temporal.
+				</div>
+			) : (
+				<div class="overflow-x-auto">
+					<table class="w-full text-left text-xs">
+						<thead>
+							<tr class="border-b border-white/5 text-[11px] font-mono uppercase text-slate-500">
+								<th class="py-3 px-3">#</th>
+								<th class="py-3 px-3">Repuesto</th>
+								<th class="py-3 px-3 text-right">Unidades</th>
+								<th class="py-3 px-3 text-right">Facturación</th>
+								<th class="py-3 px-3 text-center">Stock Actual</th>
+								<th class="py-3 px-3 text-right">Acción</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-white/5">
+							{topProducts.map((p, idx) => (
+								<tr class="hover:bg-white/[0.02] transition-colors">
+									<td class="py-3.5 px-3 font-mono font-bold text-slate-500">
+										{idx + 1 <= 3 ? (
+											<span class={`inline-block w-5 h-5 rounded-full text-center leading-5 text-[10px] font-black ${
+												idx === 0 ? 'bg-amber-400 text-black' : idx === 1 ? 'bg-slate-300 text-black' : 'bg-amber-700 text-white'
+											}`}>
+												{idx + 1}
+											</span>
+										) : (
+											<span>#{idx + 1}</span>
+										)}
+									</td>
+									<td class="py-3.5 px-3">
+										<div class="flex items-center gap-3">
+											<div class="w-10 h-10 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+												{p.imagen ? (
+													<img src={p.imagen} alt={p.sku} class="w-full h-full object-cover" />
+												) : (
+													<span class="text-xs text-slate-600">⚙️</span>
+												)}
+											</div>
+											<div class="min-w-0 max-w-[260px] sm:max-w-md">
+												<div class="font-bold text-slate-200 truncate">{p.titulo}</div>
+												<div class="font-mono text-[11px] text-brand-cyan truncate">{p.sku}</div>
+											</div>
+										</div>
+									</td>
+									<td class="py-3.5 px-3 text-right font-mono font-bold text-white">
+										{p.unitsSold} uds
+									</td>
+									<td class="py-3.5 px-3 text-right font-mono font-bold text-brand-green">
+										${p.revenue.toLocaleString('es-CL')} CLP
+									</td>
+									<td class="py-3.5 px-3 text-center font-mono">
+										<span class={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${
+											p.stockStatus === 'ok'
+												? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+												: p.stockStatus === 'critico'
+												? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+												: 'bg-red-500/10 text-red-400 border-red-500/20'
+										}`}>
+											{p.stockStatus === 'ok' ? `Stock: ${p.currentStock}` : p.stockStatus === 'critico' ? `Crítico (${p.currentStock})` : 'Agotado (0)'}
+										</span>
+									</td>
+									<td class="py-3.5 px-3 text-right font-mono">
+										<a
+											href={`/meson-servitecnology-st?q=${encodeURIComponent(p.sku)}`}
+											class="text-xs text-brand-cyan hover:underline"
+										>
+											Editar →
+										</a>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+
+		<!-- Clientes VIP del Período -->
+		<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 space-y-4">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+				<div>
+					<h3 class="font-outfit text-base font-bold text-white flex items-center gap-2">
+						<span>⭐</span>
+						<span>Top Compradores del Período</span>
+					</h3>
+					<p class="text-xs text-slate-400">
+						Clientes con mayor aportación de ingresos aprobados en el rango temporal seleccionado.
+					</p>
+				</div>
+				<a
+					href="/meson-servitecnology-st/clientes"
+					class="text-xs font-mono font-bold text-brand-green hover:underline flex items-center gap-1"
+				>
+					<span>Ver Directorio CRM Completo</span>
+					<span>→</span>
+				</a>
+			</div>
+
+			{topCustomers.length === 0 ? (
+				<div class="py-8 text-center text-xs text-slate-500 font-mono">
+					No hay compradores registrados en este período.
+				</div>
+			) : (
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+					{topCustomers.map((cust, i) => (
+						<div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2.5 hover:border-brand-green/20 transition-all">
+							<div class="flex items-start justify-between gap-2">
+								<div class="min-w-0">
+									<div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
+										<span class="text-amber-400 font-mono text-[11px]">#{i + 1}</span>
+										<span class="truncate">{cust.fullName}</span>
+									</div>
+									<div class="font-mono text-[11px] text-slate-500">{cust.rut}</div>
+								</div>
+								{cust.whatsappUrl && (
+									<a
+										href={cust.whatsappUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="w-7 h-7 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs transition-colors shrink-0"
+										title="Contactar por WhatsApp Web"
+									>
+										💬
+									</a>
+								)}
+							</div>
+							<div class="flex items-center justify-between text-xs pt-2 border-t border-white/5">
+								<span class="text-slate-400 text-[11px] font-mono">{cust.ordersCount} compras</span>
+								<span class="font-mono font-bold text-brand-green">
+									${cust.totalSpent.toLocaleString('es-CL')} CLP
+								</span>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+
+		<!-- Footer de Navegación Rápida -->
+		<div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/5">
+			<div class="flex items-center gap-3">
+				<a
+					href="/meson-servitecnology-st/pedidos"
+					class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10 transition-all cursor-pointer"
+				>
+					<span>📦 Ir al Gestor de Pedidos</span>
+				</a>
+				<a
+					href="/meson-servitecnology-st/clientes"
+					class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10 transition-all cursor-pointer"
+				>
+					<span>👥 Ir al Directorio CRM</span>
+				</a>
+			</div>
+			<div class="text-xs font-mono text-slate-500">
+				SERVITECNOLOGY Chile · E-commerce & Taller Técnico
+			</div>
+		</div>
+	</div>
+</AdminLayout>

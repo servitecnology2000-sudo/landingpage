@@ -1,0 +1,861 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../../lib/supabase';
+import { formatRut, getWhatsAppUrl } from '../../../lib/rut';
+
+// 1. Obtener clientes y pedidos para agregación en servidor
+let customers: any[] = [];
+let orders: any[] = [];
+let fetchError = '';
+
+try {
+	const [customersRes, ordersRes] = await Promise.all([
+		supabaseAdmin
+			.from('customers')
+			.select('*')
+			.order('created_at', { ascending: false }),
+		supabaseAdmin
+			.from('orders')
+			.select('id, customer_id, total_amount, payment_status, order_status, created_at, items')
+			.order('created_at', { ascending: false })
+	]);
+
+	if (customersRes.error) fetchError = customersRes.error.message;
+	else customers = customersRes.data || [];
+
+	if (ordersRes.data) orders = ordersRes.data;
+
+} catch (e: any) {
+	fetchError = e.message || 'Error al conectar con la base de datos.';
+}
+
+// 2. Mapeo de agregación LTV: pedidos y gasto histórico por cliente
+const customerStatsMap = new Map<string, { totalSpent: number; orderCount: number; orders: any[] }>();
+
+for (const ord of orders) {
+	if (!ord.customer_id) continue;
+	const current = customerStatsMap.get(ord.customer_id) || { totalSpent: 0, orderCount: 0, orders: [] };
+	if (ord.payment_status === 'aprobado') {
+		current.totalSpent += Number(ord.total_amount) || 0;
+	}
+	current.orderCount += 1;
+	current.orders.push(ord);
+	customerStatsMap.set(ord.customer_id, current);
+}
+
+// 3. Cálculo de KPIs superiores de CRM
+const totalCustomers = customers.length;
+const customersWithPurchases = customers.filter(c => (customerStatsMap.get(c.id)?.orderCount || 0) > 0);
+const recurringCustomers = customers.filter(c => (customerStatsMap.get(c.id)?.orderCount || 0) > 1);
+
+const totalRevenue = Array.from(customerStatsMap.values()).reduce((sum, s) => sum + s.totalSpent, 0);
+const averageLtv = customersWithPurchases.length > 0 
+	? Math.round(totalRevenue / customersWithPurchases.length) 
+	: 0;
+
+function formatCLP(amount: number): string {
+	return `$${(amount || 0).toLocaleString('es-CL')}`;
+}
+
+function formatDate(dateString: string): string {
+	if (!dateString) return '—';
+	try {
+		const d = new Date(dateString);
+		return d.toLocaleDateString('es-CL', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric'
+		});
+	} catch {
+		return dateString;
+	}
+}
+---
+
+<AdminLayout title="Directorio CRM & Clientes — SERVITECNOLOGY Admin" activeSection="clientes">
+
+	<!-- Encabezado de Sección -->
+	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+		<div>
+			<h1 class="font-outfit text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+				<span>👥</span>
+				<span>Directorio CRM & Clientes</span>
+			</h1>
+			<p class="text-xs sm:text-sm text-slate-400 mt-1">
+				Directorio unificado de compradores registrados, invitados web y clientes de mesón de taller.
+			</p>
+		</div>
+
+		<div class="flex items-center gap-2">
+			<button 
+				type="button" 
+				id="btnNewCustomer" 
+				class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow-lg hover:opacity-90 transition-all cursor-pointer"
+			>
+				<span>+</span>
+				<span>Nuevo Cliente Manual</span>
+			</button>
+			<button 
+				type="button" 
+				id="btnRefreshCustomers" 
+				class="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-all cursor-pointer"
+			>
+				<span>🔄</span>
+			</button>
+		</div>
+	</div>
+
+	{fetchError && (
+		<div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs sm:text-sm mb-6 flex items-center gap-3">
+			<span>⚠️</span>
+			<span><strong>Error al cargar clientes:</strong> {fetchError}</span>
+		</div>
+	)}
+
+	<!-- Tarjetas de KPIs Superiores -->
+	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+		<!-- Total Clientes -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-white/5 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-slate-700 group-hover:bg-brand-cyan transition-colors"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-slate-400">Total Directorio</span>
+				<span class="text-lg">👥</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-white">
+				{totalCustomers}
+			</div>
+			<div class="text-[11px] text-slate-500 mt-1">Registrados, invitados y taller</div>
+		</div>
+
+		<!-- Clientes con Compras -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-brand-cyan/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-brand-cyan"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-brand-cyan">Compradores Activos</span>
+				<span class="text-lg">💳</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-brand-cyan">
+				{customersWithPurchases.length}
+			</div>
+			<div class="text-[11px] text-brand-cyan/70 mt-1">Con al menos 1 orden</div>
+		</div>
+
+		<!-- Clientes Recurrentes -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-brand-green/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-brand-green"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-brand-green">Clientes Recurrentes</span>
+				<span class="text-lg">🔁</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-brand-green">
+				{recurringCustomers.length}
+			</div>
+			<div class="text-[11px] text-brand-green/70 mt-1">Más de 1 compra realizada</div>
+		</div>
+
+		<!-- LTV Promedio -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-purple-500/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-purple-500"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-purple-300">Gasto Promedio LTV</span>
+				<span class="text-lg">💎</span>
+			</div>
+			<div class="mt-3 font-outfit text-xl sm:text-2xl font-extrabold text-purple-300 truncate">
+				{formatCLP(averageLtv)}
+			</div>
+			<div class="text-[11px] text-purple-400/70 mt-1">Por comprador efectivo</div>
+		</div>
+	</div>
+
+	<!-- Barra de Búsqueda y Filtros Rápidos -->
+	<div class="space-y-4 mb-6">
+		<div class="relative">
+			<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+				🔍
+			</span>
+			<input 
+				type="text" 
+				id="customersSearchInput" 
+				placeholder="Buscar por RUT, Nombre, Razón Social, Teléfono, Correo, Comuna o Notas..." 
+				class="w-full pl-10 pr-4 py-3 rounded-xl bg-[#121215] border border-white/10 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all"
+			/>
+		</div>
+
+		<!-- Filtros de Píldoras -->
+		<div class="flex flex-wrap items-center gap-2" id="filterPillsContainer">
+			<button 
+				type="button" 
+				data-filter="todos" 
+				class="crm-filter-pill active px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-brand-cyan text-black"
+			>
+				Todos ({totalCustomers})
+			</button>
+			<button 
+				type="button" 
+				data-filter="con-compras" 
+				class="crm-filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				💳 Con Compras ({customersWithPurchases.length})
+			</button>
+			<button 
+				type="button" 
+				data-filter="registrado" 
+				class="crm-filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				🔵 Registrados Google
+			</button>
+			<button 
+				type="button" 
+				data-filter="invitado" 
+				class="crm-filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				🟣 Invitados Web
+			</button>
+			<button 
+				type="button" 
+				data-filter="manual" 
+				class="crm-filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				🟢 Taller Manual
+			</button>
+		</div>
+	</div>
+
+	<!-- Tabla de Clientes CRM -->
+	<div class="bg-[#121215] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+		{customers.length === 0 ? (
+			<div class="p-12 text-center">
+				<div class="text-4xl mb-3">👥</div>
+				<h3 class="font-outfit text-base font-bold text-white">No hay clientes registrados en el directorio</h3>
+				<p class="text-xs text-slate-400 mt-1">Crea tu primer cliente manualmente con el botón superior o espera a que se generen ventas en el checkout.</p>
+			</div>
+		) : (
+			<div class="overflow-x-auto">
+				<table class="w-full text-left border-collapse text-xs" id="customersTable">
+					<thead>
+						<tr class="bg-black/40 border-b border-white/5 text-slate-400 font-mono uppercase text-[11px] tracking-wider">
+							<th class="py-3.5 px-4 font-semibold">RUT (SII)</th>
+							<th class="py-3.5 px-4 font-semibold">Cliente / Razón Social</th>
+							<th class="py-3.5 px-4 font-semibold">Contacto Rápido</th>
+							<th class="py-3.5 px-4 font-semibold">Tipo</th>
+							<th class="py-3.5 px-4 font-semibold">Historial Compras</th>
+							<th class="py-3.5 px-4 font-semibold">Registro</th>
+							<th class="py-3.5 px-4 font-semibold text-right">Acciones</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-white/5" id="customersTableBody">
+						{customers.map((c) => {
+							const stats = customerStatsMap.get(c.id) || { totalSpent: 0, orderCount: 0, orders: [] };
+							const rawPhone = c.phone ? c.phone.replace(/[^0-9]/g, '') : '';
+							const waUrl = getWhatsAppUrl(c.phone || '', `Hola ${c.full_name}, te contactamos desde SERVITECNOLOGY respecto a tus servicios y compras.`);
+							const rutFormatted = formatRut(c.rut || '');
+
+							return (
+								<tr 
+									class="customer-row hover:bg-white/[0.02] transition-colors"
+									data-customer-id={c.id}
+									data-type={c.customer_type || 'registrado'}
+									data-has-purchases={stats.orderCount > 0 ? 'true' : 'false'}
+									data-search={`${c.rut || ''} ${c.full_name || ''} ${c.razon_social || ''} ${c.email || ''} ${c.phone || ''} ${c.address || ''} ${c.notes || ''}`.toLowerCase()}
+								>
+									<!-- RUT -->
+									<td class="py-3.5 px-4 font-mono font-extrabold text-brand-cyan whitespace-nowrap">
+										{rutFormatted || '—'}
+									</td>
+
+									<!-- Nombre / Razón Social -->
+									<td class="py-3.5 px-4">
+										<div class="font-semibold text-white truncate max-w-[200px]">
+											{c.full_name}
+										</div>
+										{c.razon_social && (
+											<div class="text-[10px] text-slate-400 truncate max-w-[200px]">
+												🏢 {c.razon_social}
+											</div>
+										)}
+										{c.address && (
+											<div class="text-[10px] text-slate-500 truncate max-w-[220px]">
+												📍 {c.address}
+											</div>
+										)}
+									</td>
+
+									<!-- Contacto -->
+									<td class="py-3.5 px-4 whitespace-nowrap">
+										<div class="flex items-center gap-1.5">
+											{rawPhone ? (
+												<a 
+													href={waUrl} 
+													target="_blank" 
+													class="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-mono font-bold transition-colors"
+													title="Contactar por WhatsApp"
+												>
+													<span>💬</span>
+													<span>{c.phone}</span>
+												</a>
+											) : (
+												<span class="text-slate-600 text-[11px] font-mono">Sin fono</span>
+											)}
+
+											{c.email && (
+												<a 
+													href={`mailto:${c.email}`} 
+													class="p-1 rounded bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5 transition-colors"
+													title={`Enviar correo a ${c.email}`}
+												>
+													✉️
+												</a>
+											)}
+										</div>
+									</td>
+
+									<!-- Tipo -->
+									<td class="py-3.5 px-4 whitespace-nowrap">
+										{c.customer_type === 'manual' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+												🟢 Taller Manual
+											</span>
+										) : c.customer_type === 'invitado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+												🟣 Invitado Web
+											</span>
+										) : (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+												🔵 Google Auth
+											</span>
+										)}
+									</td>
+
+									<!-- Total Gastado -->
+									<td class="py-3.5 px-4 whitespace-nowrap">
+										<div class="font-mono font-bold text-brand-green">
+											{formatCLP(stats.totalSpent)}
+										</div>
+										<span class="text-[10px] text-slate-500">
+											{stats.orderCount} {stats.orderCount === 1 ? 'pedido' : 'pedidos'}
+										</span>
+									</td>
+
+									<!-- Fecha Registro -->
+									<td class="py-3.5 px-4 text-slate-400 whitespace-nowrap">
+										{formatDate(c.created_at)}
+									</td>
+
+									<!-- Acciones -->
+									<td class="py-3.5 px-4 text-right whitespace-nowrap">
+										<div class="flex items-center justify-end gap-1.5">
+											<button 
+												type="button" 
+												class="btn-view-orders px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-300 hover:text-brand-cyan border border-white/5 text-xs transition-colors cursor-pointer"
+												data-customer-name={c.full_name}
+												data-orders={JSON.stringify(stats.orders)}
+												title="Ver historial de compras"
+											>
+												📜
+											</button>
+											<button 
+												type="button" 
+												class="btn-edit-customer px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5 text-xs transition-colors cursor-pointer"
+												data-customer={JSON.stringify(c)}
+												title="Editar datos del cliente"
+											>
+												✏️
+											</button>
+											<button 
+												type="button" 
+												class="btn-delete-customer px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-xs transition-colors cursor-pointer"
+												data-customer-id={c.id}
+												data-customer-name={c.full_name}
+												title="Eliminar cliente"
+											>
+												🗑️
+											</button>
+										</div>
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		)}
+	</div>
+
+	<!-- MODAL 1: CREAR O EDITAR CLIENTE -->
+	<div 
+		id="customerFormModal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
+	>
+		<div 
+			id="formModalContent"
+			class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col transform scale-95 transition-transform duration-300"
+		>
+			<div class="sticky top-0 z-10 bg-[#18181b] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+				<h3 class="font-outfit text-base sm:text-lg font-bold text-white flex items-center gap-2" id="formModalTitle">
+					<span>👤</span>
+					<span>Ficha del Cliente</span>
+				</h3>
+				<button 
+					type="button" 
+					id="btnCloseFormModal" 
+					class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
+				>
+					✕
+				</button>
+			</div>
+
+			<form id="customerForm" class="p-6 space-y-4">
+				<input type="hidden" id="customerIdInput" name="id" value="" />
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<!-- Nombre Completo -->
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo o Razón Social *</label>
+						<input 
+							type="text" 
+							id="inputFullName" 
+							name="full_name" 
+							required 
+							placeholder="Ej: Juan Pérez / Inversiones Tecnológicas SpA" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- RUT -->
+					<div>
+						<label class="block text-xs font-semibold text-slate-300 mb-1">RUT (Facturación SII) *</label>
+						<input 
+							type="text" 
+							id="inputRut" 
+							name="rut" 
+							required 
+							placeholder="Ej: 12.345.678-9" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white font-mono text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+						<span id="rutValidationText" class="text-[10px] text-slate-500 mt-1 block">Validado por Módulo 11</span>
+					</div>
+
+					<!-- Teléfono -->
+					<div>
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Teléfono Móvil / WhatsApp *</label>
+						<input 
+							type="text" 
+							id="inputPhone" 
+							name="phone" 
+							placeholder="Ej: +56 9 1234 5678" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white font-mono text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- Correo -->
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico *</label>
+						<input 
+							type="email" 
+							id="inputEmail" 
+							name="email" 
+							required 
+							placeholder="cliente@ejemplo.com" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- Dirección -->
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Dirección de Despacho o Domicilio</label>
+						<input 
+							type="text" 
+							id="inputAddress" 
+							name="address" 
+							placeholder="Ej: Av. Providencia 1234, Providencia (RM)" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- Razón Social Adicional (Empresas) -->
+					<div>
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Razón Social Adicional</label>
+						<input 
+							type="text" 
+							id="inputRazonSocial" 
+							name="razon_social" 
+							placeholder="Opcional para Factura SII" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- Giro Comercial -->
+					<div>
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Giro Comercial</label>
+						<input 
+							type="text" 
+							id="inputGiro" 
+							name="giro" 
+							placeholder="Ej: Servicios Informáticos" 
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						/>
+					</div>
+
+					<!-- Tipo de Cliente -->
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Tipo de Registro CRM</label>
+						<select id="selectCustomerType" name="customer_type" class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none">
+							<option value="manual">🟢 Cliente Manual / Taller Técnico</option>
+							<option value="invitado">🟣 Comprador Invitado Web</option>
+							<option value="registrado">🔵 Cliente Registrado (Google Auth)</option>
+						</select>
+					</div>
+
+					<!-- Notas Internas CRM -->
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-semibold text-slate-300 mb-1">Notas Internas de CRM</label>
+						<textarea 
+							id="inputNotes" 
+							name="notes" 
+							rows="2" 
+							placeholder="Apuntes privados: Equipos frecuentes, preferencias de repuestos, advertencias..."
+							class="w-full px-3 py-2 rounded-xl bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+						></textarea>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
+					<button 
+						type="button" 
+						id="btnCancelForm" 
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button 
+						type="submit" 
+						id="btnSaveCustomer" 
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
+					>
+						Guardar Cliente
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- MODAL 2: HISTORIAL DE COMPRAS DEL CLIENTE -->
+	<div 
+		id="customerOrdersModal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
+	>
+		<div 
+			id="ordersModalContent"
+			class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col transform scale-95 transition-transform duration-300"
+		>
+			<div class="sticky top-0 z-10 bg-[#18181b] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+				<div>
+					<h3 class="font-outfit text-base sm:text-lg font-bold text-white flex items-center gap-2">
+						<span>📜</span>
+						<span>Historial de Compras</span>
+					</h3>
+					<span id="historyCustomerName" class="text-xs text-brand-cyan font-mono">Nombre Cliente</span>
+				</div>
+				<button 
+					type="button" 
+					id="btnCloseOrdersModal" 
+					class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
+				>
+					✕
+				</button>
+			</div>
+
+			<div class="p-6">
+				<div id="historyOrdersContainer" class="space-y-3">
+					<!-- Inyectado por JS -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- CLIENT-SIDE SCRIPT PARA CRUD, MODALES, BÚSQUEDA Y FILTROS -->
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', () => {
+			// Modales
+			const formModal = document.getElementById('customerFormModal');
+			const formModalBox = document.getElementById('formModalContent');
+			const formModalTitle = document.getElementById('formModalTitle');
+			const btnCloseFormModal = document.getElementById('btnCloseFormModal');
+			const btnCancelForm = document.getElementById('btnCancelForm');
+			const customerForm = document.getElementById('customerForm');
+			const btnNewCustomer = document.getElementById('btnNewCustomer');
+			const btnRefresh = document.getElementById('btnRefreshCustomers');
+
+			const ordersModal = document.getElementById('customerOrdersModal');
+			const ordersModalBox = document.getElementById('ordersModalContent');
+			const btnCloseOrdersModal = document.getElementById('btnCloseOrdersModal');
+			const historyCustomerName = document.getElementById('historyCustomerName');
+			const historyOrdersContainer = document.getElementById('historyOrdersContainer');
+
+			// Inputs de Formulario
+			const customerIdInput = document.getElementById('customerIdInput');
+			const inputFullName = document.getElementById('inputFullName');
+			const inputRut = document.getElementById('inputRut');
+			const inputPhone = document.getElementById('inputPhone');
+			const inputEmail = document.getElementById('inputEmail');
+			const inputAddress = document.getElementById('inputAddress');
+			const inputRazonSocial = document.getElementById('inputRazonSocial');
+			const inputGiro = document.getElementById('inputGiro');
+			const selectCustomerType = document.getElementById('selectCustomerType');
+			const inputNotes = document.getElementById('inputNotes');
+			const rutValidationText = document.getElementById('rutValidationText');
+
+			// 1. Abrir Modal de Creación
+			btnNewCustomer?.addEventListener('click', () => {
+				customerForm.reset();
+				customerIdInput.value = '';
+				formModalTitle.innerHTML = '<span>➕</span><span>Nuevo Cliente Manual</span>';
+				rutValidationText.textContent = 'Validado por Módulo 11';
+				rutValidationText.className = 'text-[10px] text-slate-500 mt-1 block';
+				openModal(formModal, formModalBox);
+			});
+
+			// 2. Abrir Modal de Edición
+			document.querySelectorAll('.btn-edit-customer').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const raw = btn.getAttribute('data-customer');
+					if (!raw) return;
+					try {
+						const c = JSON.parse(raw);
+						customerIdInput.value = c.id || '';
+						inputFullName.value = c.full_name || '';
+						inputRut.value = c.rut || '';
+						inputPhone.value = c.phone || '';
+						inputEmail.value = c.email || '';
+						inputAddress.value = c.address || '';
+						inputRazonSocial.value = c.razon_social || '';
+						inputGiro.value = c.giro || '';
+						selectCustomerType.value = c.customer_type || 'manual';
+						inputNotes.value = c.notes || '';
+
+						formModalTitle.innerHTML = `<span>✏️</span><span>Editar Cliente: ${c.full_name}</span>`;
+						openModal(formModal, formModalBox);
+					} catch (e) {
+						console.error(e);
+					}
+				});
+			});
+
+			// 3. Abrir Modal de Historial de Compras
+			document.querySelectorAll('.btn-view-orders').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const name = btn.getAttribute('data-customer-name') || 'Cliente';
+					const rawOrders = btn.getAttribute('data-orders');
+					historyCustomerName.textContent = name;
+					historyOrdersContainer.innerHTML = '';
+
+					let ordersList = [];
+					try {
+						ordersList = JSON.parse(rawOrders || '[]');
+					} catch (e) {}
+
+					if (ordersList.length === 0) {
+						historyOrdersContainer.innerHTML = `
+							<div class="p-8 text-center text-slate-500 text-xs">
+								Este cliente aún no registra órdenes de compra asociadas.
+							</div>
+						`;
+					} else {
+						ordersList.forEach(ord => {
+							const date = new Date(ord.created_at).toLocaleString('es-CL');
+							const isApproved = ord.payment_status === 'aprobado';
+							const card = document.createElement('div');
+							card.className = 'p-3.5 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs hover:border-white/20 transition-all';
+							card.innerHTML = `
+								<div class="space-y-1">
+									<div class="flex items-center gap-2">
+										<span class="font-mono font-bold text-brand-cyan">${ord.id}</span>
+										<span class="px-2 py-0.2 rounded-full text-[10px] font-bold ${
+											isApproved ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-300'
+										}">
+											${ord.payment_status}
+										</span>
+										<span class="px-2 py-0.2 rounded-full text-[10px] font-mono bg-white/5 text-slate-300">
+											${ord.order_status}
+										</span>
+									</div>
+									<div class="text-[11px] text-slate-500">${date}</div>
+								</div>
+								<div class="text-right">
+									<div class="font-mono font-bold text-white text-sm">
+										$${(Number(ord.total_amount) || 0).toLocaleString('es-CL')} CLP
+									</div>
+									<a 
+										href="/meson-servitecnology-st/pedidos" 
+										class="text-[10px] text-brand-green hover:underline inline-block mt-0.5"
+									>
+										Ver en Pedidos ➔
+									</a>
+								</div>
+							`;
+							historyOrdersContainer.appendChild(card);
+						});
+					}
+
+					openModal(ordersModal, ordersModalBox);
+				});
+			});
+
+			function openModal(modalEl, boxEl) {
+				modalEl.classList.remove('opacity-0', 'pointer-events-none');
+				boxEl.classList.remove('scale-95');
+				document.body.style.overflow = 'hidden';
+			}
+
+			function closeModal(modalEl, boxEl) {
+				modalEl.classList.add('opacity-0', 'pointer-events-none');
+				boxEl.classList.add('scale-95');
+				document.body.style.overflow = '';
+			}
+
+			btnCloseFormModal?.addEventListener('click', () => closeModal(formModal, formModalBox));
+			btnCancelForm?.addEventListener('click', () => closeModal(formModal, formModalBox));
+			formModal?.addEventListener('click', (e) => {
+				if (e.target === formModal) closeModal(formModal, formModalBox);
+			});
+
+			btnCloseOrdersModal?.addEventListener('click', () => closeModal(ordersModal, ordersModalBox));
+			ordersModal?.addEventListener('click', (e) => {
+				if (e.target === ordersModal) closeModal(ordersModal, ordersModalBox);
+			});
+
+			// 4. Guardar Cliente (Submit Form)
+			customerForm?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const formData = new FormData(customerForm);
+				const payload = Object.fromEntries(formData.entries());
+
+				const btnSave = document.getElementById('btnSaveCustomer');
+				btnSave.disabled = true;
+				btnSave.textContent = 'Guardando...';
+
+				try {
+					const res = await fetch('/api/admin/customers/save', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload)
+					});
+
+					const data = await res.json();
+					btnSave.disabled = false;
+					btnSave.textContent = 'Guardar Cliente';
+
+					if (!res.ok || !data.success) {
+						window.showAdminToast(data.error || 'Error al guardar cliente', 'error');
+						return;
+					}
+
+					window.showAdminToast(data.message || 'Cliente guardado exitosamente', 'success');
+					closeModal(formModal, formModalBox);
+
+					setTimeout(() => {
+						window.location.reload();
+					}, 700);
+
+				} catch (err) {
+					btnSave.disabled = false;
+					btnSave.textContent = 'Guardar Cliente';
+					window.showAdminToast('Error de red al conectar con el servidor', 'error');
+				}
+			});
+
+			// 5. Eliminar Cliente
+			document.querySelectorAll('.btn-delete-customer').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					const id = btn.getAttribute('data-customer-id');
+					const name = btn.getAttribute('data-customer-name');
+					if (!id) return;
+
+					if (confirm(`¿Estás seguro de eliminar al cliente "${name}"? Sus órdenes históricas se conservarán sin asociar.`)) {
+						try {
+							const res = await fetch('/api/admin/customers/delete', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({ customer_id: id })
+							});
+
+							const data = await res.json();
+							if (!res.ok || !data.success) {
+								window.showAdminToast(data.error || 'Error al eliminar cliente', 'error');
+								return;
+							}
+
+							window.showAdminToast('Cliente eliminado del directorio', 'success');
+							setTimeout(() => {
+								window.location.reload();
+							}, 600);
+
+						} catch (err) {
+							window.showAdminToast('Error de red al intentar eliminar cliente', 'error');
+						}
+					}
+				});
+			});
+
+			// 6. Búsqueda en Vivo y Filtros de Píldoras
+			const searchInput = document.getElementById('customersSearchInput');
+			const filterPills = document.querySelectorAll('.crm-filter-pill');
+			const rows = document.querySelectorAll('.customer-row');
+
+			let currentFilter = 'todos';
+			let currentSearch = '';
+
+			function applyFilters() {
+				rows.forEach(row => {
+					const rowSearch = row.getAttribute('data-search') || '';
+					const type = row.getAttribute('data-type') || '';
+					const hasPurchases = row.getAttribute('data-has-purchases') === 'true';
+
+					const matchesSearch = !currentSearch || rowSearch.includes(currentSearch);
+
+					let matchesPill = true;
+					if (currentFilter === 'con-compras') {
+						matchesPill = hasPurchases;
+					} else if (currentFilter === 'registrado') {
+						matchesPill = type === 'registrado';
+					} else if (currentFilter === 'invitado') {
+						matchesPill = type === 'invitado';
+					} else if (currentFilter === 'manual') {
+						matchesPill = type === 'manual';
+					}
+
+					if (matchesSearch && matchesPill) {
+						row.style.display = '';
+					} else {
+						row.style.display = 'none';
+					}
+				});
+			}
+
+			searchInput?.addEventListener('input', (e) => {
+				currentSearch = e.target.value.toLowerCase().trim();
+				applyFilters();
+			});
+
+			filterPills.forEach(pill => {
+				pill.addEventListener('click', () => {
+					filterPills.forEach(p => {
+						p.classList.remove('bg-brand-cyan', 'text-black', 'active');
+						p.classList.add('bg-white/5', 'text-slate-400');
+					});
+					pill.classList.add('bg-brand-cyan', 'text-black', 'active');
+					pill.classList.remove('bg-white/5', 'text-slate-400');
+
+					currentFilter = pill.getAttribute('data-filter') || 'todos';
+					applyFilters();
+				});
+			});
+
+			btnRefresh?.addEventListener('click', () => {
+				window.location.reload();
+			});
+		});
+	</script>
+</AdminLayout>

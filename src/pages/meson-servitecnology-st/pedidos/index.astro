@@ -1,0 +1,939 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../../lib/supabase';
+
+// 1. Obtención de órdenes con datos del cliente asociado
+let orders: any[] = [];
+let fetchError = '';
+
+try {
+	const { data, error } = await supabaseAdmin
+		.from('orders')
+		.select(`
+			*,
+			customers (
+				id,
+				full_name,
+				email,
+				phone,
+				rut,
+				address
+			)
+		`)
+		.order('created_at', { ascending: false });
+
+	if (error) {
+		fetchError = error.message;
+	} else {
+		orders = data || [];
+	}
+} catch (e: any) {
+	fetchError = e.message || 'Error al conectar con la base de datos.';
+}
+
+// 2. Cálculo de métricas superiores (KPIs)
+const totalOrders = orders.length;
+const pendingPaymentOrders = orders.filter(o => o.payment_status === 'pendiente');
+const inPrepOrders = orders.filter(o => o.payment_status === 'aprobado' && o.order_status === 'preparacion');
+const completedOrders = orders.filter(o => o.order_status === 'entregado');
+const totalApprovedIncome = orders
+	.filter(o => o.payment_status === 'aprobado')
+	.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+
+// Helper para formatear montos en CLP
+function formatCLP(amount: number): string {
+	return `$${(amount || 0).toLocaleString('es-CL')}`;
+}
+
+// Helper para formatear fechas
+function formatDate(dateString: string): string {
+	if (!dateString) return '—';
+	try {
+		const d = new Date(dateString);
+		return d.toLocaleDateString('es-CL', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	} catch {
+		return dateString;
+	}
+}
+---
+
+<AdminLayout title="Gestor de Pedidos y Despacho — SERVITECNOLOGY Admin" activeSection="pedidos">
+
+	<!-- Encabezado de Sección -->
+	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+		<div>
+			<h1 class="font-outfit text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+				<span>📋</span>
+				<span>Gestor de Pedidos & Logística</span>
+			</h1>
+			<p class="text-xs sm:text-sm text-slate-400 mt-1">
+				Control de órdenes, conciliación de transferencias BancoEstado y seguimiento de despachos Starken / Chilexpress.
+			</p>
+		</div>
+
+		<div class="flex items-center gap-2">
+			<button 
+				type="button" 
+				id="btnRefreshOrders" 
+				class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-all cursor-pointer"
+			>
+				<span id="refreshIcon">🔄</span>
+				<span>Actualizar</span>
+			</button>
+		</div>
+	</div>
+
+	{fetchError && (
+		<div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs sm:text-sm mb-6 flex items-center gap-3">
+			<span>⚠️</span>
+			<span><strong>Error de sincronización con Supabase:</strong> {fetchError}</span>
+		</div>
+	)}
+
+	<!-- Tarjetas de KPIs Superiores -->
+	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+		<!-- Total Pedidos -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-white/5 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-slate-700 group-hover:bg-brand-cyan transition-colors"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-slate-400">Total Pedidos</span>
+				<span class="text-lg">📦</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-white">
+				{totalOrders}
+			</div>
+			<div class="text-[11px] text-slate-500 mt-1">Histórico en la plataforma</div>
+		</div>
+
+		<!-- Pendientes de Pago (Alerta) -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-amber-500/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-amber-500"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-amber-400">Pendientes Pago</span>
+				<span class="text-lg animate-pulse">⏳</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-amber-300">
+				{pendingPaymentOrders.length}
+			</div>
+			<div class="text-[11px] text-amber-400/70 mt-1">Transferencias por validar</div>
+		</div>
+
+		<!-- Por Despachar / Retirar -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-brand-cyan/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-brand-cyan"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-brand-cyan">Por Preparar</span>
+				<span class="text-lg">🚀</span>
+			</div>
+			<div class="mt-3 font-outfit text-2xl sm:text-3xl font-extrabold text-brand-cyan">
+				{inPrepOrders.length}
+			</div>
+			<div class="text-[11px] text-brand-cyan/70 mt-1">Pagados para embalaje</div>
+		</div>
+
+		<!-- Ingresos Aprobados -->
+		<div class="p-4 sm:p-5 rounded-2xl bg-[#121215] border border-brand-green/20 shadow-lg relative overflow-hidden group">
+			<div class="absolute top-0 left-0 h-1 w-full bg-brand-green"></div>
+			<div class="flex items-center justify-between">
+				<span class="text-xs uppercase font-mono font-semibold text-brand-green">Total Recaudado</span>
+				<span class="text-lg">💰</span>
+			</div>
+			<div class="mt-3 font-outfit text-xl sm:text-2xl font-extrabold text-brand-green truncate">
+				{formatCLP(totalApprovedIncome)}
+			</div>
+			<div class="text-[11px] text-brand-green/70 mt-1">Órdenes aprobadas web</div>
+		</div>
+	</div>
+
+	<!-- Barra de Búsqueda y Filtros Rápidos -->
+	<div class="space-y-4 mb-6">
+		<div class="relative">
+			<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+				🔍
+			</span>
+			<input 
+				type="text" 
+				id="ordersSearchInput" 
+				placeholder="Buscar por código (ST-2026-XXXX), cliente, RUT, courier, tracking o comuna..." 
+				class="w-full pl-10 pr-4 py-3 rounded-xl bg-[#121215] border border-white/10 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all"
+			/>
+		</div>
+
+		<!-- Filtros Tipo Píldoras -->
+		<div class="flex flex-wrap items-center gap-2" id="filterPillsContainer">
+			<button 
+				type="button" 
+				data-filter="todos" 
+				class="filter-pill active px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-brand-cyan text-black"
+			>
+				Todos ({totalOrders})
+			</button>
+			<button 
+				type="button" 
+				data-filter="pendientes" 
+				class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				⏳ Pendientes ({pendingPaymentOrders.length})
+			</button>
+			<button 
+				type="button" 
+				data-filter="preparacion" 
+				class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				🚀 Por Preparar ({inPrepOrders.length})
+			</button>
+			<button 
+				type="button" 
+				data-filter="despachados" 
+				class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				📦 Despachados / Listos
+			</button>
+			<button 
+				type="button" 
+				data-filter="entregados" 
+				class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
+			>
+				✅ Entregados ({completedOrders.length})
+			</button>
+		</div>
+	</div>
+
+	<!-- Tabla de Pedidos -->
+	<div class="bg-[#121215] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+		{orders.length === 0 ? (
+			<div class="p-12 text-center">
+				<div class="text-4xl mb-3">📭</div>
+				<h3 class="font-outfit text-base font-bold text-white">No hay órdenes registradas aún</h3>
+				<p class="text-xs text-slate-400 mt-1">Las compras realizadas en el e-commerce aparecerán automáticamente en este panel.</p>
+			</div>
+		) : (
+			<div class="overflow-x-auto">
+				<table class="w-full text-left border-collapse text-xs" id="ordersTable">
+					<thead>
+						<tr class="bg-black/40 border-b border-white/5 text-slate-400 font-mono uppercase text-[11px] tracking-wider">
+							<th class="py-3.5 px-4 font-semibold">Código Orden</th>
+							<th class="py-3.5 px-4 font-semibold">Fecha / Hora</th>
+							<th class="py-3.5 px-4 font-semibold">Cliente & RUT</th>
+							<th class="py-3.5 px-4 font-semibold">Entrega</th>
+							<th class="py-3.5 px-4 font-semibold">Total</th>
+							<th class="py-3.5 px-4 font-semibold">Estado Pago</th>
+							<th class="py-3.5 px-4 font-semibold">Estado Despacho</th>
+							<th class="py-3.5 px-4 font-semibold text-right">Acción</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-white/5" id="ordersTableBody">
+						{orders.map((order) => {
+							const customer = order.customers || {};
+							const isPickup = order.delivery_type === 'retiro';
+							const itemsCount = Array.isArray(order.items) ? order.items.reduce((acc: number, it: any) => acc + (it.cantidad || 1), 0) : 0;
+							
+							return (
+								<tr 
+									class="order-row hover:bg-white/[0.02] transition-colors"
+									data-order-id={order.id}
+									data-payment-status={order.payment_status}
+									data-order-status={order.order_status}
+									data-search={`${order.id} ${customer.full_name || ''} ${customer.rut || ''} ${customer.phone || ''} ${customer.email || ''} ${order.commune || ''} ${order.courier || ''} ${order.tracking_number || ''}`.toLowerCase()}
+								>
+									<!-- Código -->
+									<td class="py-3 px-4 font-mono font-extrabold text-brand-cyan whitespace-nowrap">
+										{order.id}
+									</td>
+
+									<!-- Fecha -->
+									<td class="py-3 px-4 text-slate-400 whitespace-nowrap">
+										{formatDate(order.created_at)}
+									</td>
+
+									<!-- Cliente -->
+									<td class="py-3 px-4">
+										<div class="font-semibold text-white truncate max-w-[180px]">
+											{customer.full_name || 'Cliente Invitado'}
+										</div>
+										<div class="text-[10px] font-mono text-slate-400">
+											{customer.rut || 'RUT no registrado'}
+										</div>
+									</td>
+
+									<!-- Modalidad Entrega -->
+									<td class="py-3 px-4 whitespace-nowrap">
+										{isPickup ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+												🏢 Retiro Taller
+											</span>
+										) : (
+											<div class="flex flex-col">
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20 w-fit">
+													🚚 Encomienda
+												</span>
+												<span class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[140px]">
+													{order.commune || 'Por coordinar'}
+												</span>
+											</div>
+										)}
+									</td>
+
+									<!-- Total -->
+									<td class="py-3 px-4 font-mono font-bold text-white whitespace-nowrap">
+										{formatCLP(order.total_amount)}
+										<span class="block text-[10px] font-sans font-normal text-slate-500">
+											{itemsCount} {itemsCount === 1 ? 'ítem' : 'ítems'}
+										</span>
+									</td>
+
+									<!-- Estado de Pago -->
+									<td class="py-3 px-4 whitespace-nowrap">
+										{order.payment_status === 'aprobado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+												Aprobado
+											</span>
+										) : order.payment_status === 'pendiente' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 animate-pulse">
+												<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+												Pendiente
+											</span>
+										) : (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+												{order.payment_status}
+											</span>
+										)}
+									</td>
+
+									<!-- Estado Logístico -->
+									<td class="py-3 px-4 whitespace-nowrap">
+										{order.order_status === 'despachado' ? (
+											<div class="flex flex-col">
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 w-fit">
+													🚀 Despachado
+												</span>
+												{order.tracking_number && (
+													<span class="text-[10px] font-mono text-slate-400 mt-0.5">
+														{order.courier}: {order.tracking_number}
+													</span>
+												)}
+											</div>
+										) : order.order_status === 'listo_retiro' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+												📦 Listo Retiro
+											</span>
+										) : order.order_status === 'entregado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+												🏁 Entregado
+											</span>
+										) : order.order_status === 'cancelado' ? (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400">
+												❌ Cancelado
+											</span>
+										) : (
+											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
+												⚙️ En Preparación
+											</span>
+										)}
+									</td>
+
+									<!-- Acción -->
+									<td class="py-3 px-4 text-right whitespace-nowrap">
+										<button 
+											type="button" 
+											class="btn-open-modal px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 hover:border-brand-cyan/40 text-slate-200 hover:text-white border border-white/10 font-semibold text-xs transition-all cursor-pointer"
+											data-order={JSON.stringify(order)}
+										>
+											Gestionar 🔍
+										</button>
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		)}
+	</div>
+
+	<!-- MODAL INTERACTIVO DE DETALLE Y GESTIÓN LOGÍSTICA -->
+	<div 
+		id="orderDetailModal" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
+	>
+		<div 
+			id="modalContentBox"
+			class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col transform scale-95 transition-transform duration-300"
+		>
+			<!-- Header del Modal -->
+			<div class="sticky top-0 z-10 bg-[#18181b] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<span class="text-xl">📋</span>
+					<div>
+						<h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
+							<span>Pedido</span>
+							<span id="modalOrderId" class="font-mono text-brand-cyan">ST-2026-XXXX</span>
+						</h3>
+						<span id="modalOrderDate" class="text-xs text-slate-400">Fecha de orden</span>
+					</div>
+				</div>
+				<button 
+					type="button" 
+					id="btnCloseModal" 
+					class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
+				>
+					✕
+				</button>
+			</div>
+
+			<!-- Cuerpo del Modal -->
+			<div class="p-6 space-y-6">
+				
+				<!-- Bloque 1: Datos del Cliente & Contacto Directo -->
+				<div class="p-4 rounded-xl bg-black/40 border border-white/5 space-y-3">
+					<div class="flex items-center justify-between border-b border-white/5 pb-2">
+						<h4 class="text-xs font-mono uppercase font-bold text-brand-cyan tracking-wider">
+							👤 Información del Comprador
+						</h4>
+						<div class="flex items-center gap-2">
+							<a 
+								id="modalWaLink" 
+								href="#" 
+								target="_blank" 
+								class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-colors"
+							>
+								<span>💬</span>
+								<span>WhatsApp</span>
+							</a>
+							<a 
+								id="modalMailLink" 
+								href="#" 
+								class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs transition-colors"
+							>
+								<span>✉️</span>
+								<span>Email</span>
+							</a>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+						<div>
+							<span class="text-slate-500 block">Nombre / Razón Social:</span>
+							<span id="modalCustomerName" class="font-semibold text-white text-sm">Juan Pérez</span>
+						</div>
+						<div>
+							<span class="text-slate-500 block">RUT (Facturación SII):</span>
+							<span id="modalCustomerRut" class="font-mono text-white text-sm">12.345.678-9</span>
+						</div>
+						<div>
+							<span class="text-slate-500 block">Teléfono Móvil:</span>
+							<span id="modalCustomerPhone" class="font-mono text-slate-200">+56 9 1234 5678</span>
+						</div>
+						<div>
+							<span class="text-slate-500 block">Correo Electrónico:</span>
+							<span id="modalCustomerEmail" class="text-slate-200 truncate block">cliente@gmail.com</span>
+						</div>
+						<div class="sm:col-span-2">
+							<span class="text-slate-500 block">Dirección de Despacho:</span>
+							<span id="modalCustomerAddress" class="text-slate-200">Av. Libertador 1234, Rancagua</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Bloque 2: Repuestos Comprados -->
+				<div>
+					<h4 class="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3">
+						📦 Detalle de Repuestos Solicitados
+					</h4>
+					<div class="border border-white/5 rounded-xl overflow-hidden bg-black/30">
+						<table class="w-full text-xs text-left">
+							<thead class="bg-white/5 text-slate-400 font-mono text-[10px] uppercase">
+								<tr>
+									<th class="p-2.5">Repuesto</th>
+									<th class="p-2.5 text-center">Cant.</th>
+									<th class="p-2.5 text-right">Unitario</th>
+									<th class="p-2.5 text-right">Subtotal</th>
+								</tr>
+							</thead>
+							<tbody id="modalItemsTableBody" class="divide-y divide-white/5">
+								<!-- Inyectado por JS -->
+							</tbody>
+							<tfoot class="bg-black/50 border-t border-white/10 font-bold">
+								<tr>
+									<td colspan="3" class="p-3 text-right text-slate-300">Total Orden:</td>
+									<td id="modalTotalAmount" class="p-3 text-right font-mono text-brand-green text-sm">
+										$0 CLP
+									</td>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+				</div>
+
+				<!-- Bloque 3: Acciones Operacionales y Logística -->
+				<div class="p-5 rounded-xl bg-black/50 border border-white/10 space-y-4">
+					<h4 class="text-xs font-mono uppercase font-bold text-brand-green tracking-wider flex items-center gap-2">
+						<span>⚡</span>
+						<span>Gestión de Estado y Despacho</span>
+					</h4>
+
+					<!-- Sección A: Conciliación de Transferencia (Si está pendiente) -->
+					<div id="transferActionsBox" class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-2.5">
+						<div class="flex items-center gap-2 text-amber-300 text-xs font-semibold">
+							<span>⏳</span>
+							<span>Este pedido está pendiente de confirmación de pago por transferencia.</span>
+						</div>
+						<div class="flex flex-wrap items-center gap-2">
+							<button 
+								type="button" 
+								id="btnApprovePayment" 
+								class="px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 transition-colors cursor-pointer"
+							>
+								✅ Confirmar Pago Aprobado
+							</button>
+							<button 
+								type="button" 
+								id="btnRejectOrder" 
+								class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 text-xs font-bold transition-colors cursor-pointer"
+							>
+								❌ Rechazar / Cancelar Pedido
+							</button>
+						</div>
+					</div>
+
+					<!-- Sección B: Formulario de Despacho (Si es encomienda) -->
+					<div id="shippingFormBox" class="space-y-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+						<div class="text-xs font-semibold text-white flex items-center gap-2">
+							<span>🚚</span>
+							<span>Despacho por Encomienda Nacional / RM</span>
+						</div>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div>
+								<label class="block text-[11px] text-slate-400 mb-1">Empresa de Transporte (Courier):</label>
+								<select id="modalCourierSelect" class="w-full px-3 py-2 rounded-lg bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none">
+									<option value="Starken">Starken</option>
+									<option value="Chilexpress">Chilexpress</option>
+									<option value="Correos de Chile">Correos de Chile</option>
+									<option value="Blue Express">Blue Express</option>
+									<option value="Varmontt">Transportes Varmontt</option>
+									<option value="Otro">Otro transportista</option>
+								</select>
+							</div>
+
+							<div>
+								<label class="block text-[11px] text-slate-400 mb-1">Número de Seguimiento (Tracking / Flete):</label>
+								<input 
+									type="text" 
+									id="modalTrackingInput" 
+									placeholder="Ej: 9876543210" 
+									class="w-full px-3 py-2 rounded-lg bg-black border border-white/10 text-white font-mono text-xs focus:border-brand-cyan focus:outline-none"
+								/>
+							</div>
+						</div>
+
+						<div class="flex items-center justify-between pt-2">
+							<label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+								<input type="checkbox" id="modalNotifyShippedCheck" checked class="rounded bg-black border-white/20 text-brand-cyan focus:ring-0" />
+								<span>Enviar notificación automática por correo al cliente</span>
+							</label>
+
+							<button 
+								type="button" 
+								id="btnMarkShipped" 
+								class="px-4 py-2 rounded-lg bg-brand-cyan text-black text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer"
+							>
+								🚀 Marcar como Despachado
+							</button>
+						</div>
+					</div>
+
+					<!-- Sección C: Retiro en Sucursal -->
+					<div id="pickupActionsBox" class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
+						<div class="text-xs font-semibold text-white flex items-center gap-2">
+							<span>🏢</span>
+							<span>Modalidad Retiro en Sucursal (Santiago Centro)</span>
+						</div>
+
+						<div class="flex items-center justify-between">
+							<label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+								<input type="checkbox" id="modalNotifyPickupCheck" checked class="rounded bg-black border-white/20 text-brand-green focus:ring-0" />
+								<span>Notificar por email con horarios y requisitos de retiro</span>
+							</label>
+
+							<button 
+								type="button" 
+								id="btnMarkReadyPickup" 
+								class="px-4 py-2 rounded-lg bg-brand-green text-black text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer"
+							>
+								📦 Marcar Listo para Retiro
+							</button>
+						</div>
+					</div>
+
+					<!-- Sección D: Cierre y Notas -->
+					<div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+						<button 
+							type="button" 
+							id="btnMarkDelivered" 
+							class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors cursor-pointer"
+						>
+							🏁 Marcar como Entregado / Finalizado
+						</button>
+
+						<div class="flex items-center gap-2">
+							<span id="modalActionSpinner" class="text-xs text-brand-cyan font-medium hidden">
+								⏳ Procesando...
+							</span>
+						</div>
+					</div>
+
+					<!-- Notas Internas del Administrador -->
+					<div class="pt-2 border-t border-white/5">
+						<label class="block text-[11px] text-slate-400 mb-1">Notas Internas de Taller (Solo visibles para administradores):</label>
+						<div class="flex gap-2">
+							<input 
+								type="text" 
+								id="modalAdminNotesInput" 
+								placeholder="Ej: Cliente pidió boleta en lugar de factura / Entregado a hermano..." 
+								class="flex-1 px-3 py-1.5 rounded-lg bg-black border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+							/>
+							<button 
+								type="button" 
+								id="btnSaveNotes" 
+								class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
+							>
+								Guardar Nota
+							</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- CLIENT-SIDE SCRIPT PARA FILTROS, BÚSQUEDA Y MODAL INTERACTIVO -->
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', () => {
+			let currentSelectedOrder = null;
+
+			const modal = document.getElementById('orderDetailModal');
+			const modalBox = document.getElementById('modalContentBox');
+			const btnCloseModal = document.getElementById('btnCloseModal');
+			const btnRefresh = document.getElementById('btnRefreshOrders');
+
+			// Elementos del Modal
+			const modalOrderId = document.getElementById('modalOrderId');
+			const modalOrderDate = document.getElementById('modalOrderDate');
+			const modalCustomerName = document.getElementById('modalCustomerName');
+			const modalCustomerRut = document.getElementById('modalCustomerRut');
+			const modalCustomerPhone = document.getElementById('modalCustomerPhone');
+			const modalCustomerEmail = document.getElementById('modalCustomerEmail');
+			const modalCustomerAddress = document.getElementById('modalCustomerAddress');
+			const modalWaLink = document.getElementById('modalWaLink');
+			const modalMailLink = document.getElementById('modalMailLink');
+			const modalItemsTableBody = document.getElementById('modalItemsTableBody');
+			const modalTotalAmount = document.getElementById('modalTotalAmount');
+
+			// Acciones del Modal
+			const transferActionsBox = document.getElementById('transferActionsBox');
+			const shippingFormBox = document.getElementById('shippingFormBox');
+			const pickupActionsBox = document.getElementById('pickupActionsBox');
+			const courierSelect = document.getElementById('modalCourierSelect');
+			const trackingInput = document.getElementById('modalTrackingInput');
+			const notifyShippedCheck = document.getElementById('modalNotifyShippedCheck');
+			const notifyPickupCheck = document.getElementById('modalNotifyPickupCheck');
+			const adminNotesInput = document.getElementById('modalAdminNotesInput');
+			const actionSpinner = document.getElementById('modalActionSpinner');
+
+			const btnApprovePayment = document.getElementById('btnApprovePayment');
+			const btnRejectOrder = document.getElementById('btnRejectOrder');
+			const btnMarkShipped = document.getElementById('btnMarkShipped');
+			const btnMarkReadyPickup = document.getElementById('btnMarkReadyPickup');
+			const btnMarkDelivered = document.getElementById('btnMarkDelivered');
+			const btnSaveNotes = document.getElementById('btnSaveNotes');
+
+			// 1. Apertura de Modal
+			document.querySelectorAll('.btn-open-modal').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const rawOrder = btn.getAttribute('data-order');
+					if (!rawOrder) return;
+					try {
+						currentSelectedOrder = JSON.parse(rawOrder);
+						populateModal(currentSelectedOrder);
+						openModal();
+					} catch (e) {
+						console.error('Error parseando orden:', e);
+					}
+				});
+			});
+
+			function openModal() {
+				modal.classList.remove('opacity-0', 'pointer-events-none');
+				modalBox.classList.remove('scale-95');
+				document.body.style.overflow = 'hidden';
+			}
+
+			function closeModal() {
+				modal.classList.add('opacity-0', 'pointer-events-none');
+				modalBox.classList.add('scale-95');
+				document.body.style.overflow = '';
+				currentSelectedOrder = null;
+			}
+
+			btnCloseModal?.addEventListener('click', closeModal);
+			modal?.addEventListener('click', (e) => {
+				if (e.target === modal) closeModal();
+			});
+
+			// 2. Poblado de datos en el Modal
+			function populateModal(order) {
+				const customer = order.customers || {};
+				modalOrderId.textContent = order.id;
+				modalOrderDate.textContent = `Registrado el: ${new Date(order.created_at).toLocaleString('es-CL')}`;
+
+				modalCustomerName.textContent = customer.full_name || 'Cliente Invitado';
+				modalCustomerRut.textContent = customer.rut || 'No informado';
+				modalCustomerPhone.textContent = customer.phone || 'No informado';
+				modalCustomerEmail.textContent = customer.email || 'No informado';
+				
+				const addressText = order.shipping_address 
+					? `${order.shipping_address}${order.commune ? `, ${order.commune}` : ''}`
+					: (order.delivery_type === 'retiro' ? 'Retiro presencial en taller (Santiago Centro)' : 'Dirección pendiente');
+				modalCustomerAddress.textContent = addressText;
+
+				// WhatsApp Link
+				const rawPhone = (customer.phone || '').replace(/[^0-9]/g, '');
+				if (rawPhone) {
+					const waMsg = encodeURIComponent(`Hola ${customer.full_name || ''}, te contactamos desde SERVITECNOLOGY por tu pedido ${order.id}.`);
+					modalWaLink.href = `https://wa.me/${rawPhone}?text=${waMsg}`;
+					modalWaLink.style.display = 'inline-flex';
+				} else {
+					modalWaLink.style.display = 'none';
+				}
+
+				// Mail Link
+				if (customer.email) {
+					modalMailLink.href = `mailto:${customer.email}?subject=${encodeURIComponent(`Actualización de tu pedido ${order.id} — SERVITECNOLOGY`)}`;
+					modalMailLink.style.display = 'inline-flex';
+				} else {
+					modalMailLink.style.display = 'none';
+				}
+
+				// Tabla de Repuestos
+				modalItemsTableBody.innerHTML = '';
+				const items = Array.isArray(order.items) ? order.items : [];
+				items.forEach(it => {
+					const tr = document.createElement('tr');
+					const subtotal = (Number(it.precio_venta) || 0) * (Number(it.cantidad) || 1);
+					tr.innerHTML = `
+						<td class="p-2.5">
+							<div class="font-semibold text-white">${it.titulo || 'Repuesto'}</div>
+							<div class="text-[10px] font-mono text-brand-cyan">SKU: ${it.sku || 'N/A'}</div>
+						</td>
+						<td class="p-2.5 text-center font-mono">${it.cantidad || 1}</td>
+						<td class="p-2.5 text-right font-mono">$${(Number(it.precio_venta) || 0).toLocaleString('es-CL')}</td>
+						<td class="p-2.5 text-right font-mono font-bold text-slate-200">$${subtotal.toLocaleString('es-CL')}</td>
+					`;
+					modalItemsTableBody.appendChild(tr);
+				});
+
+				modalTotalAmount.textContent = `$${(Number(order.total_amount) || 0).toLocaleString('es-CL')} CLP`;
+
+				// Visibilidad de cajas de acción
+				if (order.payment_status === 'pendiente') {
+					transferActionsBox.style.display = 'block';
+				} else {
+					transferActionsBox.style.display = 'none';
+				}
+
+				if (order.delivery_type === 'retiro') {
+					shippingFormBox.style.display = 'none';
+					pickupActionsBox.style.display = 'block';
+				} else {
+					shippingFormBox.style.display = 'block';
+					pickupActionsBox.style.display = 'none';
+				}
+
+				courierSelect.value = order.courier || 'Starken';
+				trackingInput.value = order.tracking_number || '';
+				adminNotesInput.value = order.admin_notes || '';
+			}
+
+			// 3. Función Central para Llamar al Endpoint de Actualización
+			async function updateOrderStatus(payload) {
+				if (!currentSelectedOrder) return;
+				actionSpinner.classList.remove('hidden');
+
+				try {
+					const res = await fetch('/api/admin/orders/update-status', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							order_id: currentSelectedOrder.id,
+							...payload
+						})
+					});
+
+					const data = await res.json();
+					actionSpinner.classList.add('hidden');
+
+					if (!res.ok || !data.success) {
+						window.showAdminToast(data.error || 'Error al actualizar pedido', 'error');
+						return;
+					}
+
+					window.showAdminToast(`Pedido ${currentSelectedOrder.id} actualizado exitosamente`, 'success');
+					
+					// Actualizar la orden en memoria y recargar tras breve delay
+					setTimeout(() => {
+						window.location.reload();
+					}, 800);
+
+				} catch (err) {
+					actionSpinner.classList.add('hidden');
+					console.error(err);
+					window.showAdminToast('Error de red al conectar con el servidor', 'error');
+				}
+			}
+
+			// A. Confirmar Pago Aprobado Manual
+			btnApprovePayment?.addEventListener('click', () => {
+				if (confirm('¿Confirmas que el pago de este pedido fue recibido en la cuenta bancaria?')) {
+					updateOrderStatus({
+						payment_status: 'aprobado',
+						notify_customer: true
+					});
+				}
+			});
+
+			// B. Rechazar / Cancelar Pedido
+			btnRejectOrder?.addEventListener('click', () => {
+				if (confirm('¿Deseas rechazar o cancelar este pedido? Se liberará la reserva de stock.')) {
+					updateOrderStatus({
+						payment_status: 'rechazado',
+						order_status: 'cancelado',
+						notify_customer: false
+					});
+				}
+			});
+
+			// C. Marcar como Despachado
+			btnMarkShipped?.addEventListener('click', () => {
+				const courier = courierSelect.value.trim();
+				const tracking = trackingInput.value.trim();
+
+				if (!courier) {
+					alert('Por favor selecciona una empresa de transporte (Courier).');
+					courierSelect.focus();
+					return;
+				}
+
+				if (!tracking) {
+					alert('Por favor ingresa el Número de Seguimiento (Tracking / N° de Flete).');
+					trackingInput.focus();
+					return;
+				}
+
+				updateOrderStatus({
+					order_status: 'despachado',
+					courier,
+					tracking_number: tracking,
+					notify_customer: notifyShippedCheck.checked
+				});
+			});
+
+			// D. Marcar Listo para Retiro
+			btnMarkReadyPickup?.addEventListener('click', () => {
+				updateOrderStatus({
+					order_status: 'listo_retiro',
+					notify_customer: notifyPickupCheck.checked
+				});
+			});
+
+			// E. Marcar como Entregado
+			btnMarkDelivered?.addEventListener('click', () => {
+				if (confirm('¿Confirmas que el cliente ya recibió o retiró sus repuestos satisfactoriamente?')) {
+					updateOrderStatus({
+						order_status: 'entregado',
+						notify_customer: false
+					});
+				}
+			});
+
+			// F. Guardar Notas Internas
+			btnSaveNotes?.addEventListener('click', () => {
+				const notes = adminNotesInput.value.trim();
+				updateOrderStatus({
+					admin_notes: notes,
+					notify_customer: false
+				});
+			});
+
+			// 4. Búsqueda y Filtros Rápidos
+			const searchInput = document.getElementById('ordersSearchInput');
+			const filterPills = document.querySelectorAll('.filter-pill');
+			const rows = document.querySelectorAll('.order-row');
+
+			let currentFilter = 'todos';
+			let currentSearch = '';
+
+			function applyFilters() {
+				rows.forEach(row => {
+					const rowSearch = row.getAttribute('data-search') || '';
+					const paymentStatus = row.getAttribute('data-payment-status') || '';
+					const orderStatus = row.getAttribute('data-order-status') || '';
+
+					// Filtro de Texto
+					const matchesSearch = !currentSearch || rowSearch.includes(currentSearch);
+
+					// Filtro de Píldora
+					let matchesPill = true;
+					if (currentFilter === 'pendientes') {
+						matchesPill = paymentStatus === 'pendiente';
+					} else if (currentFilter === 'preparacion') {
+						matchesPill = paymentStatus === 'aprobado' && orderStatus === 'preparacion';
+					} else if (currentFilter === 'despachados') {
+						matchesPill = ['despachado', 'listo_retiro'].includes(orderStatus);
+					} else if (currentFilter === 'entregados') {
+						matchesPill = orderStatus === 'entregado';
+					}
+
+					if (matchesSearch && matchesPill) {
+						row.style.display = '';
+					} else {
+						row.style.display = 'none';
+					}
+				});
+			}
+
+			searchInput?.addEventListener('input', (e) => {
+				currentSearch = e.target.value.toLowerCase().trim();
+				applyFilters();
+			});
+
+			filterPills.forEach(pill => {
+				pill.addEventListener('click', () => {
+					filterPills.forEach(p => {
+						p.classList.remove('bg-brand-cyan', 'text-black', 'active');
+						p.classList.add('bg-white/5', 'text-slate-400');
+					});
+					pill.classList.add('bg-brand-cyan', 'text-black', 'active');
+					pill.classList.remove('bg-white/5', 'text-slate-400');
+
+					currentFilter = pill.getAttribute('data-filter') || 'todos';
+					applyFilters();
+				});
+			});
+
+			btnRefresh?.addEventListener('click', () => {
+				window.location.reload();
+			});
+		});
+	</script>
+</AdminLayout>

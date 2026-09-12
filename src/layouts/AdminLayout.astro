@@ -1,0 +1,281 @@
+---
+import '../styles/global.css';
+import { supabaseAdmin } from '../lib/supabase';
+
+interface Props {
+	title?: string;
+	activeSection?: 'inventario' | 'galeria' | 'pedidos' | 'clientes' | 'metricas';
+}
+
+const {
+	title = 'Panel de Administración — SERVITECNOLOGY',
+	activeSection = 'pedidos'
+} = Astro.props;
+
+// 1. Guardia de Seguridad SSR en Servidor
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
+const cookie = Astro.cookies.get('admin_session');
+
+if (!adminSecret || cookie?.value !== adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st/login');
+}
+
+// 2. Contador en tiempo real de órdenes pendientes de pago / por preparar
+let pendingOrdersCount = 0;
+let ordersInPrepCount = 0;
+try {
+	const { data: pendingOrders } = await supabaseAdmin
+		.from('orders')
+		.select('id, payment_status, order_status')
+		.in('payment_status', ['pendiente', 'aprobado']);
+
+	if (pendingOrders) {
+		pendingOrdersCount = pendingOrders.filter(o => o.payment_status === 'pendiente').length;
+		ordersInPrepCount = pendingOrders.filter(o => o.payment_status === 'aprobado' && o.order_status === 'preparacion').length;
+	}
+} catch (e) {
+	console.warn('[AdminLayout] Advertencia al obtener conteo de órdenes:', e);
+}
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="robots" content="noindex, nofollow" />
+	<link rel="icon" href="/imagenes/favico.png" type="image/png" />
+	<title>{title}</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Inter', sans-serif;
+			background-color: #09090b;
+			color: #e2e8f0;
+			min-height: 100vh;
+		}
+		.font-outfit {
+			font-family: 'Outfit', sans-serif;
+		}
+	</style>
+</head>
+<body class="bg-[#09090b] text-slate-200 antialiased min-h-screen flex flex-col selection:bg-brand-cyan/20 selection:text-brand-cyan">
+
+	<!-- Header / Topbar Administrativo Unificado -->
+	<header class="sticky top-0 z-50 bg-[#121215]/90 backdrop-blur-md border-b border-white/5 transition-all">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex items-center justify-between h-16">
+				
+				<!-- Logo y Marca -->
+				<div class="flex items-center gap-6">
+					<a href="/meson-servitecnology-st" class="flex items-center gap-2 group">
+						<span class="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse shadow-[0_0_8px_#00FF7F]"></span>
+						<span class="font-outfit font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-brand-green via-emerald-400 to-brand-cyan bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+							SERVITECNOLOGY
+						</span>
+						<span class="text-xs uppercase font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 hidden sm:inline-block">
+							Admin
+						</span>
+					</a>
+
+					<!-- Navegación de Módulos (Escritorio) -->
+					<nav class="hidden md:flex items-center gap-1">
+						<a 
+							href="/meson-servitecnology-st?tab=inventario" 
+							class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+								activeSection === 'inventario'
+									? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]'
+									: 'text-slate-400 hover:text-white hover:bg-white/5'
+							}`}
+						>
+							<span>📦</span>
+							<span>Repuestos</span>
+						</a>
+
+						<a 
+							href="/meson-servitecnology-st?tab=galeria" 
+							class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+								activeSection === 'galeria'
+									? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]'
+									: 'text-slate-400 hover:text-white hover:bg-white/5'
+							}`}
+						>
+							<span>🖼️</span>
+							<span>Galería</span>
+						</a>
+
+						<a 
+							href="/meson-servitecnology-st/pedidos" 
+							class={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+								activeSection === 'pedidos'
+									? 'bg-brand-green/10 text-brand-green border border-brand-green/30 shadow-[0_0_12px_rgba(0,255,127,0.15)]'
+									: 'text-slate-400 hover:text-white hover:bg-white/5'
+							}`}
+						>
+							<span>📋</span>
+							<span>Pedidos</span>
+							{pendingOrdersCount > 0 && (
+								<span class="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold animate-pulse">
+									{pendingOrdersCount}
+								</span>
+							)}
+							{ordersInPrepCount > 0 && pendingOrdersCount === 0 && (
+								<span class="ml-1 px-1.5 py-0.2 rounded-full bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 text-[10px] font-mono font-bold">
+									{ordersInPrepCount}
+								</span>
+							)}
+						</a>
+
+						<a 
+							href="/meson-servitecnology-st/clientes" 
+							class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+								activeSection === 'clientes'
+									? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30'
+									: 'text-slate-400 hover:text-white hover:bg-white/5'
+							}`}
+						>
+							<span>👥</span>
+							<span>Clientes</span>
+							<span class="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-white/5 text-slate-400 border border-white/5">Fase 2</span>
+						</a>
+
+						<a 
+							href="/meson-servitecnology-st/metricas" 
+							class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+								activeSection === 'metricas'
+									? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30'
+									: 'text-slate-400 hover:text-white hover:bg-white/5'
+							}`}
+						>
+							<span>📊</span>
+							<span>Métricas</span>
+							<span class="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-white/5 text-slate-400 border border-white/5">Fase 3</span>
+						</a>
+					</nav>
+				</div>
+
+				<!-- Acciones y Perfil -->
+				<div class="flex items-center gap-2.5">
+					<a 
+						href="/meson-servitecnology-st/nuevo" 
+						class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
+					>
+						<span>+</span>
+						<span>Nuevo Repuesto</span>
+					</a>
+
+					<a 
+						href="/" 
+						target="_blank" 
+						class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 border border-white/5 transition-colors"
+						title="Ver sitio público en nueva pestaña"
+					>
+						<span>🌐</span>
+						<span class="hidden md:inline">Ver Sitio</span>
+					</a>
+
+					<a 
+						href="/meson-servitecnology-st/logout" 
+						class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-red-400/80 hover:text-red-300 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 transition-all"
+						title="Cerrar sesión de administrador"
+					>
+						<span>🚪</span>
+						<span class="hidden sm:inline">Salir</span>
+					</a>
+				</div>
+			</div>
+
+			<!-- Navegación Móvil (Scroll Horizontal) -->
+			<div class="md:hidden flex items-center gap-2 overflow-x-auto py-2.5 border-t border-white/5 scrollbar-none">
+				<a 
+					href="/meson-servitecnology-st?tab=inventario" 
+					class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						activeSection === 'inventario' ? 'bg-brand-cyan text-black font-bold' : 'bg-white/5 text-slate-400'
+					}`}
+				>
+					📦 Repuestos
+				</a>
+				<a 
+					href="/meson-servitecnology-st?tab=galeria" 
+					class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						activeSection === 'galeria' ? 'bg-brand-cyan text-black font-bold' : 'bg-white/5 text-slate-400'
+					}`}
+				>
+					🖼️ Galería
+				</a>
+				<a 
+					href="/meson-servitecnology-st/pedidos" 
+					class={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+						activeSection === 'pedidos' ? 'bg-brand-green text-black font-bold' : 'bg-white/5 text-slate-400'
+					}`}
+				>
+					📋 Pedidos
+					{pendingOrdersCount > 0 && (
+						<span class="px-1.5 py-0.2 rounded-full bg-amber-500 text-black text-[10px] font-bold">
+							{pendingOrdersCount}
+						</span>
+					)}
+				</a>
+				<a 
+					href="/meson-servitecnology-st/clientes" 
+					class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						activeSection === 'clientes' ? 'bg-brand-cyan text-black font-bold' : 'bg-white/5 text-slate-400'
+					}`}
+				>
+					👥 Clientes
+				</a>
+				<a 
+					href="/meson-servitecnology-st/metricas" 
+					class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						activeSection === 'metricas' ? 'bg-brand-cyan text-black font-bold' : 'bg-white/5 text-slate-400'
+					}`}
+				>
+					📊 Métricas
+				</a>
+			</div>
+		</div>
+	</header>
+
+	<!-- Contenedor Principal de la Página -->
+	<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<slot />
+	</main>
+
+	<!-- Toast Container Global para Notificaciones Interactivas -->
+	<div id="adminToastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+	<script is:inline>
+		window.showAdminToast = function(message, type = 'success') {
+			const container = document.getElementById('adminToastContainer');
+			if (!container) return;
+
+			const toast = document.createElement('div');
+			toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-semibold shadow-2xl border transition-all duration-300 transform translate-y-4 opacity-0 ${
+				type === 'success'
+					? 'bg-zinc-900 border-emerald-500/50 text-emerald-300 shadow-[0_0_20px_rgba(0,255,127,0.2)]'
+					: type === 'error'
+					? 'bg-zinc-900 border-red-500/50 text-red-300 shadow-[0_0_20px_rgba(239,68,68,0.2)]'
+					: 'bg-zinc-900 border-amber-500/50 text-amber-300 shadow-[0_0_20px_rgba(234,179,8,0.2)]'
+			}`;
+
+			const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+			toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+			container.appendChild(toast);
+
+			// Animación de entrada
+			requestAnimationFrame(() => {
+				toast.classList.remove('translate-y-4', 'opacity-0');
+			});
+
+			// Desaparición automática tras 4 segundos
+			setTimeout(() => {
+				toast.classList.add('translate-y-4', 'opacity-0');
+				setTimeout(() => toast.remove(), 300);
+			}, 4000);
+		};
+	</script>
+</body>
+</html>
