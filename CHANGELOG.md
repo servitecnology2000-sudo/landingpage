@@ -2,6 +2,15 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-11 (Homologación y Validación de Ciclo de Vida Completo Mercado Pago - Hito 80%):**
+  - **Prueba Integral de Estados de Transacción:** Validación del comportamiento del sistema ante diversos estados de pago en Checkout Pro (aprobado `APRO`, fondos insuficientes `FUND`, llamada para autorizar `CONT`, código de seguridad `SECU`, etc.). Confirmación de que el flujo de Checkout Pro retiene al usuario de forma segura ante rechazos bancarios ofreciendo reintentar con otro medio de pago; en caso de abandono o cancelación, redirige a `/checkout?payment=failure` preservando el carrito del cliente y actualizando la orden en Supabase a `rechazado`/`cancelado` sin alterar el stock ni disparar correos de factura.
+  - **Cumplimiento del Checklist en Developers Dashboard (80%):** Aprobación y verificación de los 4 hitos técnicos obligatorios de Mercado Pago:
+    1. *Creación y configuración de orden/preferencia de pago* (payload estructurado de items, payer y external_reference).
+    2. *Elección de tipo de integración* (Checkout Pro web con redirección).
+    3. *Configuración de notificaciones de pago* (Webhook HTTP POST en `/api/mercadopago/webhook` con manejo de idempotencia y validación de firma/API).
+    4. *Prueba de integración* (Simulación exitosa con Comprador de Pruebas oficial, tarjetas de test y conciliación en BD).
+  - **Habilitación de Etapa "Salir a Producción":** Preparación del formulario de homologación de negocio para la activación final de credenciales productivas (`APP_USR-...`).
+  - **Actualización de Memoria del Agente (`AGENTS.md`):** Reestructuración integral de la arquitectura del proyecto documentando el ecosistema de e-commerce moderno, Supabase, Mercado Pago Chile, Webhooks y políticas de entorno de pruebas.
 - **2026-09-11 (Vista Post-Pago Aprobado con Mercado Pago & Corrección de Dirección Duplicada):**
   - **Renderizado Condicional Post-Pago (`src/pages/pedido/[id].astro`):** Implementación de discriminación condicional (`isPaid`) basada en el estado del pedido en base de datos (`order.payment_status === 'aprobado'`) o parámetros de retorno de la pasarela (`collection_status=approved`, `payment=success`). Si el pago está aprobado con Mercado Pago:
     - Se oculta por completo el temporizador regresivo de 2 horas y el recuadro de reserva temporal.
