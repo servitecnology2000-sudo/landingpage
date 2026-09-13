@@ -2,6 +2,24 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Playbook Maestro de Integración Mercado Pago para SaaS & E-Commerce):**
+  - **Documento Técnico Maestro (`docs/DesarrolloEcommerce/playbook-maestro-mercadopago-saas.md`):**
+    - Creación de guía arquitectónica exhaustiva y definitiva para la integración de pagos con Mercado Pago Checkout Pro y Webhooks en cualquier plataforma SaaS o e-commerce.
+    - **El Muro de los Horrores (10 Errores Críticos y sus Soluciones Probadas):**
+      1. Bucle infinito de redirecciones (`ERR_TOO_MANY_REDIRECTS`) resuelto mediante fallback inteligente `init_point || sandbox_init_point`.
+      2. Conflicto de cuentas de prueba ("Una de las partes es de prueba") resuelto con aislamiento forzado de pagador sandbox.
+      3. Error `UNDEFINED SOURCE` en Chile (MLC) resuelto seleccionando documento `Otro` + `123456789`.
+      4. Rechazo de `back_urls` resuelto mediante detección de localhost y normalización a HTTPS público.
+      5. Pérdida del carrito por vaciado prematuro (`clearCart`) resuelto posponiendo la limpieza hasta la confirmación efectiva de la orden.
+      6. Fuga o secuestro de inventario por compras abandonadas resuelto mediante reserva temporal (`stock_reserved_until`) y endpoint de cancelación inmediata `/api/mercadopago/cancel-attempt`.
+      7. Descuento duplicado de stock en webhooks resuelto mediante idempotencia estricta antes de procesar eventos concurrentes.
+      8. Manipulación de precios desde el cliente resuelta con validación estricta anti-fraude en servidor contra base de datos.
+      9. Desfase de stock en carrito resuelto con sincronización en tiempo real (`Live Stock Clamping`).
+      10. Erradicación de `window.alert()` y `window.confirm()` en favor de modales y toasts modernos con glassmorphism.
+    - **Modelado de Datos & DDL SQL:** Esquema completo en PostgreSQL/Supabase con soporte para órdenes, perfiles híbridos (invitados/registrados), conciliación tributaria y trazabilidad.
+    - **Código Modular Listo para Producción:** Implementaciones completas y desacopladas de cliente SDK resiliente (`mercadopago.ts`), generador de preferencias (`create-preference.ts`), webhook oficial (`webhook.ts`), cancelador de intentos (`cancel-attempt.ts`) y validador de stock (`validate-stock.ts`).
+    - **Guía de Pruebas Sandbox:** Catálogo de tarjetas de prueba para Chile/Latam, nombres mágicos de simulación de estados (`APRO`, `FUND`, `CONT`, etc.) y checklist de pase a producción.
+
 - **2026-09-12 (Control Estricto de Stock en Tiempo Real en Resumen del Checkout y Catálogo):**
   - **Validación y Bloqueo en Resumen del Pedido (`src/pages/checkout.astro`):**
     - Sincronización en tiempo real (`validateAndSyncLiveStock`) con Supabase al cargar el checkout: Si un producto en el carrito supera el stock disponible en bodega (como el caso de `A2514_DSM` con 1 unidad disponible), se ajusta automáticamente la cantidad al máximo físico existente y se notifica al usuario con modal informativo.
