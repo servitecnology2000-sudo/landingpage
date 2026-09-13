@@ -35,10 +35,10 @@ export const POST: APIRoute = async ({ request }) => {
 
 		console.log(`[MercadoPago Webhook] Recibida notificación para ID: ${paymentId}, type: ${type}`);
 
-		// Si es una notificación de merchant_order, responder 200 (se procesará cuando llegue la notificación de 'payment')
-		if (type === 'merchant_order' || url.searchParams.get('topic') === 'merchant_order') {
-			console.log(`[MercadoPago Webhook] Notificación informativa de merchant_order ${paymentId} recibida.`);
-			return new Response(JSON.stringify({ received: true, type: 'merchant_order' }), {
+		// Si es una notificación de merchant_order u order, responder 200 (se procesará cuando llegue la notificación de 'payment')
+		if (type === 'merchant_order' || type === 'order' || url.searchParams.get('topic') === 'merchant_order' || url.searchParams.get('topic') === 'order') {
+			console.log(`[MercadoPago Webhook] Notificación informativa de ${type || 'order'} ${paymentId} recibida.`);
+			return new Response(JSON.stringify({ received: true, type: type || 'order' }), {
 				status: 200,
 				headers: { 'Content-Type': 'application/json' }
 			});

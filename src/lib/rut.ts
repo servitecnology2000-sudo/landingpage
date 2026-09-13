@@ -177,3 +177,16 @@ export function getWhatsAppUrl(phone: string, message: string = ''): string {
 	const encodedMsg = message ? `?text=${encodeURIComponent(message)}` : '';
 	return `https://wa.me/${cleanPhone}${encodedMsg}`;
 }
+
+/**
+ * Determina si un RUT corresponde a una Empresa / Persona Jurídica (RUT >= 50.000.000)
+ * o a una Persona Natural / RUT Personal (RUT < 50.000.000) de acuerdo con la asignación
+ * de roles del Servicio de Impuestos Internos (SII) de Chile.
+ */
+export function isCompanyRut(rut: string): boolean {
+	const clean = cleanRut(rut);
+	if (!clean || clean.length < 2) return false;
+	const cuerpo = clean.slice(0, -1);
+	const num = parseInt(cuerpo, 10);
+	return !isNaN(num) && num >= 50000000;
+}

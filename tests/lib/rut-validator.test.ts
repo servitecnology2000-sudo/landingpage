@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanRut, validateRut, formatRut, normalizePhone, getWhatsAppUrl, cleanChileanPhone, isValidChileanPhone, formatChileanPhone } from '../../src/lib/rut';
+import { cleanRut, validateRut, formatRut, normalizePhone, getWhatsAppUrl, cleanChileanPhone, isValidChileanPhone, formatChileanPhone, isCompanyRut } from '../../src/lib/rut';
 
 describe('Pruebas Unitarias de Validación y Formateo (src/lib/rut.ts)', () => {
   describe('cleanRut()', () => {
@@ -97,10 +97,33 @@ describe('Pruebas Unitarias de Validación y Formateo (src/lib/rut.ts)', () => {
       expect(isValidChileanPhone('+56 2 2123 4567')).toBe(true);
       expect(isValidChileanPhone('+56 32 212 3456')).toBe(true);
 
-      // Inválidos
+        // Inválidos
       expect(isValidChileanPhone('12345678')).toBe(false); // 8 dígitos
       expect(isValidChileanPhone('+56 1 1234 5678')).toBe(false); // inicia en 1
       expect(isValidChileanPhone('')).toBe(false);
+    });
+  });
+
+  describe('isCompanyRut()', () => {
+    it('debe clasificar como RUT Personal (false) a personas naturales (< 50.000.000)', () => {
+      expect(isCompanyRut('11.111.111-1')).toBe(false);
+      expect(isCompanyRut('12.345.678-5')).toBe(false);
+      expect(isCompanyRut('27.498.484-8')).toBe(false);
+      expect(isCompanyRut('18.765.432-1')).toBe(false);
+    });
+
+    it('debe clasificar como RUT Empresa (true) a personas jurídicas (>= 50.000.000)', () => {
+      expect(isCompanyRut('76.452.123-K')).toBe(true);
+      expect(isCompanyRut('77.123.456-7')).toBe(true);
+      expect(isCompanyRut('96.987.654-3')).toBe(true);
+      expect(isCompanyRut('65.123.456-7')).toBe(true);
+      expect(isCompanyRut('50.000.000-K')).toBe(true);
+    });
+
+    it('debe retornar false ante entradas vacías o inválidas', () => {
+      expect(isCompanyRut('')).toBe(false);
+      expect(isCompanyRut('abc')).toBe(false);
+      expect(isCompanyRut(null as any)).toBe(false);
     });
   });
 });

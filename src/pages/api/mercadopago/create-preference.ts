@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
-import { preferenceClient, isMercadoPagoConfigured, isSandbox } from '../../../lib/mercadopago';
+import { orderClient, preferenceClient, isMercadoPagoConfigured, isSandbox } from '../../../lib/mercadopago';
 import { validateRut, formatRut } from '../../../lib/rut';
 
 export const prerender = false;
@@ -318,8 +318,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 		}
 
-		// 5. Generar Preferencia Oficial con el SDK de Mercado Pago
-		// NOTA: Mercado Pago exige estrictamente que las back_urls sean URLs públicas con protocolo HTTPS válido para admitir auto_return
+		// 5. Estrategia Dual de Pago: Intentar API de Orders (nueva) y fallback a API de Preferences (clásica)
+		// NOTA: Mercado Pago exige estrictamente que las URLs sean públicas con protocolo HTTPS válido para admitir auto_return
 		const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 		const baseUrl = isLocalhost ? 'https://servitecnology.com' : url.origin;
 
@@ -327,46 +327,98 @@ export const POST: APIRoute = async ({ request, url }) => {
 			? (customer.email?.includes('@testuser.com') ? customer.email : (process.env['ML_PRUEBAS_COMPRADOR_EMAIL'] || 'test_user_4386276905329265909@testuser.com'))
 			: customer.email;
 
-		const preferenceData: any = {
-			items: mpItemsPayload,
-			payer: {
-				name: isSandbox ? 'Comprador de Prueba' : customer.full_name,
-				email: payerEmail,
-				identification: {
-					type: isSandbox ? 'Otro' : 'RUT',
-					number: isSandbox ? '123456789' : (customer.rut || '')
+		let checkoutUrl: string | null = null;
+		let checkoutId: string | null = null;
+
+		// Intento 1: API de Orders (Estándar moderno unificado de Mercado Pago /v1/orders)
+		try {
+			const orderPayload: any = {
+				type: 'online',
+				processing_mode: 'manual',
+				total_amount: String(totalAmount),
+				external_reference: orderId,
+				description: `Pedido ${orderId} - SERVITECNOLOGY`,
+				payer: {
+					email: payerEmail,
+					identification: {
+						type: isSandbox ? 'Otro' : 'RUT',
+						number: isSandbox ? '123456789' : (customer.rut || '')
+					}
+				},
+				items: validatedOrderItems.map(it => ({
+					title: it.titulo,
+					quantity: it.cantidad,
+					unit_price: String(it.precio_venta)
+				})),
+				config: {
+					statement_descriptor: 'SERVITECNOLOGY',
+					online: {
+						success_url: `${baseUrl}/pedido/${orderId}?payment=success`,
+						failure_url: `${baseUrl}/checkout?payment=failure&order=${orderId}`,
+						pending_url: `${baseUrl}/pedido/${orderId}?payment=pending`,
+						auto_return: 'approved',
+						callback_url: `${baseUrl}/api/mercadopago/webhook`
+					}
 				}
-			},
-			back_urls: {
-				success: `${baseUrl}/pedido/${orderId}?payment=success`,
-				failure: `${baseUrl}/checkout?payment=failure&order=${orderId}`,
-				pending: `${baseUrl}/pedido/${orderId}?payment=pending`
-			},
-			auto_return: 'approved',
-			external_reference: orderId,
-			statement_descriptor: 'SERVITECNOLOGY',
-			notification_url: `${baseUrl}/api/mercadopago/webhook`
-		};
+			};
 
-		const mpResponse = await preferenceClient.create({ body: preferenceData });
-
-		// Actualizar orden con el preference_id de Mercado Pago
-		if (mpResponse.id) {
-			await supabaseAdmin
-				.from('orders')
-				.update({ mp_preference_id: mpResponse.id })
-				.eq('id', orderId);
+			const orderResponse: any = await orderClient.create({ body: orderPayload });
+			if (orderResponse?.checkout_url) {
+				checkoutUrl = orderResponse.checkout_url;
+				checkoutId = orderResponse.id || null;
+				console.log(`[create-preference] Orden generada exitosamente con API de Orders (ID: ${checkoutId})`);
+			}
+		} catch (orderError: any) {
+			console.warn('[create-preference] Orders API no disponible para este token o cuenta, recurriendo a Preferences API:', orderError?.message || orderError);
 		}
 
-		// Usar init_point oficial para evitar bucles de redirección entre sandbox.mercadopago.cl y mercadopago.cl (ERR_TOO_MANY_REDIRECTS)
-		const effectiveInitPoint = mpResponse.init_point || mpResponse.sandbox_init_point;
+		// Intento 2 (Fallback transparente): API de Preferences (Checkout Pro clásico)
+		if (!checkoutUrl) {
+			const preferenceData: any = {
+				items: mpItemsPayload,
+				payer: {
+					name: isSandbox ? 'Comprador de Prueba' : customer.full_name,
+					email: payerEmail,
+					identification: {
+						type: isSandbox ? 'Otro' : 'RUT',
+						number: isSandbox ? '123456789' : (customer.rut || '')
+					}
+				},
+				back_urls: {
+					success: `${baseUrl}/pedido/${orderId}?payment=success`,
+					failure: `${baseUrl}/checkout?payment=failure&order=${orderId}`,
+					pending: `${baseUrl}/pedido/${orderId}?payment=pending`
+				},
+				auto_return: 'approved',
+				external_reference: orderId,
+				statement_descriptor: 'SERVITECNOLOGY',
+				notification_url: `${baseUrl}/api/mercadopago/webhook`
+			};
+
+			const mpResponse = await preferenceClient.create({ body: preferenceData });
+			// Usar init_point oficial para evitar bucles de redirección entre sandbox.mercadopago.cl y mercadopago.cl (ERR_TOO_MANY_REDIRECTS)
+			checkoutUrl = mpResponse.init_point || mpResponse.sandbox_init_point || null;
+			checkoutId = mpResponse.id || null;
+		}
+
+		if (!checkoutUrl) {
+			throw new Error('No se pudo obtener la URL de checkout de Mercado Pago');
+		}
+
+		// Actualizar orden con el preference_id / order_id de Mercado Pago
+		if (checkoutId) {
+			await supabaseAdmin
+				.from('orders')
+				.update({ mp_preference_id: checkoutId })
+				.eq('id', orderId);
+		}
 
 		return new Response(JSON.stringify({
 			success: true,
 			orderId,
-			preferenceId: mpResponse.id,
-			initPoint: effectiveInitPoint,
-			sandboxInitPoint: mpResponse.sandbox_init_point,
+			preferenceId: checkoutId,
+			initPoint: checkoutUrl,
+			checkoutUrl,
 			isSandbox
 		}), {
 			status: 200,

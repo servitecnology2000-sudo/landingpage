@@ -4,6 +4,8 @@ import {
   sendOrderShippedEmail,
   sendOrderReadyForPickupEmail,
   sendOrderDeliveredEmail,
+  sendOrderConfirmationEmail,
+  getOrderConfirmationEmailHtml,
   transporter
 } from '../../src/lib/mailer';
 
@@ -126,6 +128,130 @@ describe('Pruebas Unitarias de Notificaciones y Correos (src/lib/mailer.ts)', ()
       expect(mailOptions.html).toContain('HDMI Inalámbrico Full HD 1080P');
       expect(mailOptions.html).toContain('Garantía Técnica');
       expect(mailOptions.html).toContain('Notificación de Seguridad');
+    });
+  });
+
+  describe('sendOrderConfirmationEmail() y getOrderConfirmationEmailHtml()', () => {
+    it('Caso 1: RUT Personal con Envío por Cobrar en Destino -> debe indicar "su boleta llegará junto con su compra"', async () => {
+      const sendMailSpy = vi.spyOn(transporter, 'sendMail').mockResolvedValueOnce({ messageId: 'test-conf-1' } as any);
+
+      const data = {
+        orderId: 'ST-2026-PERS-ENV',
+        customerName: 'Juan Pérez',
+        customerEmail: 'juan@personal.cl',
+        customerRut: '15.234.567-8', // RUT Personal (< 50M)
+        customerPhone: '+56 9 1234 5678',
+        customerAddress: 'Av. Providencia 1234',
+        deliveryType: 'envio_cobro_destino',
+        commune: 'Providencia',
+        totalAmount: 35000,
+        items: [
+          { sku: 'DISC-01', titulo: 'Disco SSD NVMe 1TB', precio_venta: 35000, cantidad: 1 }
+        ]
+      };
+
+      const html = getOrderConfirmationEmailHtml(data);
+      expect(html.toLowerCase()).toContain('su boleta llegará junto con su compra');
+      expect(html).toContain('Boleta Electrónica');
+
+      const result = await sendOrderConfirmationEmail(data);
+      expect(result).toBe(true);
+      expect(sendMailSpy).toHaveBeenCalledTimes(1);
+
+      const mailOptions = sendMailSpy.mock.calls[0][0];
+      expect(mailOptions.subject).toContain('[Boleta]');
+      expect(mailOptions.subject).toContain('ST-2026-PERS-ENV');
+      expect(mailOptions.html.toLowerCase()).toContain('su boleta llegará junto con su compra');
+    });
+
+    it('Caso 2: RUT Personal con Retiro en Bodega -> debe indicar "su boleta se le entregará al retirar su compra en bodega"', async () => {
+      const sendMailSpy = vi.spyOn(transporter, 'sendMail').mockResolvedValueOnce({ messageId: 'test-conf-2' } as any);
+
+      const data = {
+        orderId: 'ST-2026-PERS-RET',
+        customerName: 'María Soto',
+        customerEmail: 'maria@personal.cl',
+        customerRut: '19.876.543-2', // RUT Personal (< 50M)
+        customerPhone: '+56 9 8765 4321',
+        customerAddress: 'Santiago Centro',
+        deliveryType: 'retiro',
+        commune: 'Santiago Centro',
+        totalAmount: 18000,
+        items: [
+          { sku: 'MEM-02', titulo: 'Memoria RAM 8GB DDR4', precio_venta: 18000, cantidad: 1 }
+        ]
+      };
+
+      const html = getOrderConfirmationEmailHtml(data);
+      expect(html.toLowerCase()).toContain('su boleta se le entregará al retirar su compra en bodega');
+      expect(html).toContain('Boleta Electrónica');
+
+      const result = await sendOrderConfirmationEmail(data);
+      expect(result).toBe(true);
+
+      const mailOptions = sendMailSpy.mock.calls[0][0];
+      expect(mailOptions.subject).toContain('[Boleta]');
+      expect(mailOptions.html.toLowerCase()).toContain('su boleta se le entregará al retirar su compra en bodega');
+    });
+
+    it('Caso 3: RUT Empresa con Envío por Cobrar en Destino -> debe indicar "su factura llegará junto con su compra"', async () => {
+      const sendMailSpy = vi.spyOn(transporter, 'sendMail').mockResolvedValueOnce({ messageId: 'test-conf-3' } as any);
+
+      const data = {
+        orderId: 'ST-2026-EMP-ENV',
+        customerName: 'Tecnología y Soluciones SpA',
+        customerEmail: 'compras@tecnosol.cl',
+        customerRut: '76.842.190-3', // RUT Empresa (>= 50M)
+        customerPhone: '+56 9 4433 2211',
+        customerAddress: 'Camino Lo Boza 120',
+        deliveryType: 'envio_nacional',
+        commune: 'Pudahuel',
+        totalAmount: 150000,
+        items: [
+          { sku: 'SVR-01', titulo: 'Fuente Servidor Redundante', precio_venta: 150000, cantidad: 1 }
+        ]
+      };
+
+      const html = getOrderConfirmationEmailHtml(data);
+      expect(html.toLowerCase()).toContain('su factura llegará junto con su compra');
+      expect(html).toContain('Factura Electrónica');
+
+      const result = await sendOrderConfirmationEmail(data);
+      expect(result).toBe(true);
+
+      const mailOptions = sendMailSpy.mock.calls[0][0];
+      expect(mailOptions.subject).toContain('[Factura]');
+      expect(mailOptions.html.toLowerCase()).toContain('su factura llegará junto con su compra');
+    });
+
+    it('Caso 4: RUT Empresa con Retiro en Bodega -> debe indicar "su factura se le entregará al retirar su compra en bodega"', async () => {
+      const sendMailSpy = vi.spyOn(transporter, 'sendMail').mockResolvedValueOnce({ messageId: 'test-conf-4' } as any);
+
+      const data = {
+        orderId: 'ST-2026-EMP-RET',
+        customerName: 'Inversiones y Servicios Globales Ltda.',
+        customerEmail: 'contacto@globales.cl',
+        customerRut: '77.345.678-K', // RUT Empresa (>= 50M)
+        customerPhone: '+56 2 2345 6789',
+        customerAddress: 'Santiago Centro',
+        deliveryType: 'retiro',
+        commune: 'Santiago',
+        totalAmount: 85000,
+        items: [
+          { sku: 'DISP-03', titulo: 'Cargador Universal 120W Industrial', precio_venta: 85000, cantidad: 1 }
+        ]
+      };
+
+      const html = getOrderConfirmationEmailHtml(data);
+      expect(html.toLowerCase()).toContain('su factura se le entregará al retirar su compra en bodega');
+      expect(html).toContain('Factura Electrónica');
+
+      const result = await sendOrderConfirmationEmail(data);
+      expect(result).toBe(true);
+
+      const mailOptions = sendMailSpy.mock.calls[0][0];
+      expect(mailOptions.subject).toContain('[Factura]');
+      expect(mailOptions.html.toLowerCase()).toContain('su factura se le entregará al retirar su compra en bodega');
     });
   });
 });

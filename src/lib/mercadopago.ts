@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Order, Payment } from 'mercadopago';
 
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
 
@@ -30,5 +30,7 @@ export const mpClient = new MercadoPagoConfig({
 	options: { timeout: 8000 }
 });
 
+export const orderClient = new Order(mpClient);
 export const preferenceClient = new Preference(mpClient);
+export const paymentClient = new Payment(mpClient);
 

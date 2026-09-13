@@ -2,6 +2,31 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-12 (Implementación Dual Mercado Pago: API de Orders con Fallback a Preferences API):**
+  - **Modernización y Resiliencia en Pasarela (`src/lib/mercadopago.ts` y `src/pages/api/mercadopago/create-preference.ts`):**
+    - Se incorporó la instancia oficial de `Order` (`orderClient = new Order(mpClient)`) y `Payment` (`paymentClient = new Payment(mpClient)`) en el SDK.
+    - Se implementó la estrategia de compatibilidad dual: el backend intenta en primera instancia generar el pago utilizando la moderna **API de Orders** (`/v1/orders`), obteniendo directamente el `checkout_url` oficial.
+    - En caso de contingencia o si la cuenta/token solo admite credenciales legacy, el sistema conmuta automáticamente (fallback transparente) a la **API de Preferences** clásica (`Preference.create()`), evitando cualquier interrupción de servicio.
+    - Actualización del webhook (`src/pages/api/mercadopago/webhook.ts`) para reconocer y responder de inmediato `HTTP 200 OK` ante notificaciones de eventos tipo `order` y `merchant_order`.
+  - **Aseguramiento de Calidad y Tests Automatizados:**
+    - Se ejecutó la suite completa de 112 pruebas unitarias e integración en Vitest (`npm test`), certificando la generación de órdenes en vivo en la API de Orders de Mercado Pago.
+    - Compilación de producción exitosa en 4.10s con 0 errores (`npm run build`).
+
+- **2026-09-12 (Plantilla Inteligente de Confirmación de Compra: Boleta vs Factura con Discriminación de Entrega):**
+  - **Clasificación Automática de Contribuyentes en `src/lib/rut.ts` (`isCompanyRut`):**
+    - Implementación de discriminación algorítmica conforme a las directrices del Servicio de Impuestos Internos (SII) de Chile:
+      - **RUT Personal / Persona Natural (< 50.000.000):** Emisión de Boleta Electrónica de Ventas y Servicios.
+      - **RUT Empresa / Persona Jurídica (>= 50.000.000):** Emisión de Factura Electrónica con derecho a crédito fiscal IVA.
+  - **Plantilla Transaccional Dinámica en `src/lib/mailer.ts` (`getOrderConfirmationEmailHtml`):**
+    - Adaptación condicional del correo *"Confirmación de Compra"* según el tipo de RUT y la modalidad de entrega seleccionada:
+      - **RUT Personal + Envío por cobrar en destino:** Notifica formalmente: *"Su boleta llegará junto con su compra"*.
+      - **RUT Personal + Retiro en bodega:** Notifica formalmente: *"Su boleta se le entregará al retirar su compra en bodega"*.
+      - **RUT Empresa + Envío por cobrar en destino:** Notifica formalmente: *"Su factura llegará junto con su compra"*.
+      - **RUT Empresa + Retiro en bodega:** Notifica formalmente: *"Su factura se le entregará al retirar su compra en bodega"*.
+    - Asunto del correo adaptativo (`[Boleta]` o `[Factura]`) con paleta de acentos visuales diferenciados (verde esmeralda `#00FF7F` para consumidores y cian `#00CFFF` para empresas).
+  - **Cobertura de Pruebas Unitarias (`tests/lib/mailer.test.ts` y `tests/lib/rut-validator.test.ts`):**
+    - Incorporación de pruebas exhaustivas en Vitest cubriendo los 4 cuadrantes (Personal/Empresa x Cobro en Destino/Retiro en Bodega), certificando 112 pruebas unitarias aprobadas al 100%.
+
 - **2026-09-12 (Playbook Maestro de Integración Mercado Pago para SaaS & E-Commerce):**
   - **Documento Técnico Maestro (`docs/DesarrolloEcommerce/playbook-maestro-mercadopago-saas.md`):**
     - Creación de guía arquitectónica exhaustiva y definitiva para la integración de pagos con Mercado Pago Checkout Pro y Webhooks en cualquier plataforma SaaS o e-commerce.
