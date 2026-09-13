@@ -9,18 +9,20 @@
 
 ## 📑 Tabla de Contenidos
 1. [Arquitectura General del Flujo de Pago](#1-arquitectura-general-del-flujo-de-pago)
-2. [El Muro de los Horrores: 10 Errores Críticos que Debes Evitar](#2-el-muro-de-los-horrores-10-errores-críticos-que-debes-evitar)
-3. [Separación de Entornos y Variables (Servidor vs Base de Datos)](#3-separación-de-entornos-y-variables-servidor-vs-base-de-datos)
-4. [Diseño del Modelo de Datos (PostgreSQL / Supabase / Prisma)](#4-diseño-del-modelo-de-datos-postgresql--supabase--prisma)
-5. [Implementación Técnica de Código (Clean Architecture)](#5-implementación-técnica-de-código-clean-architecture)
-   - 5.1 [Cliente SDK Resiliente (`mercadopago.ts`)](#51-cliente-sdk-resiliente-mercadopagots)
-   - 5.2 [Creación de Preferencias Anti-Fraude (`create-preference.ts`)](#52-creación-de-preferencias-anti-fraude-create-preferencets)
-   - 5.3 [Webhook de Conciliación Idempotente (`webhook.ts`)](#53-webhook-de-conciliación-idempotente-webhookts)
-   - 5.4 [Liberación Inmediata de Stock Cancelado (`cancel-attempt.ts`)](#54-liberación-inmediata-de-stock-cancelado-cancel-attemptts)
-   - 5.5 [Sincronización en Vivo de Stock en Carrito (`validate-stock.ts`)](#55-sincronización-en-vivo-de-stock-en-carrito-validate-stockts)
-6. [Guía de Pruebas en Sandbox Chile (MLC) y Latam](#6-guía-de-pruebas-en-sandbox-chile-mlc-y-latam)
-7. [Experiencia de Usuario (UI/UX) y Cumplimiento Legal](#7-experiencia-de-usuario-uiux-y-cumplimiento-legal)
-8. [Checklist Definitivo de Pase a Producción](#8-checklist-definitivo-de-pase-a-producción)
+2. [API de Preferences (Legacy) vs API de Orders (Nueva API Oficial)](#2-api-de-preferences-legacy-vs-api-de-orders-nueva-api-oficial)
+3. [El Muro de los Horrores: 10 Errores Críticos que Debes Evitar](#3-el-muro-de-los-horrores-10-errores-críticos-que-debes-evitar)
+4. [Separación de Entornos y Variables (Servidor vs Base de Datos)](#4-separación-de-entornos-y-variables-servidor-vs-base-de-datos)
+5. [Diseño del Modelo de Datos (PostgreSQL / Supabase / Prisma)](#5-diseño-del-modelo-de-datos-postgresql--supabase--prisma)
+6. [Implementación Técnica de Código (Clean Architecture)](#6-implementación-técnica-de-código-clean-architecture)
+   - 6.1 [Cliente SDK Resiliente (`mercadopago.ts`)](#61-cliente-sdk-resiliente-mercadopagots)
+   - 6.2 [Creación de Preferencias Anti-Fraude (`create-preference.ts` - Preferences API)](#62-creación-de-preferencias-anti-fraude-create-preferencets---preferences-api)
+   - 6.3 [Creación de Orden Anti-Fraude con la Nueva API de Orders (`create-order.ts` - Orders API)](#63-creación-de-orden-anti-fraude-con-la-nueva-api-de-orders-create-orderts---orders-api)
+   - 6.4 [Webhook de Conciliación Idempotente (`webhook.ts`)](#64-webhook-de-conciliación-idempotente-webhookts)
+   - 6.5 [Liberación Inmediata de Stock Cancelado (`cancel-attempt.ts`)](#65-liberación-inmediata-de-stock-cancelado-cancel-attemptts)
+   - 6.6 [Sincronización en Vivo de Stock en Carrito (`validate-stock.ts`)](#66-sincronización-en-vivo-de-stock-en-carrito-validate-stockts)
+7. [Guía de Pruebas en Sandbox Chile (MLC) y Latam](#7-guía-de-pruebas-en-sandbox-chile-mlc-y-latam)
+8. [Experiencia de Usuario (UI/UX) y Cumplimiento Legal](#8-experiencia-de-usuario-uiux-y-cumplimiento-legal)
+9. [Checklist Definitivo de Pase a Producción](#9-checklist-definitivo-de-pase-a-producción)
 
 ---
 
@@ -86,7 +88,36 @@ sequenceDiagram
 
 ---
 
-## 2. El Muro de los Horrores: 10 Errores Críticos que Debes Evitar
+## 2. API de Preferences (Legacy) vs API de Orders (Nueva API Oficial)
+
+Cuando creas una aplicación en el **Panel de Desarrolladores de Mercado Pago** (`developers.mercadopago.cl/panel/app/create-app`), el asistente te presenta un selector crítico:
+
+> [!WARNING]
+> **Aviso Oficial de Mercado Pago en el Panel:**  
+> - Si seleccionas **`API de Preferences`**: Aparece en rojo la advertencia:  
+>   `⚠️ Esta API será descontinuada pronto.`  
+> - Si seleccionas **`API de Orders`**: Es la opción oficial, moderna y recomendada para todas las nuevas aplicaciones.
+
+### ¿Por qué Mercado Pago descontinúa la API de Preferences?
+Mercado Pago históricamente mantenía APIs dispersas para cada caso de uso: Preferences para Checkout Pro web, Merchant Orders para QR físico y Payment API para cobros directos. Con la **API de Orders** (`/v1/orders`), Mercado Pago unificó el ciclo de vida completo de la transacción (creación, consulta, cancelación, reembolsos e idempotencia nativa) en un solo recurso omnicanal.
+
+### Tabla Comparativa: ¿Cuál usar en tu SaaS?
+
+| Característica | API de Preferences (Legacy) | API de Orders (Nueva y Oficial) |
+| :--- | :--- | :--- |
+| **Estado de Soporte** | ⚠️ **En proceso de obsolescencia** (No recomendada para nuevos SaaS) | ✅ **Oficial y Activa** (Recomendada para todo nuevo proyecto) |
+| **Endpoint REST** | `POST https://api.mercadopago.com/checkout/preferences` | `POST https://api.mercadopago.com/v1/orders` |
+| **SDK Node.js** | `import { Preference } from 'mercadopago'` | `POST /v1/orders` directo con `fetch` o SDK v2 Orders |
+| **Header de Idempotencia** | Opcional | **Obligatorio:** `X-Idempotency-Key: <UUID>` |
+| **Identificador Retornado** | `id` de preferencia (ej: `123456789-abcd-...`) | `id` de order (ej: `ORDTST01KS5AJ6HTK...`) |
+| **URL de Pago al Comprador** | `init_point` y `sandbox_init_point` | `checkout_url` |
+| **URLs de Retorno** | `back_urls: { success, failure, pending }` | `config.online.callback_urls: { return, cancel }` |
+| **Retorno Automático** | `auto_return: 'approved'` | `config.online.auto_return: { allowed: true }` |
+| **¿Dónde está en Servitecnology?** | Implementada en `landingpage` (creada antes del aviso) | **Obligatoria para cualquier nueva aplicación** |
+
+---
+
+## 3. El Muro de los Horrores: 10 Errores Críticos que Debes Evitar
 
 | # | Error o Trampa Frecuente | Causa Raíz | Solución Probada y Certificada |
 | :--- | :--- | :--- | :--- |
@@ -103,7 +134,7 @@ sequenceDiagram
 
 ---
 
-## 3. Separación de Entornos y Variables (Servidor vs Base de Datos)
+## 4. Separación de Entornos y Variables (Servidor vs Base de Datos)
 
 Uno de los errores más comunes de concepto es intentar configurar las credenciales de pasarela en la base de datos (ej. Supabase) en lugar del entorno de ejecución del backend.
 
@@ -151,7 +182,7 @@ PUBLIC_APP_URL=https://tusaas.com
 
 ---
 
-## 4. Diseño del Modelo de Datos (PostgreSQL / Supabase / Prisma)
+## 5. Diseño del Modelo de Datos (PostgreSQL / Supabase / Prisma)
 
 Para garantizar consistencia financiera, logística e inventario, el esquema relacional debe soportar:
 1. **Identificador Legible:** Un código amigable para humanos (`ST-2026-XXXX`) usado como `external_reference`.
@@ -228,9 +259,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_mp_payment_id ON public.orders(mp_payment_
 
 ---
 
-## 5. Implementación Técnica de Código (Clean Architecture)
+## 6. Implementación Técnica de Código (Clean Architecture)
 
-### 5.1 Cliente SDK Resiliente (`src/lib/mercadopago.ts`)
+### 6.1 Cliente SDK Resiliente (`src/lib/mercadopago.ts`)
 
 Este cliente detecta si estás en modo desarrollo mediante múltiples alias (`development`, `sandbox`, `dev`, `test`), inicializa el SDK oficial `@mercadopago/sdk-nodejs` con timeout defensivo y tolera arranques sin credenciales para no colapsar la aplicación.
 
@@ -272,7 +303,7 @@ export const preferenceClient = new Preference(mpClient);
 
 ---
 
-### 5.2 Creación de Preferencias Anti-Fraude (`create-preference.ts`)
+### 6.2 Creación de Preferencias Anti-Fraude (`create-preference.ts` - Preferences API)
 
 > [!IMPORTANT]
 > **Regla Anti-Fraude:** El frontend NUNCA decide los precios. El backend toma los SKUs, los busca en la BD y aplica los precios y disponibilidad reales.
@@ -404,7 +435,141 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 ---
 
-### 5.3 Webhook de Conciliación Idempotente (`webhook.ts`)
+### 6.3 Creación de Orden Anti-Fraude con la Nueva API de Orders (`create-order.ts` - Orders API)
+
+> [!TIP]
+> **Para aplicaciones nuevas creadas en el Panel de Mercado Pago:**  
+> Si tu aplicación fue creada seleccionando **"API de Orders"**, debes invocar directamente el endpoint unificado `POST https://api.mercadopago.com/v1/orders`. Esta API requiere el header `X-Idempotency-Key` (UUIDv4) y retorna directamente el `checkout_url`.
+
+```typescript
+import type { APIRoute } from 'astro'; // O Next.js / Express
+import { mpAccessToken, isSandbox } from '../../lib/mercadopago';
+import { db } from '../../lib/db';
+import { randomUUID } from 'crypto';
+
+export const POST: APIRoute = async ({ request, url }) => {
+    try {
+        const body = await request.json();
+        const { items, customer } = body;
+
+        // 1. VALIDACIÓN ANTI-FRAUDE EN BD
+        const skus = items.map((i: any) => i.sku);
+        const productsInDb = await db.products.findMany({ where: { sku: { in: skus } } });
+        const productMap = new Map(productsInDb.map((p: any) => [p.sku, p]));
+
+        const orderItemsPayload: any[] = [];
+        let totalAmount = 0;
+
+        for (const reqItem of items) {
+            const product = productMap.get(reqItem.sku);
+            if (!product) return new Response(JSON.stringify({ error: `SKU ${reqItem.sku} no existe` }), { status: 400 });
+
+            const qty = Math.max(1, parseInt(reqItem.cantidad, 10) || 1);
+            if (product.stock_cantidad < qty) {
+                return new Response(JSON.stringify({ error: `Stock insuficiente para ${product.titulo}` }), { status: 400 });
+            }
+
+            const unitPrice = parseFloat(product.precio_venta);
+            const itemTotal = unitPrice * qty;
+            totalAmount += itemTotal;
+
+            orderItemsPayload.push({
+                title: product.titulo,
+                quantity: qty,
+                unit_price: unitPrice.toString(),
+                unit_measure: 'unit',
+                total_amount: itemTotal.toString()
+            });
+        }
+
+        // 2. CREACIÓN DE ORDEN PRELIMINAR EN BD
+        const orderId = `ORD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        await db.orders.create({
+            data: {
+                id: orderId,
+                customer_id: customer.id,
+                items,
+                total_amount: totalAmount,
+                payment_status: 'pendiente',
+                order_status: 'en_espera_pago',
+                stock_reserved_until: new Date(Date.now() + 2 * 60 * 60 * 1000)
+            }
+        });
+
+        // 3. URLs DE RETORNO Y AUTO_RETURN
+        const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+        const baseUrl = isLocalhost ? (process.env.PUBLIC_APP_URL || 'https://tusaas.com') : url.origin;
+
+        const payerEmail = isSandbox
+            ? (process.env.ML_PRUEBAS_COMPRADOR_EMAIL || 'test_user_4386276905329265909@testuser.com')
+            : customer.email;
+
+        // 4. PAYLOAD PARA LA API DE ORDERS (/v1/orders)
+        const orderPayload = {
+            type: 'online',
+            processing_mode: 'manual',
+            total_amount: totalAmount.toString(),
+            external_reference: orderId,
+            description: `Orden de compra ${orderId}`,
+            payer: {
+                email: payerEmail
+            },
+            items: orderItemsPayload,
+            config: {
+                online: {
+                    callback_urls: {
+                        return: `${baseUrl}/pedido/${orderId}?payment=success`,
+                        cancel: `${baseUrl}/checkout?payment=failure&order=${orderId}`
+                    },
+                    auto_return: {
+                        allowed: true
+                    }
+                }
+            }
+        };
+
+        // 5. LLAMADA DIRECTA CON X-Idempotency-Key
+        const mpRes = await fetch('https://api.mercadopago.com/v1/orders', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${mpAccessToken}`,
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': randomUUID()
+            },
+            body: JSON.stringify(orderPayload)
+        });
+
+        const mpData = await mpRes.json();
+
+        if (!mpRes.ok) {
+            console.error('[Orders API Error]', mpData);
+            return new Response(JSON.stringify({ error: mpData.message || 'Error en Mercado Pago Orders API' }), { status: mpRes.status });
+        }
+
+        // Actualizar id de order de Mercado Pago
+        await db.orders.update({
+            where: { id: orderId },
+            data: { mp_preference_id: mpData.id }
+        });
+
+        return new Response(JSON.stringify({
+            success: true,
+            orderId,
+            mpOrderId: mpData.id,
+            checkoutUrl: mpData.checkout_url,
+            isSandbox
+        }), { status: 200 });
+
+    } catch (err: any) {
+        console.error('[create-order] Error:', err);
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    }
+};
+```
+
+---
+
+### 6.4 Webhook de Conciliación Idempotente (`webhook.ts`)
 
 > [!CAUTION]
 > **Regla de Oro de Webhook:** NUNCA creas ciegamente en el payload del POST. Siempre consulta a la API oficial de Mercado Pago (`Payment.get({ id })`) para certificar que el pago existe y fue realmente aprobado en sus servidores bancarios.
@@ -520,7 +685,7 @@ export const GET: APIRoute = async () => {
 
 ---
 
-### 5.4 Liberación Inmediata de Stock Cancelado (`cancel-attempt.ts`)
+### 6.5 Liberación Inmediata de Stock Cancelado (`cancel-attempt.ts`)
 
 Si el comprador hace clic en "Volver al sitio" o cancela en Mercado Pago, este endpoint expira la reserva temporal para que otro cliente pueda comprar de inmediato.
 
@@ -563,7 +728,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
-### 5.5 Sincronización en Vivo de Stock en Carrito (`validate-stock.ts`)
+### 6.6 Sincronización en Vivo de Stock en Carrito (`validate-stock.ts`)
 
 Evita que un comprador intente pagar por más unidades de las que actualmente existen en bodega.
 
@@ -598,7 +763,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
-## 6. Guía de Pruebas en Sandbox Chile (MLC) y Latam
+## 7. Guía de Pruebas en Sandbox Chile (MLC) y Latam
 
 ### ⚠️ Reglas Obligatorias de Navegación para Pruebas:
 1. **Abrir SIEMPRE una Ventana de Incógnito:** Las cookies de tu sesión real de Mercado Libre provocarán el error de "partes de prueba".
@@ -632,7 +797,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
-## 7. Experiencia de Usuario (UI/UX) y Cumplimiento Legal
+## 8. Experiencia de Usuario (UI/UX) y Cumplimiento Legal
 
 1. **Checkout Híbrido Fricción-Cero (Invitado vs Registrado):**
    - No obligues al usuario a registrarse o iniciar sesión antes de comprar; esto reduce el abandono del carrito en un 40%.
@@ -648,7 +813,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
-## 8. Checklist Definitivo de Pase a Producción
+## 9. Checklist Definitivo de Pase a Producción
 
 - [ ] **1. Credenciales de Producción:** Configurar `MERCADOPAGO_ENV=production` y cargar `ML_PRODUCCION_ACCESS_TOKEN` y `ML_PRODUCCION_PUBLIC_KEY` en el gestor de variables del servidor (Vercel, Railway, etc.).
 - [ ] **2. Webhook URL Registrada:** En el panel de Mercado Pago Developers (`Tus Aplicaciones > Webhooks`), registrar la URL pública en HTTPS: `https://tudominio.com/api/mercadopago/webhook`.
