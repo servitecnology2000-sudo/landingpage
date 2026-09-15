@@ -7,50 +7,101 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
 
-const pageTitle = "Diseño de Páginas Web y Tiendas Online | Servitecnology";
-const pageDescription = "Creación y desarrollo de páginas web profesionales, landing pages y tiendas online optimizadas para Google y dispositivos móviles.";
-const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, requiero cotizar un proyecto de Desarrollo / Diseño Web.`);
+const pageTitle = "Desarrollo de Bots para WhatsApp, Agentes IA y Software a Medida | SERVITECNOLOGY";
+const pageDescription = "Especialistas en desarrollo de software a medida en Chile. Creamos bots para WhatsApp, agentes IA para atención 24/7, automatización de redes sociales (Instagram/Meta) y plataformas SaaS empresariales.";
+const pageKeywords = "desarrollo de software a medida, bot para whatsapp, agentes ia, bots whatsapp chile, automatizacion de redes sociales, desarrollo web chile, saas chile, crear bot whatsapp, servitecnology, santiago";
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa cotizar un proyecto de Desarrollo de Software / Bot para WhatsApp / Agentes IA.`);
 const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+
+const softwareSchema = {
+	"@context": "https://schema.org",
+	"@type": "Service",
+	"name": "Desarrollo de Software a Medida, Bots para WhatsApp y Agentes IA",
+	"provider": {
+		"@type": "Organization",
+		"name": "SERVITECNOLOGY",
+		"url": "https://servitecnology.com"
+	},
+	"serviceType": "Software Development & AI Automation",
+	"description": "Desarrollo de software a medida, creación de bots para WhatsApp, agentes IA para atención al cliente y automatización de redes sociales en Santiago de Chile.",
+	"areaServed": {
+		"@type": "Country",
+		"name": "Chile"
+	},
+	"hasOfferCatalog": {
+		"@type": "OfferCatalog",
+		"name": "Servicios de Software & Automatización",
+		"itemListElement": [
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Desarrollo de Bots para WhatsApp e Inteligencia Artificial",
+					"description": "Creación de bots para WhatsApp con Agentes IA para atención al cliente 24/7, catálogo interactivo, cotizaciones automáticas y cierre de ventas."
+				}
+			},
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Automatización de Redes Sociales y Meta API",
+					"description": "Automatización de mensajes directos, comentarios a DM en Instagram/Facebook y conexión con sistemas CRM."
+				}
+			},
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Desarrollo de Software a Medida y Plataformas Web",
+					"description": "Ingeniería de software a medida, sistemas SaaS, tiendas e-commerce, paneles autoadministrables y aplicaciones web de alto rendimiento."
+				}
+			}
+		]
+	}
+};
 ---
 
 <Layout 
 	title={pageTitle} 
 	description={pageDescription}
-	keywords="desarrollo web, diseno web, crear pagina web, e-commerce chile, landing page, seo, ai-seo, servitecnology, santiago"
+	keywords={pageKeywords}
 >
+	<!-- Structured Data JSON-LD Service Schema -->
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(softwareSchema)} />
+
 	<Header />
 
 	<main class="relative bg-black min-h-screen pb-20 overflow-hidden">
 		<!-- HERO SECTION BANNER -->
-		<section class="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 bg-black border-b border-white/10 mb-12">
+		<section class="relative min-h-[55vh] md:min-h-[65vh] flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 bg-black border-b border-white/10 mb-12">
 			<!-- Background Image with Overlay -->
 			<div class="absolute inset-0 z-0 pointer-events-none">
-				<img src="/imagenes/disenoweb.jpg" alt="Diseño y Desarrollo de Páginas Web Profesionales" class="w-full h-full object-cover object-center scale-105 filter brightness-90" />
-				<div class="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/60 z-10"></div>
+				<img src="/imagenes/disenoweb.jpg" alt="Desarrollo de Software a Medida, Bots y Agentes IA" class="w-full h-full object-cover object-center scale-105 filter brightness-75" />
+				<div class="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/70 z-10"></div>
 				<div class="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black z-10"></div>
 			</div>
 
 			<!-- Decorative Glows & Grid Pattern -->
-			<div class="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-cyan/15 rounded-full blur-[140px] pointer-events-none z-10"></div>
-			<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-brand-green/15 rounded-full blur-[140px] pointer-events-none z-10"></div>
+			<div class="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-brand-cyan/20 rounded-full blur-[150px] pointer-events-none z-10"></div>
+			<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-brand-green/15 rounded-full blur-[150px] pointer-events-none z-10"></div>
 			<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-10"></div>
 
 			<!-- Hero Content -->
 			<div class="relative z-20 mx-auto max-w-5xl px-6 w-full text-center space-y-6">
 				<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs sm:text-sm font-semibold uppercase tracking-wider backdrop-blur-md shadow-lg">
 					<span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
-					Desarrollo Web & Software
+					Agentes IA · Bots para WhatsApp · Software a Medida
 				</div>
 
-				<h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-					Diseño y Desarrollo de <br class="hidden sm:inline" />
+				<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] max-w-4xl mx-auto">
+					Desarrollo de Software, <br class="hidden sm:inline" />
 					<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-brand-cyan to-brand-green drop-shadow-[0_2px_10px_rgba(0,207,255,0.4)]">
-						Páginas Web Profesionales
+						Agentes IA & Bots de WhatsApp
 					</span>
 				</h1>
 
 				<p class="text-slate-200 text-base md:text-xl max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] font-medium">
-					{pageDescription}
+					Automatizamos la atención de tus clientes 24/7 con inteligencia artificial, conectamos tus redes sociales y construimos plataformas web y sistemas a medida para hacer crecer tu empresa en Chile.
 				</p>
 
 				<div class="pt-4 flex flex-wrap justify-center gap-4">
@@ -58,11 +109,130 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 						href={waLink}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="inline-flex justify-center items-center gap-3 bg-brand-cyan text-black hover:bg-brand-green px-8 py-4 rounded-xl font-bold text-base transition-all duration-300 shadow-[0_0_25px_rgba(0,207,255,0.3)] hover:scale-105"
+						class="inline-flex justify-center items-center gap-3 bg-gradient-to-r from-brand-cyan to-brand-green text-black hover:opacity-90 px-8 py-4 rounded-xl font-black text-sm sm:text-base uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(0,207,255,0.35)] hover:scale-105"
 					>
-						Cotizar Proyecto Web
+						Cotizar Proyecto / Bot IA
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
 					</a>
+					<a 
+						href="#soluciones-ia"
+						class="inline-flex justify-center items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/15 px-8 py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-300 backdrop-blur-md"
+					>
+						Ver Soluciones
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- 3 SOLUCIONES CLAVE (BOTS, AGENTES IA, SOFTWARE A MEDIDA) -->
+		<section id="soluciones-ia" class="relative z-10 mx-auto max-w-7xl px-6 w-full py-16">
+			<div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+				<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-brand-green/30 bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider">
+					Especialidades Tecnológicas
+				</div>
+				<h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+					Soluciones en <span class="text-brand-cyan">Inteligencia Artificial</span> y Software
+				</h2>
+				<p class="text-slate-400 text-base">
+					Transformamos procesos manuales en flujos automatizados de alta rentabilidad y escalabilidad.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<!-- Card 1: Bots para WhatsApp & Agentes IA -->
+				<div class="group relative p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-brand-green/40 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-xl hover:-translate-y-1">
+					<div class="absolute top-0 right-0 w-32 h-32 bg-brand-green/10 rounded-full blur-[50px] group-hover:bg-brand-green/20 transition-all"></div>
+					<div class="space-y-5 relative z-10">
+						<div class="w-14 h-14 rounded-xl bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green shadow-lg">
+							<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white group-hover:text-brand-green transition-colors">
+							Bots para WhatsApp con Agentes IA
+						</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Atención automática de clientes 24/7 con lenguaje natural. Respuestas a preguntas frecuentes, catálogo interactivo, cotizaciones al instante y derivación inteligente a ejecutivos humanos.
+						</p>
+						<ul class="space-y-2.5 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2">
+								<span class="text-brand-green font-bold">✓</span> Integración oficial WhatsApp Business API
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-brand-green font-bold">✓</span> Entrenamiento de IA con datos de tu negocio
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-brand-green font-bold">✓</span> Sin pérdidas de prospectos fuera de horario
+							</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5 relative z-10">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-brand-green hover:underline flex items-center gap-1.5">
+							Cotizar Bot para WhatsApp →
+						</a>
+					</div>
+				</div>
+
+				<!-- Card 2: Automatización de Redes Sociales -->
+				<div class="group relative p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-brand-cyan/40 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-xl hover:-translate-y-1">
+					<div class="absolute top-0 right-0 w-32 h-32 bg-brand-cyan/10 rounded-full blur-[50px] group-hover:bg-brand-cyan/20 transition-all"></div>
+					<div class="space-y-5 relative z-10">
+						<div class="w-14 h-14 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan shadow-lg">
+							<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white group-hover:text-brand-cyan transition-colors">
+							Automatización de Redes Sociales
+						</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Convierte interacciones en ventas. Automatizamos respuestas a comentarios en Instagram y Facebook, envío de DMs instantáneos, embudos de captura de leads y conexión directa con tu CRM.
+						</p>
+						<ul class="space-y-2.5 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2">
+								<span class="text-brand-cyan font-bold">✓</span> Comentario a mensaje directo (DM) automático
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-brand-cyan font-bold">✓</span> Calificación y registro automático de prospectos
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-brand-cyan font-bold">✓</span> Campañas masivas y secuencias de seguimiento
+							</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5 relative z-10">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-brand-cyan hover:underline flex items-center gap-1.5">
+							Automatizar Redes Sociales →
+						</a>
+					</div>
+				</div>
+
+				<!-- Card 3: Software a Medida & Plataformas Web -->
+				<div class="group relative p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-purple-500/40 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-xl hover:-translate-y-1">
+					<div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-all"></div>
+					<div class="space-y-5 relative z-10">
+						<div class="w-14 h-14 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-lg">
+							<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">
+							Desarrollo de Software a Medida
+						</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Sistemas web, portales corporativos, plataformas SaaS y tiendas online con pasarelas de pago (Mercado Pago), bases de datos en la nube y paneles autoadministrables hechos a la medida de tu flujo.
+						</p>
+						<ul class="space-y-2.5 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2">
+								<span class="text-purple-400 font-bold">✓</span> Arquitectura moderna con carga ultrarrápida
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-purple-400 font-bold">✓</span> Paneles de administración sin dependencia externa
+							</li>
+							<li class="flex items-center gap-2">
+								<span class="text-purple-400 font-bold">✓</span> Integración de pasarelas de pago y facturación
+							</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5 relative z-10">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1.5">
+							Cotizar Software a Medida →
+						</a>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -75,23 +245,23 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
 					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
-					<h3 class="text-xl font-bold text-white mb-3">1. Arquitectura y UX/UI</h3>
+					<h3 class="text-xl font-bold text-white mb-3">1. Diagnóstico & Arquitectura</h3>
 					<p class="text-slate-400 text-sm leading-relaxed">
-						Diseñamos prototipos interactivos adaptados a tu marca, enfocándonos en la experiencia de usuario, llamadas a la acción eficientes y modo oscuro premium.
+						Analizamos los cuellos de botella de tu negocio, diseñamos los flujos de conversación del bot y estructuramos la arquitectura del sistema.
 					</p>
 				</div>
 				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
 					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
-					<h3 class="text-xl font-bold text-white mb-3">2. Desarrollo e Integraciones</h3>
+					<h3 class="text-xl font-bold text-white mb-3">2. Desarrollo & Entrenamiento IA</h3>
 					<p class="text-slate-400 text-sm leading-relaxed">
-						Construimos la plataforma con tecnologías ultrarrápidas, integrando bases de datos, pasarelas de pago, botones directos de WhatsApp y paneles autoadministrables.
+						Construimos el software y entrenamos los agentes de IA con el catálogo, preguntas frecuentes y reglas comerciales específicas de tu empresa.
 					</p>
 				</div>
 				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/20 transition-all duration-300">
 					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
-					<h3 class="text-xl font-bold text-white mb-3">3. Optimización SEO/AEO y Despliegue</h3>
+					<h3 class="text-xl font-bold text-white mb-3">3. Conexión, SEO & Despliegue</h3>
 					<p class="text-slate-400 text-sm leading-relaxed">
-						Optimizamos la carga rápida, inyectamos marcado estandarizado para Google y Motores de IA (ChatGPT, Claude, Perplexity) y publicamos con SSL en servidores globales.
+						Conectamos a tus números de WhatsApp y redes sociales, optimizamos el posicionamiento SEO para Google y publicamos en servidores de alta disponibilidad.
 					</p>
 				</div>
 			</div>
@@ -100,7 +270,7 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 		<!-- CÓMO TRABAJAMOS Y VENTAJAS -->
 		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
 			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
-				Por qué Elegir <span class="text-brand-green">SERVITECNOLOGY</span> en Desarrollo Web
+				Por qué Elegir <span class="text-brand-green">SERVITECNOLOGY</span> para tu Software y Bots
 			</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 				<div class="space-y-6">
@@ -109,9 +279,9 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
 						</div>
 						<div>
-							<h3 class="text-lg font-bold text-white mb-1">Carga Ultrarrápida y Rendimiento</h3>
+							<h3 class="text-lg font-bold text-white mb-1">Agentes IA con Respuestas Precisas</h3>
 							<p class="text-slate-400 text-sm leading-relaxed">
-								Desarrollamos código limpio sin plantillas pesadas para lograr puntuaciones máximas en Google PageSpeed y retener a tus clientes.
+								Configurados para no inventar información y responder con total fidelidad a las políticas de tu negocio.
 							</p>
 						</div>
 					</div>
@@ -120,9 +290,9 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
 						</div>
 						<div>
-							<h3 class="text-lg font-bold text-white mb-1">Diseño 100% Responsivo</h3>
+							<h3 class="text-lg font-bold text-white mb-1">Integración 100% Cloud</h3>
 							<p class="text-slate-400 text-sm leading-relaxed">
-								Experiencia fluida y adaptable perfectamente a smartphones, tablets y monitores de alta resolución.
+								Tus bots y plataformas operan 24/7 en servidores en la nube sin requerir computadores encendidos en tu oficina.
 							</p>
 						</div>
 					</div>
@@ -135,7 +305,7 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 						<div>
 							<h3 class="text-lg font-bold text-white mb-1">SEO & Visibilidad en Motores de IA</h3>
 							<p class="text-slate-400 text-sm leading-relaxed">
-								Optimizamos las etiquetas meta, Schema.org y archivos llms.txt para posicionarte en los resultados de Google y asistentes como ChatGPT.
+								Optimizamos las etiquetas meta, Schema.org y archivos llms.txt para posicionarte en Google y asistentes como ChatGPT.
 							</p>
 						</div>
 					</div>
@@ -146,7 +316,7 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 						<div>
 							<h3 class="text-lg font-bold text-white mb-1">Paneles Autoadministrables</h3>
 							<p class="text-slate-400 text-sm leading-relaxed">
-								Implementamos paneles de control personalizados para actualizar inventario, productos, servicios o imágenes sin depender de terceros.
+								Implementamos paneles de control intuitivos para actualizar inventario, productos, clientes o métricas en tiempo real.
 							</p>
 						</div>
 					</div>
@@ -157,11 +327,11 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 		<!-- CINTA UNIFICADA DE CLIENTES SATISFECHOS - DESARROLLO -->
 		<CintaTrabajos 
 			categoria="desarrollo" 
-			tituloSeccion="Portafolio de Desarrollo Web y Proyectos Digitales" 
-			subtituloSeccion="Sitios web, e-commerce y plataformas a medida diseñadas para potenciar tu negocio." 
+			tituloSeccion="Portafolio de Desarrollo Web, Bots y Plataformas" 
+			subtituloSeccion="Sitios web, bots inteligentes y plataformas a medida diseñadas para potenciar tu negocio." 
 		/>
 	</main>
 
 	<Footer />
-	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por proyectos de desarrollo web..." />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por proyectos de desarrollo de software y bots con IA..." />
 </Layout>

@@ -1,6 +1,6 @@
 # SERVITECNOLOGY
 
-> Servicio técnico informático profesional de computadoras y notebooks, tienda ecommerce de repuestos de hardware y soluciones de software SaaS con IA en Santiago de Chile.
+> Empresa líder en desarrollo de software a medida, agentes de inteligencia artificial (Agentes IA), bots para WhatsApp y servicio técnico informático con catálogo de repuestos de hardware en Santiago de Chile.
 
 ## Información General
 - **Marca Oficial:** SERVITECNOLOGY (anteriormente SERVITECH)
@@ -8,6 +8,14 @@
 - **Contacto Comercial y Soporte:** WhatsApp [+56948672300](https://wa.me/56948672300)
 - **Correo Oficial:** contacto@servitecnology.com / jesusleon@servitecnology.com
 - **Ubicación y Cobertura:** Santiago de Chile (Santiago Centro, Providencia, Las Condes, Ñuñoa, La Florida, Maipú, Puente Alto, Peñalolén y despachos nacionales a todo Chile).
+
+## Desarrollo de Software a Medida, Bots & Agentes IA
+1. **Bots para WhatsApp con Agentes IA:** Creación de asistentes virtuales 24/7 conectados a WhatsApp Business API, entrenados con la información de tu negocio para cotizaciones automáticas, soporte técnico y calificación de clientes.
+2. **Automatización de Redes Sociales:** Automatización de comentarios a mensajes directos (DM) en Instagram y Meta/Facebook, embudos de captura de leads y conexión a CRMs.
+3. **Desarrollo de Software a Medida & Plataformas SaaS:** Ingeniería de plataformas web, sistemas de gestión empresarial (ERP/CRM), portales autoadministrables e integración de pasarelas de pago (Mercado Pago).
+4. **Whagil IA:** Ecosistema SaaS para atención multicanal y automatización con agentes IA.
+5. **Whalinkbot:** Motor cloud para campañas masivas y prospección por WhatsApp.
+6. **Infra Manager Pro:** ERP integral para gestión de soporte TI, operaciones y finanzas.
 
 ## Servicios Técnicos Estrella
 1. **Soporte Técnico Especializado:** Diagnóstico, reparación, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos.
@@ -21,11 +29,6 @@
 - **Canal de Venta y Transacciones:** Tienda ecommerce en https://servitecnology.com/repuestos con checkout directo.
 - **Medios de Pago Soportados:** Pasarela de pago oficial Mercado Pago (tarjetas de crédito, débito y dinero en cuenta) y Transferencia Bancaria Manual a BancoEstado con verificación automática.
 - **Modalidades de Entrega:** Retiro en punto físico en Santiago, despacho delivery RM y envío a todo Chile por Starken/Chilexpress.
-
-## Plataformas de Software SaaS
-1. **Whagil IA:** Agentes de inteligencia artificial conversacional y automatización operativa.
-2. **Whalinkbot:** Plataforma de marketing y comunicación multicanal para fidelización de clientes.
-3. **Infra Manager Pro:** Sistema de gestión empresarial para infraestructura TI, órdenes técnicas e inventario.
 
 ## Políticas y Garantías
 - **Garantías:** Cumplimiento total con Ley del Consumidor (SERNAC). 6 meses de garantía para repuestos nuevos y 3 meses de garantía técnica de laboratorio para repuestos usados verificados.

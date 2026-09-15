@@ -2,6 +2,19 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-15 (Optimización SEO On-Page: Software a Medida, Agentes IA y Bots de WhatsApp):**
+  - **Enfoque Integral en Portada (`src/components/Hero.astro` e `src/pages/index.astro`):**
+    - Se integró en el `H1`, badge superior y subtítulo el posicionamiento estratégico de **Software a Medida & Agentes IA** junto a **Bots de WhatsApp** y Soporte TI, manteniendo la autoridad de la marca **SERVITECNOLOGY**.
+    - Inclusión de píldoras interactivas en el Hero con enlaces directos (`🤖 Bots para WhatsApp`, `🧠 Agentes IA & Automatización`, `💻 Software a Medida`, `📦 Repuestos & Servicio Técnico`).
+  - **Ampliación de Soluciones SaaS & Ecosistemas Digitales (`src/components/SaaSProducts.astro`):**
+    - Se adaptó la sección a un grid de 4 columnas incorporando la tarjeta dedicada **"Software a Medida & Bots de IA"** (`/desarrollo`), resaltando asistentes 24/7, automatizaciones de Instagram/Meta y sistemas conectados a bases de datos y pagos.
+  - **Página Dedicada Enriquecida con Schema Service (`src/pages/desarrollo.astro`):**
+    - Reestructuración completa con 3 pilares clave: Bots para WhatsApp con Agentes IA, Automatización de Redes Sociales (Meta API / Instagram) y Desarrollo de Software a Medida.
+    - Implementación de marcado estructurado JSON-LD `Schema.org/Service` con catálogo de ofertas (`hasOfferCatalog`) para resultados enriquecidos en Google.
+  - **Actualización de Manifiesto IA (`public/llms.txt`) y Tests:**
+    - Registro de capacidades de desarrollo de agentes IA y bots para motores de búsqueda de IA (ChatGPT, Claude, Perplexity).
+    - Suite de pruebas de SEO ampliada (`tests/seo-audit.test.ts`), con 122 tests aprobados al 100% y build de producción verificado.
+
 - **2026-09-15 (Recuperación y Optimización Integral de Indexación SEO en Google: Marca y Repuestos por SKU):**
   - **Diagnóstico y Corrección On-Page de Portada (`src/components/Hero.astro` e `src/pages/index.astro`):**
     - Se restauró la presencia explícita de la entidad de marca **SERVITECNOLOGY** en el `H1`, badge superior, subtítulo descriptivo y metadatos de la portada para recuperar el posicionamiento orgánico #1 en Google frente a la ficha de Google Maps.

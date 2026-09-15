@@ -90,7 +90,7 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(content).toContain('Astro.response.status = 404;');
 	});
 
-	it('index.astro y Hero.astro deben incluir explícitamente la marca SERVITECNOLOGY y FeaturedParts', () => {
+	it('index.astro y Hero.astro deben incluir explícitamente la marca SERVITECNOLOGY, Software a Medida, Agentes IA y Bots', () => {
 		const indexPath = path.join(rootDir, 'src', 'pages', 'index.astro');
 		const heroPath = path.join(rootDir, 'src', 'components', 'Hero.astro');
 		const featuredPath = path.join(rootDir, 'src', 'components', 'FeaturedParts.astro');
@@ -105,8 +105,20 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(indexContent).toContain('FeaturedParts');
 		expect(indexContent).toContain('SERVITECNOLOGY');
 		expect(heroContent).toContain('SERVITECNOLOGY');
-		expect(heroContent).toContain('Servicio Técnico Especializado');
-		expect(heroContent).toContain('Repuestos y Soluciones TI');
+		expect(heroContent).toContain('Software a Medida & Agentes IA');
+		expect(heroContent).toContain('Bots de WhatsApp');
+		expect(heroContent).toContain('Bots para WhatsApp');
+	});
+
+	it('desarrollo.astro debe contener Schema.org Service y optimización para Agentes IA y Bots', () => {
+		const desarrolloPath = path.join(rootDir, 'src', 'pages', 'desarrollo.astro');
+		expect(fs.existsSync(desarrolloPath)).toBe(true);
+		const content = fs.readFileSync(desarrolloPath, 'utf-8');
+
+		expect(content).toContain('Agentes IA');
+		expect(content).toContain('bot para whatsapp');
+		expect(content).toContain('"@type": "Service"');
+		expect(content).toContain('"hasOfferCatalog"');
 	});
 
 	it('sitemap.xml.ts debe incluir espacio de nombres de Google Images y lastmod', () => {
