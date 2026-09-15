@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /meson-servitecnology-st/
+Disallow: /checkout
+Disallow: /pedido/
+Disallow: /mis-pedidos
+Disallow: /api/
 
 Sitemap: https://servitecnology.com/sitemap.xml

@@ -1,0 +1,121 @@
+---
+import { supabase } from '../lib/supabase';
+
+let featuredProducts: any[] = [];
+try {
+	const { data } = await supabase
+		.from('repuestos_productos')
+		.select('id, slug, titulo, sku, precio_venta, categoria, imagenes, stock_cantidad, estado')
+		.order('created_at', { ascending: false })
+		.limit(8);
+	featuredProducts = data ?? [];
+} catch (e) {
+	console.error('[FeaturedParts] Error fetching products:', e);
+}
+---
+
+{featuredProducts.length > 0 && (
+	<section id="repuestos-destacados" class="relative py-20 bg-black/95 overflow-hidden border-t border-white/5">
+		<!-- Subtle ambient glows -->
+		<div class="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-brand-cyan/5 rounded-full blur-[150px] pointer-events-none"></div>
+		<div class="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-brand-green/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
+			<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+				<div class="space-y-3">
+					<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-brand-green/30 bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider">
+						<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+						Stock Inmediato en Santiago
+					</div>
+					<h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+						Repuestos y Hardware Destacado
+					</h2>
+					<p class="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed">
+						Cargadores, teclados, pantallas y componentes originales testeados electrónicamente con garantía técnica SERVITECNOLOGY y despacho a todo Chile.
+					</p>
+				</div>
+
+				<a 
+					href="/repuestos" 
+					class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-cyan hover:text-brand-green transition-colors group shrink-0"
+				>
+					<span>Explorar Tienda Completa</span>
+					<svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+				</a>
+			</div>
+
+			<!-- Grid of Featured Products -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+				{featuredProducts.map((p) => {
+					const img = (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0] : '/imagenes/logost.png';
+					return (
+						<article class="group flex flex-col justify-between p-5 rounded-2xl border border-white/5 bg-zinc-950/60 backdrop-blur-sm transition-all duration-300 hover:border-brand-green/30 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(0,255,127,0.06)]">
+							<div class="space-y-4">
+								<!-- Image Container -->
+								<a href={`/repuesto/${p.slug}`} class="block relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-white/10">
+									<img 
+										src={img} 
+										alt={p.titulo} 
+										loading="lazy"
+										class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									{p.stock_cantidad > 0 ? (
+										<span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-green/20 border border-brand-green/30 text-brand-green backdrop-blur-md">
+											En Stock ({p.stock_cantidad})
+										</span>
+									) : (
+										<span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-500/20 border border-red-500/30 text-red-400 backdrop-blur-md">
+											Agotado
+										</span>
+									)}
+								</a>
+
+								<!-- Badges -->
+								<div class="flex items-center gap-2">
+									<span class="text-[10px] font-bold uppercase tracking-wider text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded border border-brand-cyan/20">
+										{p.categoria || 'Hardware'}
+									</span>
+									<span class="text-[10px] font-semibold text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+										SKU: {p.sku}
+									</span>
+								</div>
+
+								<!-- Title -->
+								<h3 class="text-sm font-bold text-white line-clamp-2 group-hover:text-brand-cyan transition-colors leading-snug">
+									<a href={`/repuesto/${p.slug}`}>
+										{p.titulo}
+									</a>
+								</h3>
+							</div>
+
+							<!-- Price & CTA -->
+							<div class="pt-4 mt-4 border-t border-white/5 flex items-center justify-between gap-3">
+								<div class="flex items-baseline gap-1">
+									<span class="text-lg font-black text-white">${p.precio_venta?.toLocaleString('es-CL')}</span>
+									<span class="text-[10px] text-slate-400 font-semibold">CLP</span>
+								</div>
+
+								<a 
+									href={`/repuesto/${p.slug}`}
+									class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,255,127,0.2)]"
+								>
+									Ver Ficha
+								</a>
+							</div>
+						</article>
+					);
+				})}
+			</div>
+
+			<!-- Bottom CTA -->
+			<div class="mt-12 text-center">
+				<a 
+					href="/repuestos" 
+					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white font-bold text-xs uppercase tracking-wider border border-white/10 hover:border-brand-cyan/30 transition-all duration-300"
+				>
+					Ver Catálogo Completo de Repuestos con Buscador por SKU →
+				</a>
+			</div>
+		</div>
+	</section>
+)}

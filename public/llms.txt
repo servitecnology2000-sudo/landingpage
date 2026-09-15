@@ -1,25 +1,32 @@
 # SERVITECNOLOGY
 
-> Soluciones informáticas de alto rendimiento, soporte técnico IT y catálogo de repuestos de hardware en Santiago de Chile.
+> Servicio técnico informático profesional de computadoras y notebooks, tienda ecommerce de repuestos de hardware y soluciones de software SaaS con IA en Santiago de Chile.
 
 ## Información General
-- **Marca:** SERVITECNOLOGY (anteriormente SERVITECH)
+- **Marca Oficial:** SERVITECNOLOGY (anteriormente SERVITECH)
 - **Sitio Web:** https://servitecnology.com/
-- **Contacto Principal:** WhatsApp [+56948672300](https://wa.me/56948672300)
-- **Cobertura:** Santiago de Chile (Santiago Centro, Providencia, Las Condes, Ñuñoa, La Florida, Maipú, Puente Alto, Peñalolén y alrededores).
+- **Contacto Comercial y Soporte:** WhatsApp [+56948672300](https://wa.me/56948672300)
+- **Correo Oficial:** contacto@servitecnology.com / jesusleon@servitecnology.com
+- **Ubicación y Cobertura:** Santiago de Chile (Santiago Centro, Providencia, Las Condes, Ñuñoa, La Florida, Maipú, Puente Alto, Peñalolén y despachos nacionales a todo Chile).
 
-## Servicios Estrella
-1. **Soporte Técnico Especializado:** Diagnóstico, mantenimiento preventivo/correctivo de laptops, PCs y consolas de videojuegos.
-2. **Armado de PCs y Modding Gaming:** Configuración personalizada para gaming, streaming y diseño.
-3. **Instalación de CCTV:** Sistemas de videovigilancia HD y monitoreo remoto.
-4. **Redes y Conectividad:** Cableado estructurado y optimización de señales Wi-Fi.
-5. **Reparación de Impresoras:** Soporte integral multimarca (HP, Epson, Canon, Brother).
+## Servicios Técnicos Estrella
+1. **Soporte Técnico Especializado:** Diagnóstico, reparación, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos.
+2. **Armado de PCs y Modding Gaming:** Configuración y ensamble de equipos de alto rendimiento para gaming, streaming y arquitectura.
+3. **Instalación de CCTV:** Sistemas de videovigilancia HD, cámaras IP y monitoreo remoto móvil en tiempo real.
+4. **Redes y Conectividad:** Cableado estructurado Cat6/6A, routers profesionales y optimización de redes Wi-Fi.
+5. **Reparación de Impresoras:** Mantenimiento integral multimarca (HP, Epson, Canon, Brother) con cambio de cabezales y almohadillas.
 
-## Catálogo de Repuestos y Componentes
-- Stock disponible de pantallas, teclados, almacenamiento (SSD), RAM, baterías y otros repuestos de hardware testeados con garantía.
-- **Nota Crítica de Venta:** El sitio web es un catálogo informativo. **No procesa pagos automáticos**. Las transacciones, formas de pago (transferencias, efectivo) y despachos se coordinan de forma directa y exclusiva por WhatsApp (+56948672300) o correo electrónico.
+## Tienda Ecommerce de Repuestos y Componentes
+- Stock disponible en tiempo real de cargadores de notebook (Asus, Dell, Lenovo, Toshiba, Samsung), teclados retroiluminados, tapas y chasis, pantallas, discos SSD, memorias RAM, almohadillas Epson y baluns CCTV.
+- **Canal de Venta y Transacciones:** Tienda ecommerce en https://servitecnology.com/repuestos con checkout directo.
+- **Medios de Pago Soportados:** Pasarela de pago oficial Mercado Pago (tarjetas de crédito, débito y dinero en cuenta) y Transferencia Bancaria Manual a BancoEstado con verificación automática.
+- **Modalidades de Entrega:** Retiro en punto físico en Santiago, despacho delivery RM y envío a todo Chile por Starken/Chilexpress.
+
+## Plataformas de Software SaaS
+1. **Whagil IA:** Agentes de inteligencia artificial conversacional y automatización operativa.
+2. **Whalinkbot:** Plataforma de marketing y comunicación multicanal para fidelización de clientes.
+3. **Infra Manager Pro:** Sistema de gestión empresarial para infraestructura TI, órdenes técnicas e inventario.
 
 ## Políticas y Garantías
-- **Términos de Despacho:** Coordinación directa uno a uno.
-- **Garantías:** Cumplimiento con la Ley del Consumidor chilena (SERNAC). Garantía de 6 meses para componentes nuevos; garantía de funcionamiento de 30 días para repuestos usados/reacondicionados.
-- **Privacidad:** Analíticas internas pasivas y anónimas para optimización de UX. Sin recopilación de datos sensibles.
+- **Garantías:** Cumplimiento total con Ley del Consumidor (SERNAC). 6 meses de garantía para repuestos nuevos y 3 meses de garantía técnica de laboratorio para repuestos usados verificados.
+- **Privacidad y Datos:** Cumplimiento con Ley N° 19.628 de Protección de Datos Personales en Chile y estándares ARCOP.

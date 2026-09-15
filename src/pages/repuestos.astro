@@ -13,9 +13,9 @@ let products: any[] = [];
 try {
 	const { data } = await supabase
 		.from('repuestos_productos')
-		.select('id, slug, nombre, descripcion, precio, categoria, imagen_url, stock')
+		.select('id, slug, titulo, descripcion, precio_venta, categoria, imagenes, stock_cantidad, sku')
 		.order('created_at', { ascending: false })
-		.limit(50);
+		.limit(100);
 	products = data ?? [];
 } catch (e) {
 	console.error('Error fetching products for schema:', e);
@@ -31,31 +31,35 @@ const catalogSchema = {
 		"@type": "ItemList",
 		"name": "Catálogo de Repuestos y Componentes de Computación e Impresoras",
 		"numberOfItems": products.length,
-		"itemListElement": products.map((p, index) => ({
-			"@type": "ListItem",
-			"position": index + 1,
-			"item": {
-				"@type": "Product",
-				"name": p.nombre,
-				"description": p.descripcion || `Repuesto original garantizado - ${p.nombre}`,
-				"image": p.imagen_url ? (p.imagen_url.startsWith('http') ? p.imagen_url : `https://servitecnology.com${p.imagen_url}`) : "https://servitecnology.com/imagenes/principal.jpg",
-				"url": `https://servitecnology.com/repuesto/${p.slug || p.id}`,
-				"category": p.categoria || "Repuestos",
-				"offers": {
-					"@type": "Offer",
-					"priceCurrency": "CLP",
-					"price": p.precio || 0,
-					"priceValidUntil": "2027-12-31",
-					"availability": (p.stock && p.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/LimitedAvailability",
-					"itemCondition": "https://schema.org/NewCondition",
-					"seller": {
-						"@type": "Organization",
-						"name": "SERVITECNOLOGY",
-						"url": "https://servitecnology.com"
+		"itemListElement": products.map((p, index) => {
+			const imgUrl = (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0] : "https://servitecnology.com/imagenes/principal.jpg";
+			return {
+				"@type": "ListItem",
+				"position": index + 1,
+				"item": {
+					"@type": "Product",
+					"name": p.titulo,
+					"sku": p.sku || undefined,
+					"description": p.descripcion ? p.descripcion.slice(0, 250) : `Repuesto original garantizado - ${p.titulo} (SKU: ${p.sku || ''})`,
+					"image": imgUrl,
+					"url": `https://servitecnology.com/repuesto/${p.slug}`,
+					"category": p.categoria || "Repuestos",
+					"offers": {
+						"@type": "Offer",
+						"priceCurrency": "CLP",
+						"price": p.precio_venta || 0,
+						"priceValidUntil": "2027-12-31",
+						"availability": (p.stock_cantidad && p.stock_cantidad > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+						"itemCondition": "https://schema.org/UsedCondition",
+						"seller": {
+							"@type": "Organization",
+							"name": "SERVITECNOLOGY",
+							"url": "https://servitecnology.com"
+						}
 					}
 				}
-			}
-		}))
+			};
+		})
 	}
 };
 ---

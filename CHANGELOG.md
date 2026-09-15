@@ -2,6 +2,33 @@
 
 Este archivo mantiene un registro cronológico de todas las actualizaciones, refactorizaciones y despliegues del proyecto SERVITECNOLOGY.
 
+- **2026-09-15 (Recuperación y Optimización Integral de Indexación SEO en Google: Marca y Repuestos por SKU):**
+  - **Diagnóstico y Corrección On-Page de Portada (`src/components/Hero.astro` e `src/pages/index.astro`):**
+    - Se restauró la presencia explícita de la entidad de marca **SERVITECNOLOGY** en el `H1`, badge superior, subtítulo descriptivo y metadatos de la portada para recuperar el posicionamiento orgánico #1 en Google frente a la ficha de Google Maps.
+    - Se incorporaron las palabras clave estratégicas de servicio técnico y repuestos originales con garantía en Santiago de Chile.
+    - Se añadieron llamadas a la acción directas hacia la tienda de repuestos (`/repuestos`) y servicios técnicos.
+  - **Enlazado Interno Directo de 1 Clic para Googlebot (`src/components/FeaturedParts.astro`):**
+    - Creación de nuevo componente para la portada que consulta en tiempo real los repuestos disponibles en Supabase y renderiza enlaces HTML directos (`<a href="/repuesto/[slug]">`) con número de parte (SKU), fotos y precios.
+    - Esto elimina el aislamiento de los productos y permite a los rastreadores de Google indexar repuestos en un solo salto desde la raíz transmitiendo la autoridad de la home.
+  - **Reparación del Catálogo y Schema ItemList (`src/pages/repuestos.astro`):**
+    - Se subsanó el error crítico de nombres de columna en Supabase (`titulo`, `precio_venta`, `imagenes`, `stock_cantidad`, `sku`), corrigiendo el schema JSON-LD `ItemList` que se entregaba vacío (`numberOfItems: 0`) a los bots de búsqueda.
+  - **Erradicación Total de Soft 404 en Fichas de Producto (`src/pages/repuesto/[slug].astro`):**
+    - Se eliminó la redirección a la raíz (`Astro.redirect('/')`) ante productos inexistentes o errores de carga, respondiendo en su lugar un auténtico código HTTP `404 Not Found` (`Astro.response.status = 404`) con interfaz amigable.
+    - Enriquecimiento del schema `Product` con extracción automática de marca (`brand`), código de fabricante (`mpn`), vendedor y políticas de devolución.
+  - **Página de Error 404 Personalizada (`src/pages/404.astro`):**
+    - Implementación de página 404 con diseño oscuro de alto contraste y glassmorphism que responde HTTP 404 legítimo para evitar penalizaciones de crawl budget.
+  - **Normalización Canónica y Control de Slashing (`src/layouts/Layout.astro` y `astro.config.mjs`):**
+    - Normalización estricta de la URL canónica: la raíz genera `https://servitecnology.com/` (con barra final según directriz de Google) y las subpáginas sin barra final.
+    - Configuración de `trailingSlash: 'never'` y consolidación de redirecciones 301 oficiales en `astro.config.mjs` (`/ecommerce` → `/repuestos`, `/soporte-tecnico` → `/soporte`, `/reparacion` → `/soporte`, etc.).
+  - **Protección de Rastreo en `public/robots.txt` y Actualización de `public/llms.txt`:**
+    - Bloqueo de rutas privadas y dinámicas (`/meson-servitecnology-st/`, `/checkout`, `/pedido/`, `/mis-pedidos`, `/api/`) en `robots.txt` para enfocar el rastreo en páginas indexables.
+    - Actualización de `llms.txt` removiendo la mención obsoleta de catálogo no transaccional y declarando el e-commerce activo con Mercado Pago y despacho nacional.
+  - **Sitemap XML Enriquecido para Google Imágenes (`src/pages/sitemap.xml.ts`):**
+    - Inclusión del espacio de nombres `xmlns:image` con `<image:image>`, `<image:loc>` y títulos con SKU para posicionar las piezas en Google Imágenes, además de fechas `<lastmod>` dinámicas.
+  - **Certificación Automatizada de Calidad:**
+    - Creación de suite `tests/seo-audit.test.ts` con 9 pruebas específicas de verificación técnica de SEO.
+    - Suite completa aprobada al 100% (15 archivos de test, 121 pruebas pasadas) y compilación de producción exitosa (`npm run build`).
+
 - **2026-09-12 (Implementación Dual Mercado Pago: API de Orders con Fallback a Preferences API):**
   - **Modernización y Resiliencia en Pasarela (`src/lib/mercadopago.ts` y `src/pages/api/mercadopago/create-preference.ts`):**
     - Se incorporó la instancia oficial de `Order` (`orderClient = new Order(mpClient)`) y `Payment` (`paymentClient = new Payment(mpClient)`) en el SDK.

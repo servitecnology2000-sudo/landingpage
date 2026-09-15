@@ -23,39 +23,67 @@ try {
 }
 
 if (!product) {
-	return Astro.redirect('/');
+	Astro.response.status = 404;
 }
 
-const compStr = product.compatibilidad && product.compatibilidad.length > 0 
+const compStr = product?.compatibilidad && product.compatibilidad.length > 0 
 	? product.compatibilidad.slice(0, 3).join(', ') 
 	: 'varios modelos';
 
-const titleSEO = `${product.titulo} para ${compStr} - SKU: ${product.sku} | SERVITECNOLOGY`;
-const descSEO = `Compra tu ${product.titulo} compatible con ${compStr}. Repuesto original con SKU ${product.sku}. Disponible en Santiago de Chile con entrega previa coordinación.`;
-const keywordsSEO = product.seo_keywords || `repuesto, ${product.titulo}, ${product.sku}, servitecnology`;
+const titleSEO = product 
+	? `${product.titulo} para ${compStr} - SKU: ${product.sku} | SERVITECNOLOGY`
+	: 'Repuesto no encontrado (404) | SERVITECNOLOGY';
+const descSEO = product
+	? `Compra tu ${product.titulo} compatible con ${compStr}. Repuesto original con SKU ${product.sku}. Disponible en Santiago de Chile con entrega previa coordinación.`
+	: 'El repuesto solicitado no está disponible en nuestro catálogo.';
+const keywordsSEO = product?.seo_keywords || `repuesto, ${product?.titulo || ''}, ${product?.sku || ''}, servitecnology`;
 
 const phone = "56948672300";
-const msg = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web en la URL de detalle. ¿Tienen stock o valor con instalación?`);
+const msg = product ? encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web en la URL de detalle. ¿Tienen stock o valor con instalación?`) : '';
 const waLink = `https://wa.me/${phone}?text=${msg}`;
 
-const images: string[] = product.imagenes ?? [];
+const images: string[] = product?.imagenes ?? [];
 const hasMultipleImages = images.length > 1;
 
+// Infer brand from title or compatibilidad or default to SERVITECNOLOGY
+const titleLower = (product?.titulo || '').toLowerCase();
+let brandName = 'SERVITECNOLOGY';
+if (titleLower.includes('dell')) brandName = 'Dell';
+else if (titleLower.includes('asus')) brandName = 'ASUS';
+else if (titleLower.includes('lenovo') || titleLower.includes('thinkpad')) brandName = 'Lenovo';
+else if (titleLower.includes('hp') || titleLower.includes('hewlett')) brandName = 'HP';
+else if (titleLower.includes('samsung')) brandName = 'Samsung';
+else if (titleLower.includes('toshiba')) brandName = 'Toshiba';
+else if (titleLower.includes('epson')) brandName = 'Epson';
+else if (titleLower.includes('canon')) brandName = 'Canon';
+else if (titleLower.includes('hikvision')) brandName = 'Hikvision';
+
 // Prepare JSON-LD schema
-const productSchema = {
+const productSchema = product ? {
 	"@context": "https://schema.org",
 	"@type": "Product",
 	"name": product.titulo,
 	"sku": product.sku,
-	"model": product.compatibilidad && product.compatibilidad.length > 0 ? product.compatibilidad.join(', ') : 'Varios',
+	"mpn": product.sku,
+	"brand": {
+		"@type": "Brand",
+		"name": brandName
+	},
+	"model": product.compatibilidad && product.compatibilidad.length > 0 ? product.compatibilidad.join(', ') : product.sku,
 	"description": `${product.descripcion || ''} | SKU: ${product.sku} | Compatibilidad: ${product.compatibilidad ? product.compatibilidad.join(', ') : 'Varios'}`,
 	"image": images.length > 0 ? images[0] : "https://servitecnology.com/imagenes/principal.jpg",
 	"offers": {
 		"@type": "Offer",
 		"priceCurrency": "CLP",
 		"price": product.precio_venta,
+		"priceValidUntil": "2027-12-31",
 		"itemCondition": "https://schema.org/UsedCondition",
 		"availability": product.stock_cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+		"seller": {
+			"@type": "Organization",
+			"name": "SERVITECNOLOGY",
+			"url": "https://servitecnology.com"
+		},
 		"hasMerchantReturnPolicy": {
 			"@type": "MerchantReturnPolicy",
 			"applicableCountry": "CL",
@@ -93,16 +121,40 @@ const productSchema = {
 			}
 		}
 	}
-};
+} : null;
 ---
 
 <Layout title={titleSEO} description={descSEO} keywords={keywordsSEO}>
 	<Header />
 	
-	<!-- Structured Data JSON-LD Product Schema -->
-	<script type="application/ld+json" is:inline set:html={JSON.stringify(productSchema)} />
-	
-	<main class="relative bg-black min-h-screen py-20 border-b border-white/5">
+	{!product ? (
+		<main class="relative bg-black min-h-[70vh] flex items-center justify-center py-20 px-6">
+			<div class="relative z-10 max-w-lg mx-auto text-center space-y-6">
+				<div class="w-20 h-20 mx-auto rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-3xl font-black">
+					404
+				</div>
+				<h1 class="text-3xl font-black text-white">Repuesto No Encontrado</h1>
+				<p class="text-sm text-slate-300 leading-relaxed">
+					El componente o SKU solicitado no se encuentra disponible actualmente en nuestro catálogo o fue dado de baja.
+				</p>
+				<div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+					<a href="/repuestos" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-brand-green to-brand-cyan text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all">
+						Ver Catálogo Completo
+					</a>
+					<a href="/" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/15 transition-all">
+						Ir al Inicio
+					</a>
+				</div>
+			</div>
+		</main>
+	) : (
+		<>
+			<!-- Structured Data JSON-LD Product Schema -->
+			{productSchema && (
+				<script type="application/ld+json" is:inline set:html={JSON.stringify(productSchema)} />
+			)}
+			
+			<main class="relative bg-black min-h-screen py-20 border-b border-white/5">
 		<!-- Background Glows -->
 		<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-brand-cyan/5 rounded-full blur-[120px] pointer-events-none"></div>
 		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-brand-green/5 rounded-full blur-[120px] pointer-events-none"></div>
@@ -281,6 +333,8 @@ const productSchema = {
 			</div>
 		</div>
 	</main>
+	</>
+	)}
 
 	<Footer />
 </Layout>
