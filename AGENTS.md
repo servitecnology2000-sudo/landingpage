@@ -1,90 +1,74 @@
-## Development
+# SERVITECNOLOGY — Centralita de Orquestación de Agentes IA (Router Maestro)
 
-When starting the dev server, use background mode:
+> Este repositorio opera bajo el estándar **Spec-Driven Development (SDD)** con gobernanza de 4 Hard Code-Gates y Context Routing modular.
 
+---
+
+## 🛠️ Comandos Principales
+
+```bash
+astro dev --background   # Iniciar servidor Astro en segundo plano
+astro dev stop           # Detener servidor en segundo plano
+npm run dev              # Iniciar servidor de desarrollo en primer plano
+npm test                 # Ejecutar suite completa de pruebas (Vitest)
+npm run build            # Compilar bundle de producción y verificar tipos
 ```
-astro dev --background
+
+---
+
+## 🌲 Mapa del Repositorio
+
+```text
+landingpage/
+├── AGENTS.md                  # 🧭 Centralita de Enrutamiento (Router Maestro)
+├── .agents/
+│   ├── rules/                 # 🚦 Reglas atómicas de dominio (YAML frontmatter)
+│   ├── specs/                 # 📋 El "QUÉ": Especificaciones Funcionales (EARS + DoD)
+│   ├── plans/                 # 🛠️ El "CÓMO": Planes Técnicos de Implementación
+│   └── archive/               # 📦 Historial archivado (CHANGELOG y AGENTS legacy)
+├── src/
+│   ├── components/            # Componentes UI reutilizables
+│   ├── layouts/               # Layouts base (Main, AdminLayout)
+│   ├── lib/                   # Utilidades y servicios (Supabase, MP, mailer, rut)
+│   └── pages/                 # Rutas SSR/estáticas y endpoints API (/api/*)
+├── supabase/migrations/       # Migraciones DDL versionadas en SQL
+└── tests/                     # Suite de pruebas automatizadas (Vitest)
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+---
 
-## Documentation
+## 🌿 Estrategia de Ramas Git
 
-Full documentation: https://docs.astro.build
+- `main`: Rama de producción vinculada a despliegues automáticos en Vercel.
+- `staging`: Entorno de homologación y validación previa.
+- `feat/*` / `fix/*`: Ramas de trabajo asociadas a una especificación en `.agents/specs/`.
 
-Consult these guides before working on related tasks:
+---
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+## 🚨 CRITICAL CONTEXT DIRECTIVE — EL HARD CODE-GATE (SDD)
 
+> [!CAUTION]
+> **REGLA INNEGOCIABLE DE GOBERNANZA:**
+> La IA tiene **TERMINANTEMENTE PROHIBIDO** modificar o crear código de producción sin haber cumplido los 4 gates:
+>
+> 1. **Gate 1 (Spec Obligatoria):** Redactar `.agents/specs/<feat>.md` con formato EARS y Definition of Done (DoD). Sin código.
+> 2. **Gate 2 (Plan Técnico):** Redactar `.agents/plans/<feat>.md` detallando archivos afectados (`[MODIFY]`, `[NEW]`, `[DELETE]`) y estrategia de testing.
+> 3. **Gate 3 (Parada Humana Obligatoria):** La IA tiene **TERMINANTEMENTE PROHIBIDO** escribir código en el mismo turno del Plan. DEBE detenerse y esperar la aprobación explícita del usuario.
+> 4. **Gate 4 (Testing Mandate & DoD):** No se cierra ninguna tarea sin ejecutar `npm test` y `npm run build` con 0 errores y certificar todos los checks del DoD en la spec.
+>
+> *Excepción única:* Consultas de lectura/investigación pura o correcciones tipográficas triviales de una línea.
 
-# SERVITECNOLOGY - Estado del Proyecto y Memoria del Agente
+---
 
-## 🚀 Arquitectura Actual del Ecosistema
-- **Plataforma Web:** E-commerce corporativo y catálogo técnico de alta fidelidad desplegado en Vercel sobre Astro 5 (SSR con adaptador `@astrojs/vercel`).
-- **Dominio Canónico:** `https://servitecnology.com` (con soporte en Vercel staging).
-- **Estilos:** Tailwind CSS 4 con diseño oscuro de alto contraste, acentos fluorescentes (`brand-green`, `brand-cyan`, ámbar y esmeralda) y soporte para carruseles táctiles y marquesinas infinitas.
-- **Base de Datos & Autenticación:** Supabase (ID de referencia: `mivsnmvupahgbrjfdyhl`).
-  - `repuestos_productos`: Inventario con SKU, stock numérico (`stock_cantidad`), precios de venta/costo, imágenes, slugs y metadatos SEO.
-  - `customers`: Perfiles de clientes sincronizados con `auth.users`, campos de contacto, RUT para facturación electrónica y direcciones de despacho.
-  - `orders`: Órdenes de compra con identificador único legible (`ST-2026-XXXX`), items JSONB, tipos de entrega (`retiro`, `delivery_rm`, `envio_nacional`), costos de flete, estados de pago (`pendiente`, `aprobado`, `rechazado`, `cancelado`), ciclo logístico completo (`preparacion`, `despachado`, `listo_retiro`, `entregado`, `cancelado`), control de seguimiento (`tracking_number`, `courier`, `shipped_at`, `ready_pickup_at`, `admin_notes`) y referencias de Mercado Pago (`mp_preference_id`, `mp_payment_id`).
-  - `metricas_eventos`: Tracking analítico de clics y visitas.
-  - `trabajos_galeria`: Portafolio dinámico de trabajos realizados por categoría técnica.
-- **Storage:** Buckets públicos en Supabase: `imagenes-repuestos` y `trabajos_galeria`.
-- **Gestión y Ejecución Directa de Migraciones en Supabase (MCP & Management API):**
-  - **ID del Proyecto:** `mivsnmvupahgbrjfdyhl` (`servitecnology2000`).
-  - **Token de Acceso Personal:** Configurado en `.agents/mcp_config.json` y `~/.gemini/config/mcp_config.json` (`SUPABASE_ACCESS_TOKEN`).
-  - **Aplicación Autónoma de Migraciones DDL/SQL:** El agente DEBE aplicar directamente las migraciones de base de datos a Supabase en vivo utilizando el script de Management API (`node scripts/apply-migration.mjs <archivo.sql>`) o el servidor MCP de Supabase.
-  - **Trazabilidad:** Todo cambio DDL debe guardarse en `supabase/migrations/YYYYMMDD_nombre.sql`, ejecutarse directamente en Supabase y certificarse con la suite de pruebas (`npm test`).
-- **Pasarela de Pagos (Mercado Pago Chile MLC):**
-  - Checkout Pro mediante SDK oficial `@mercadopago/sdk-nodejs` (`Preference` y conciliación de `Payment`).
-  - Servidor MCP oficial de Mercado Pago (`https://mcp.mercadopago.com/mcp`) integrado en `.agents/mcp_config.json`.
-  - Soporte para dos modalidades: **Transferencia Bancaria Manual** (BancoEstado con temporizador de reserva de 2 horas) y **Mercado Pago** (tarjetas de crédito, débito y dinero en cuenta).
-  - Manejo de entorno dual (Sandbox con aislamiento de comprador de prueba y Producción).
-  - Notificaciones Webhook (`/api/mercadopago/webhook`) con validación de idempotencia, conciliación automática con la API de Mercado Pago, actualización de orden en Supabase, descuento atómico de stock y envío automatizado de correos transaccionales con plantilla HTML formal para Facturación Electrónica SII.
-- **Servicio de Notificaciones por Email:** Nodemailer con transporte SMTP corporativo (`notificaciones@servitecnology.com`) para confirmaciones de compra instantáneas.
+## 🧭 Mapa de Enrutamiento de Contexto (Context Routing Map)
 
-## 🛠️ Rutas y Módulos Activos
-1. **Rutas Públicas:**
-   - `/`: Landing page principal (Hero, Servicios técnicos, Repuestos destacados).
-   - `/ecommerce` (alias `/repuestos`): Catálogo universal con buscador multicriterio en vivo (SKU, marca, modelo, descripción) y carrito de compras flotante.
-   - `/repuesto/[slug]`: Ficha de producto con microdatos schema `Product`, galería de fotos y botón de compra.
-   - `/checkout`: Flujo de checkout en dos pasos (Autenticación/Datos del cliente con RUT obligatorio y selector de entrega, seguido de selección de medio de pago: Transferencia Bancaria o Mercado Pago).
-   - `/pedido/[id]`: Pantalla de confirmación y seguimiento post-compra con discriminación condicional (`isPaid`):
-     - **Pago Aprobado (Mercado Pago):** UI verde esmeralda con stock 100% asegurado, número de operación oficial de MP, detalles de despacho/retiro, garantía 3x3 y botón directo de soporte por WhatsApp. Oculta el temporizador de cuenta regresiva.
-     - **Pendiente de Transferencia:** UI ámbar con instrucciones oficiales de BancoEstado, RUT empresarial, código obligatorio de glosa y temporizador regresivo de reserva temporal de 2 horas.
-   - `/canal-de-youtube`: Integración con YouTube Data API v3 y reproductor modal de videos y reparaciones del taller.
-   - `/terminos`, `/privacidad`, `/garantias`: Páginas legales conformes a normativas SERNAC y directrices del SII.
-2. **Ruta Administrativa Privada (`/meson-servitecnology-st`):**
-   - Panel de control ofuscado protegido por clave maestra (`ADMIN_SECRET`) y Supabase Auth.
-   - Gestión CRUD completa de repuestos, control de inventario con toggle de producto agotado, carga masiva de imágenes a Supabase Storage y edición de galería de trabajos.
+Antes de realizar cambios o proponer soluciones en un dominio específico, la IA **DEBE LEER** la regla atómica correspondiente en `.agents/rules/`:
 
-## 💳 Reglas Técnicas de Mercado Pago en Sandbox Chile (MLC)
-- **Documento del Titular en Formularios:** En el selector desplegable de documento de Checkout Pro en Chile, debe seleccionarse siempre **`Otro`** (no `RUT`) e ingresar **`123456789`**. Ingresar un RUT con tarjetas de prueba activa validaciones bancarias reales y genera el error `UNDEFINED SOURCE` o rechazo de tarjeta.
-- **Simulación de Estados:** En las pruebas con tarjetas sandbox (`5416 7526 0258 2580`), el nombre del titular controla el resultado: `APRO` (aprobado), `FUND` (fondos insuficientes), `CONT` (pendiente/autorización), `SECU` (código de seguridad inválido), etc.
-- **Aislamiento de Sesión:** En modo sandbox, el backend inyecta automáticamente el email del comprador de pruebas (`ML_PRUEBAS_COMPRADOR_EMAIL`) en el payer de la preferencia para evitar conflictos con la cuenta real de Mercado Libre del vendedor.
-
-## 🎨 Regla Obligatoria de UI/UX: Modales Modernos y Cero Alerts Nativos
-- **Prohibición Estricta de Alertas Nativas:** En todo el SaaS y la plataforma SERVITECNOLOGY está **ESTRICTAMENTE PROHIBIDO** usar las funciones nativas arcaicas del navegador: `window.alert()`, `window.confirm()` y `window.prompt()`. Estas ventanas emergentes rompen la inmersión visual, degradan la estética premium del SaaS y transmiten sensación anticuada.
-- **Uso Obligatorio de Modales y Toasts Modernos:** CADA confirmación de acción (p. ej., marcar como entregado, rechazar pedido, eliminar registros), aviso de advertencia o notificación interactiva DEBE utilizar:
-  - **Modales de Confirmación y Alerta:** El sistema global de modales oscuros con glassmorphism (`window.showAdminConfirm({ title, message, type, icon, confirmText, cancelText })` y `window.showAdminAlert({ title, message, type, icon })`).
-  - **Notificaciones Toast:** Para retroalimentación inmediata no bloqueante (`window.showAdminToast(message, 'success' | 'error' | 'warning')`).
-- **Lineamientos Estéticos de los Modales:**
-  - Fondo oscuro de alto contraste (`#121215` / `bg-zinc-950`) con telón desenfocado (`backdrop-blur-md bg-black/80`).
-  - Bordes brillantes y sutiles según la semántica de la acción (`border-emerald-500/40` para éxito, `border-red-500/40` para acciones destructivas/peligro, `border-amber-500/40` para advertencias y `border-brand-cyan/40` para información).
-  - Tipografía moderna `Outfit` e `Inter` con botones redondeados (`rounded-xl`), microanimaciones de entrada/salida y cierre accesible (tecla `Escape` y clic fuera en el telón).
-
-## 🧪 Regla Obligatoria de Pruebas y Testing
-- **Pruebas en Todo Desarrollo o Fix:** CADA VEZ que se implemente una nueva característica, módulo, endpoint o se aplique una corrección de bugs (fix), DEBE agregarse y/o ejecutarse la suite de pruebas correspondiente (unitarias, integración o scripts de verificación automatizada) para certificar que el código funciona y que no se introducen regresiones antes de dar la tarea por concluida.
-- **Criterio de Validación:** Ninguna tarea se considera finalizada sin verificar que los tests pasen exitosamente y que la compilación de producción (`npm run build`) no arroje errores de tipos ni de sintaxis.
-
-## 📋 Regla de Actualización Obligatoria para el Agente
-- **Actualización Inmediata de 'CHANGELOG.md':** CADA VEZ que realice un cambio, actualización de código, refactorización o despliegue en este proyecto, DEBO actualizar inmediatamente el archivo `CHANGELOG.md` antes de finalizar la tarea, registrando los cambios en el historial de versiones.
-- **Orden del CHANGELOG.md (Estándar de la Industria):** El archivo debe mantener un **Orden Cronológico Inverso estricto (Reverse Chronological Order)**:
-  - **Lo más NUEVO SIEMPRE va ARRIBA (al principio del archivo)**, inmediatamente debajo del título `# Historial de Versiones`.
-  - Lo más ANTIGUO permanece abajo (al final del archivo).
-  - Nunca agregar entradas nuevas al final del archivo; siempre insertarlas como el primer elemento de la lista.
+| Dominio / Acción Solicitada | Archivo de Regla a Consultar | Foco Principal |
+| :--- | :--- | :--- |
+| 🚦 **Nuevo Feature, Fix o Refactor** | [`.agents/rules/sdd-workflow.md`](file:///.agents/rules/sdd-workflow.md) | Ciclo de 4 gates, plantillas EARS y criterios de parada |
+| 🗄️ **Base de Datos, SQL y Supabase** | [`.agents/rules/database.md`](file:///.agents/rules/database.md) | DDL autónomo (`apply-migration.mjs`), RLS, tablas y storage |
+| 🎨 **Frontend, Astro, Tailwind o UX** | [`.agents/rules/frontend.md`](file:///.agents/rules/frontend.md) | **Cero alerts nativos**, modales modernos, Schema.org |
+| 💳 **Mercado Pago, Pagos y Stock** | [`.agents/rules/mercadopago-pagos.md`](file:///.agents/rules/mercadopago-pagos.md) | Sandbox MLC (`Otro` 123456789), webhooks y cancelación |
+| 🔒 **Panel Admin, CRM y Logística** | [`.agents/rules/admin-crm.md`](file:///.agents/rules/admin-crm.md) | `/meson-servitecnology-st`, RUT validator, courier tracking |
+| 🧪 **Testing, Build y Certificación** | [`.agents/rules/testing-calidad.md`](file:///.agents/rules/testing-calidad.md) | Vitest, Astro build, cero regresiones y tracking DoD |

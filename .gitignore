@@ -26,5 +26,6 @@ pnpm-debug.log*
 # vercel folder
 .vercel/
 
-# local agent config
-.agents/
+# local agent config & credentials
+.agents/mcp_config.json
+.agents/mcp/
