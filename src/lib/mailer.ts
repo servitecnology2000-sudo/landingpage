@@ -191,8 +191,8 @@ export function getOrderConfirmationEmailHtml(data: OrderEmailData): string {
 										</p>
 										<p style="margin: 4px 0 0 0; color: #a1a1aa; font-size: 11px; line-height: 1.4;">
 											${isCompany 
-												? 'Documento tributario formal para crédito fiscal emitido conforme a las directrices del SII por SERVITECNOLOGY SpA.' 
-												: 'Comprobante tributario oficial de ventas emitido conforme a las directrices del SII por SERVITECNOLOGY SpA.'}
+												? 'Documento tributario formal para crédito fiscal emitido conforme a las directrices del SII por SERVITECNOLOGY EIRL.' 
+												: 'Comprobante tributario oficial de ventas emitido conforme a las directrices del SII por SERVITECNOLOGY EIRL.'}
 										</p>
 									</div>
 
@@ -210,7 +210,7 @@ export function getOrderConfirmationEmailHtml(data: OrderEmailData): string {
 						<!-- Footer -->
 						<tr>
 							<td style="background-color: #121215; padding: 20px 30px; text-align: center; border-top: 1px solid #27272a; font-size: 11px; color: #71717a;">
-								<p style="margin: 0 0 5px 0;">SERVITECNOLOGY SpA — Santiago Centro, Chile</p>
+								<p style="margin: 0 0 5px 0;">SERVITECNOLOGY EIRL — Santiago Centro, Chile</p>
 								<p style="margin: 0 0 5px 0;">Soporte y Consultas: <a href="mailto:contacto@servitecnology.com" style="color: #00CFFF; text-decoration: none;">contacto@servitecnology.com</a> | WhatsApp: +56 9 4867 2300</p>
 								<p style="margin: 0; color: #52525b;">${isCompany ? 'Todas las compras empresariales incluyen Factura Electrónica conforme a las directrices del SII.' : 'Todas las compras incluyen Boleta Electrónica conforme a las directrices del SII.'}</p>
 							</td>
@@ -238,7 +238,8 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
 		await transporter.sendMail({
 			from: `"Servitecnology Notificaciones" <${senderEmail}>`,
 			to: data.customerEmail,
-			bcc: adminRecipients, // Copia oculta para administración y respaldo interno
+			cc: 'contacto@servitecnology.com', // Entra directo en la bandeja de entrada de administración
+			bcc: adminRecipients, // Copia oculta de respaldo para notificaciones@ y administración
 			subject: `Confirmación de Compra [${docLabel}] Pedido ${data.orderId} — SERVITECNOLOGY`,
 			html: htmlContent
 		});
@@ -387,7 +388,7 @@ export async function sendOrderShippedEmail(data: OrderShippedEmailData): Promis
 							<!-- Footer -->
 							<tr>
 								<td style="background-color: #121215; padding: 20px 30px; text-align: center; border-top: 1px solid #27272a; font-size: 11px; color: #71717a;">
-									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY SpA — Santiago Centro, Chile</p>
+									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY EIRL — Santiago Centro, Chile</p>
 									<p style="margin: 0 0 5px 0;">¿Dudas con tu despacho? <a href="mailto:contacto@servitecnology.com" style="color: #00CFFF; text-decoration: none;">contacto@servitecnology.com</a> | WhatsApp: +56 9 4867 2300</p>
 								</td>
 							</tr>
@@ -524,7 +525,7 @@ export async function sendOrderReadyForPickupEmail(data: OrderReadyPickupEmailDa
 							<!-- Footer -->
 							<tr>
 								<td style="background-color: #121215; padding: 20px 30px; text-align: center; border-top: 1px solid #27272a; font-size: 11px; color: #71717a;">
-									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY SpA — Santiago Centro, Chile</p>
+									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY EIRL — Santiago Centro, Chile</p>
 									<p style="margin: 0 0 5px 0;">¿Necesitas coordinar tu entrega? <a href="mailto:contacto@servitecnology.com" style="color: #00CFFF; text-decoration: none;">contacto@servitecnology.com</a> | WhatsApp: +56 9 4867 2300</p>
 								</td>
 							</tr>
@@ -703,7 +704,7 @@ export async function sendOrderDeliveredEmail(data: OrderDeliveredEmailData): Pr
 							<!-- Footer -->
 							<tr>
 								<td style="background-color: #121215; padding: 20px 30px; text-align: center; border-top: 1px solid #27272a; font-size: 11px; color: #71717a;">
-									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY SpA — Santiago Centro, Región Metropolitana, Chile</p>
+									<p style="margin: 0 0 5px 0;">SERVITECNOLOGY EIRL — Santiago Centro, Región Metropolitana, Chile</p>
 									<p style="margin: 0 0 5px 0;">Atención Técnica y Despachos: <a href="mailto:contacto@servitecnology.com" style="color: #00CFFF; text-decoration: none;">contacto@servitecnology.com</a> | WhatsApp: +56 9 4867 2300</p>
 								</td>
 							</tr>

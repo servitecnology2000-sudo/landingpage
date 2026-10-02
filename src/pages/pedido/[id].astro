@@ -76,12 +76,12 @@ const isPaid = (order?.payment_status === 'aprobado') ||
 
 const finalPaymentId = order?.mp_payment_id || paymentIdParam || '';
 
-// Datos bancarios oficiales de SERVITECNOLOGY SpA (para compras por transferencia)
+// Datos bancarios oficiales de SERVITECNOLOGY EIRL (para compras por transferencia)
 const BANK_DETAILS = {
 	banco: "BancoEstado",
 	tipoCuenta: "Cuenta Corriente",
 	numeroCuenta: "00-721-94820-01",
-	titular: "SERVITECNOLOGY SpA",
+	titular: "SERVITECNOLOGY EIRL",
 	rut: "77.892.410-K",
 	email: "contacto@servitecnology.com"
 };
@@ -352,7 +352,7 @@ const BANK_DETAILS = {
 							<h4 class="font-bold text-white">Factura Electrónica SII & Garantía Técnica 3x3</h4>
 							<p class="text-slate-400 leading-relaxed">
 								{isPaid 
-									? 'Tu Factura Electrónica conforme al SII será emitida y enviada a tu correo registrado. Todos los repuestos disponen de 90 días de garantía técnica formal con Servitecnology SpA.'
+									? 'Tu Factura Electrónica conforme al SII será emitida y enviada a tu correo registrado. Todos los repuestos disponen de 90 días de garantía técnica formal con Servitecnology EIRL.'
 									: 'Una vez validada la transferencia bancaria por nuestro equipo administrativo, recibirás en tu correo la Factura Electrónica emitida formalmente ante el SII junto con el comprobante de despacho o la citación de retiro.'}
 							</p>
 						</div>
@@ -638,7 +638,7 @@ const BANK_DETAILS = {
 			const exportOrderPayload = {
 				metadatos: {
 					plataforma: "SERVITECNOLOGY E-commerce & SaaS",
-					responsable_legal: "SERVITECNOLOGY SpA",
+					responsable_legal: "SERVITECNOLOGY EIRL",
 					normativa: "Ley N° 21.719 sobre Protección de Datos Personales de Chile - Art. 9 Derecho a la Portabilidad",
 					fecha_exportacion: new Date().toISOString(),
 					formato: "application/json",

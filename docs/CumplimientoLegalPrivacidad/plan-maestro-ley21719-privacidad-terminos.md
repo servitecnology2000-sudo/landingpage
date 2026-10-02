@@ -52,7 +52,7 @@ En el comercio electrónico chileno existe una aparente tensión entre el "derec
 ### Componente 1: Reforma Integral de la Política de Privacidad (`src/pages/privacidad.astro`)
 Se redactará un documento legal riguroso y transparente con diseño dark glassmorphic, organizado en las siguientes cláusulas:
 1. **Identificación del Responsable del Tratamiento:**
-   - Razón Social: SERVITECNOLOGY SpA.
+   - Razón Social: SERVITECNOLOGY EIRL.
    - Domicilio: Santiago Centro, Región Metropolitana, Chile.
    - Canales oficiales de privacidad: `contacto@servitecnology.com` / `privacidad@servitecnology.com`.
 2. **Marco Normativo:**
@@ -84,7 +84,7 @@ Se actualizará el contrato de adhesión de la tienda virtual, reflejando el eco
 1. **Ámbito de Aplicación:** Venta online de componentes, repuestos informáticos y servicios técnicos en Chile continental.
 2. **Modalidades de Pago Habilitadas:**
    - **Mercado Pago Chile (Checkout Pro):** Tarjetas de crédito (hasta en cuotas), tarjetas de débito bancarias (Redcompra / Webpay) y saldo en cuenta Mercado Pago.
-   - **Transferencia Bancaria Directa:** Cuenta corriente BancoEstado de SERVITECNOLOGY SpA, con sistema de **reserva de stock por 2 horas** y conciliación manual mediante glosa obligatoria con código `ST-2026-XXXX`.
+   - **Transferencia Bancaria Directa:** Cuenta corriente BancoEstado de SERVITECNOLOGY EIRL, con sistema de **reserva de stock por 2 horas** y conciliación manual mediante glosa obligatoria con código `ST-2026-XXXX`.
 3. **Modalidades de Despacho y Entrega:**
    - **Retiro en Sucursal ($0 CLP):** Oficina técnica en Santiago Centro, previa acreditación de pago y coordinación de horario. Exigencia de exhibición de cédula de identidad y código de orden.
    - **Envíos por Pagar a Todo Chile:** Despacho vía Starken o Chilexpress (cobro en destino). Notificación automática con empresa de transporte, número de seguimiento (tracking) y constancia de flete.
