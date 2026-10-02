@@ -5,6 +5,9 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { supabaseAdmin } from '../../lib/supabase';
+import { reconcileApprovedOrder } from '../../lib/order-reconciliation';
+import { mpClient } from '../../lib/mercadopago';
+import { Payment } from 'mercadopago';
 
 const { id } = Astro.params;
 const orderId = id?.toUpperCase() || 'ST-2026-0000';
@@ -38,6 +41,33 @@ const paymentStatusParam = Astro.url.searchParams.get('payment');
 const statusParam = Astro.url.searchParams.get('status');
 const collectionStatusParam = Astro.url.searchParams.get('collection_status');
 const paymentIdParam = Astro.url.searchParams.get('payment_id') || Astro.url.searchParams.get('collection_id');
+
+// Doble Conciliación Automática en Servidor (A prueba de retrasos de Webhooks)
+
+if (
+	order &&
+	order.payment_status !== 'aprobado' &&
+	paymentIdParam &&
+	(collectionStatusParam === 'approved' || statusParam === 'approved' || paymentStatusParam === 'success')
+) {
+	try {
+		const paymentApi = new Payment(mpClient);
+		const mpPayment = await paymentApi.get({ id: paymentIdParam });
+
+		if (mpPayment && mpPayment.status === 'approved') {
+			console.log(`[pedido/[id]] Doble Conciliación: Pago ${paymentIdParam} verificado en Mercado Pago para orden ${orderId}. Reconciliando...`);
+			await reconcileApprovedOrder({
+				orderId,
+				paymentId: paymentIdParam
+			});
+
+			order.payment_status = 'aprobado';
+			order.mp_payment_id = String(paymentIdParam);
+		}
+	} catch (reconcileErr) {
+		console.warn(`[pedido/[id]] Aviso en verificación de retorno MP para orden ${orderId}:`, reconcileErr);
+	}
+}
 
 const isPaid = (order?.payment_status === 'aprobado') ||
 	(paymentStatusParam === 'success') ||

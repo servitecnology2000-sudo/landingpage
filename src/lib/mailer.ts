@@ -233,11 +233,12 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
 		const docLabel = isCompany ? 'Factura' : 'Boleta';
 
 		const htmlContent = getOrderConfirmationEmailHtml(data);
+		const adminRecipients = Array.from(new Set([senderEmail, 'contacto@servitecnology.com'])).filter(Boolean);
 
 		await transporter.sendMail({
 			from: `"Servitecnology Notificaciones" <${senderEmail}>`,
 			to: data.customerEmail,
-			bcc: senderEmail, // Copia oculta para respaldo interno
+			bcc: adminRecipients, // Copia oculta para administración y respaldo interno
 			subject: `Confirmación de Compra [${docLabel}] Pedido ${data.orderId} — SERVITECNOLOGY`,
 			html: htmlContent
 		});

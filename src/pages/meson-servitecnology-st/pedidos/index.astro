@@ -235,7 +235,7 @@ function formatDate(dateString: string): string {
 									data-order-id={order.id}
 									data-payment-status={order.payment_status}
 									data-order-status={order.order_status}
-									data-search={`${order.id} ${customer.full_name || ''} ${customer.rut || ''} ${customer.phone || ''} ${customer.email || ''} ${order.commune || ''} ${order.courier || ''} ${order.tracking_number || ''}`.toLowerCase()}
+									data-search={`${order.id} ${order.mp_payment_id || ''} ${customer.full_name || ''} ${customer.rut || ''} ${customer.phone || ''} ${customer.email || ''} ${order.commune || ''} ${order.courier || ''} ${order.tracking_number || ''}`.toLowerCase()}
 								>
 									<!-- Código -->
 									<td class="py-3 px-4 font-mono font-extrabold text-brand-cyan whitespace-nowrap">
@@ -286,10 +286,17 @@ function formatDate(dateString: string): string {
 									<!-- Estado de Pago -->
 									<td class="py-3 px-4 whitespace-nowrap">
 										{order.payment_status === 'aprobado' ? (
-											<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-												<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-												Aprobado
-											</span>
+											<div class="flex flex-col">
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 w-fit">
+													<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+													Aprobado
+												</span>
+												{order.mp_payment_id && (
+													<span class="text-[10px] font-mono text-slate-400 mt-0.5" title="N° de Operación Mercado Pago">
+														MP #{order.mp_payment_id}
+													</span>
+												)}
+											</div>
 										) : order.payment_status === 'pendiente' ? (
 											order.mp_preference_id ? (
 												<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30" title="Iniciado en pasarela Mercado Pago">
@@ -454,6 +461,15 @@ function formatDate(dateString: string): string {
 						<div class="sm:col-span-2">
 							<span class="text-slate-500 block">Dirección de Despacho:</span>
 							<span id="modalCustomerAddress" class="text-slate-200">Av. Libertador 1234, Rancagua</span>
+						</div>
+						<div id="modalMpPaymentIdRow" class="hidden sm:col-span-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+							<div>
+								<span class="text-[10px] uppercase font-mono text-emerald-400 font-bold block">N° Operación Mercado Pago:</span>
+								<span id="modalMpPaymentId" class="font-mono text-white text-xs font-bold">—</span>
+							</div>
+							<button type="button" id="btnCopyMpId" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-emerald-300 text-xs font-mono font-bold transition-colors cursor-pointer">
+								Copiar
+							</button>
 						</div>
 					</div>
 				</div>
@@ -730,6 +746,20 @@ function formatDate(dateString: string): string {
 				if (e.target === modal) closeModal();
 			});
 
+			// Copiar N° Operación Mercado Pago
+			document.getElementById('btnCopyMpId')?.addEventListener('click', async () => {
+				const val = document.getElementById('modalMpPaymentId')?.textContent || '';
+				if (val && val !== '—') {
+					await navigator.clipboard.writeText(val);
+					const btn = document.getElementById('btnCopyMpId');
+					if (btn) {
+						const original = btn.textContent;
+						btn.textContent = '¡Copiado! ✓';
+						setTimeout(() => { btn.textContent = original; }, 2000);
+					}
+				}
+			});
+
 			// 2. Poblado de datos en el Modal
 			function populateModal(order) {
 				const customer = order.customers || {};
@@ -760,6 +790,16 @@ function formatDate(dateString: string): string {
 					? `${order.shipping_address}${order.commune ? `, ${order.commune}` : ''}`
 					: (order.delivery_type === 'retiro' ? 'Retiro presencial en taller (Santiago Centro)' : 'Dirección pendiente');
 				modalCustomerAddress.textContent = addressText;
+
+				// N° Operación Mercado Pago
+				const mpPaymentIdRow = document.getElementById('modalMpPaymentIdRow');
+				const mpPaymentIdSpan = document.getElementById('modalMpPaymentId');
+				if (order.mp_payment_id) {
+					if (mpPaymentIdRow) mpPaymentIdRow.classList.remove('hidden');
+					if (mpPaymentIdSpan) mpPaymentIdSpan.textContent = order.mp_payment_id;
+				} else {
+					if (mpPaymentIdRow) mpPaymentIdRow.classList.add('hidden');
+				}
 
 				// WhatsApp Link
 				const rawPhone = (customer.phone || '').replace(/[^0-9]/g, '');

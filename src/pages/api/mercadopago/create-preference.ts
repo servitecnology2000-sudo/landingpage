@@ -60,22 +60,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 			? (commune?.trim() || 'Santiago Centro')
 			: commune.trim();
 
-		// 2. Obtener o crear perfil de cliente en public.customers (Soporte Invitado & Registrado)
+		// 2. Obtener, actualizar o crear perfil de cliente en public.customers (Soporte Invitado & Registrado)
 		let customer: any = null;
 
-		if (customer_id) {
-			const { data: existingById } = await supabaseAdmin
-				.from('customers')
-				.select('*')
-				.eq('id', customer_id)
-				.maybeSingle();
-
-			if (existingById) {
-				customer = existingById;
-			}
-		}
-
-		if (!customer && customerPayload) {
+		if (customerPayload) {
 			const { full_name, email, phone, rut, identification_type, auth_user_id } = customerPayload;
 			const docType = (identification_type === 'pasaporte') ? 'pasaporte' : 'rut';
 
@@ -134,13 +122,36 @@ export const POST: APIRoute = async ({ request, url }) => {
 			const cleanEmail = email.trim().toLowerCase();
 			const formattedDoc = docType === 'rut' ? formatRut(rut) : cleanPassport(rut);
 
-			// Buscar si ya existe por RUT/Pasaporte o Email
-			const { data: existingCustomer } = await supabaseAdmin
-				.from('customers')
-				.select('*')
-				.or(`rut.eq.${formattedDoc},email.eq.${cleanEmail}`)
-				.limit(1)
-				.maybeSingle();
+			// Buscar si ya existe por customer_id, auth_user_id, RUT/Pasaporte o Email
+			let existingCustomer: any = null;
+
+			if (customer_id) {
+				const { data: byId } = await supabaseAdmin
+					.from('customers')
+					.select('*')
+					.eq('id', customer_id)
+					.maybeSingle();
+				if (byId) existingCustomer = byId;
+			}
+
+			if (!existingCustomer && auth_user_id) {
+				const { data: byAuthId } = await supabaseAdmin
+					.from('customers')
+					.select('*')
+					.eq('auth_user_id', auth_user_id)
+					.maybeSingle();
+				if (byAuthId) existingCustomer = byAuthId;
+			}
+
+			if (!existingCustomer) {
+				const { data: byDocOrEmail } = await supabaseAdmin
+					.from('customers')
+					.select('*')
+					.or(`rut.eq.${formattedDoc},email.eq.${cleanEmail}`)
+					.limit(1)
+					.maybeSingle();
+				if (byDocOrEmail) existingCustomer = byDocOrEmail;
+			}
 
 			if (existingCustomer) {
 				const updateFields: any = {
@@ -155,14 +166,18 @@ export const POST: APIRoute = async ({ request, url }) => {
 					updateFields.auth_user_id = auth_user_id;
 					updateFields.customer_type = 'registrado';
 				}
-				const { data: updatedCustomer } = await supabaseAdmin
+				const { data: updatedCustomer, error: updateErr } = await supabaseAdmin
 					.from('customers')
 					.update(updateFields)
 					.eq('id', existingCustomer.id)
 					.select()
 					.single();
 
-				customer = updatedCustomer || existingCustomer;
+				if (updateErr) {
+					console.warn('[create-preference] Aviso actualizando datos de cliente:', updateErr.message);
+				}
+
+				customer = updatedCustomer || { ...existingCustomer, ...updateFields };
 			} else {
 				const { data: newCustomer, error: insertCustomerErr } = await supabaseAdmin
 					.from('customers')
@@ -191,6 +206,16 @@ export const POST: APIRoute = async ({ request, url }) => {
 					});
 				}
 				customer = newCustomer;
+			}
+		} else if (customer_id) {
+			const { data: existingById } = await supabaseAdmin
+				.from('customers')
+				.select('*')
+				.eq('id', customer_id)
+				.maybeSingle();
+
+			if (existingById) {
+				customer = existingById;
 			}
 		}
 

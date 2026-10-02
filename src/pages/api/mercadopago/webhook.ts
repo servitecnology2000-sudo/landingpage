@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
 import { mpClient } from '../../../lib/mercadopago';
 import { Payment } from 'mercadopago';
-import { sendOrderConfirmationEmail } from '../../../lib/mailer';
+import { reconcileApprovedOrder } from '../../../lib/order-reconciliation';
 
 export const prerender = false;
 
@@ -93,75 +93,11 @@ export const POST: APIRoute = async ({ request }) => {
 
 		// 4. SI EL PAGO FUE APROBADO ('approved')
 		if (status === 'approved') {
-			console.log(`[MercadoPago Webhook] Pago APROBADO para orden ${orderId}. Actualizando base de datos y stock...`);
-
-			// A. Actualizar estado de la orden
-			await supabaseAdmin
-				.from('orders')
-				.update({
-					payment_status: 'aprobado',
-					mp_payment_id: String(paymentId),
-					updated_at: new Date().toISOString()
-				})
-				.eq('id', orderId);
-
-			// B. Decrementar stock definitivo en repuestos_productos por cada item
-			if (order.items && Array.isArray(order.items)) {
-				for (const item of order.items) {
-					try {
-						const qtyPurchased = Math.max(1, parseInt(item.cantidad, 10) || 1);
-						// Leer stock actual
-						const { data: currentProduct } = await supabaseAdmin
-							.from('repuestos_productos')
-							.select('stock_cantidad')
-							.eq('sku', item.sku)
-							.single();
-
-						if (currentProduct) {
-							const newStock = Math.max(0, currentProduct.stock_cantidad - qtyPurchased);
-							await supabaseAdmin
-								.from('repuestos_productos')
-								.update({ stock_cantidad: newStock })
-								.eq('sku', item.sku);
-
-							console.log(`[MercadoPago Webhook] Stock actualizado para SKU ${item.sku}: ${currentProduct.stock_cantidad} -> ${newStock}`);
-						}
-					} catch (stockErr) {
-						console.error(`[MercadoPago Webhook] Error decrementando stock para SKU ${item.sku}:`, stockErr);
-					}
-				}
-			}
-
-			// C. Obtener datos del cliente y disparar correo transaccional desde notificaciones@servitecnology.com
-			if (order.customer_id) {
-				try {
-					const { data: customer } = await supabaseAdmin
-						.from('customers')
-						.select('*')
-						.eq('id', order.customer_id)
-						.single();
-
-					if (customer) {
-						await sendOrderConfirmationEmail({
-							orderId: order.id,
-							customerName: customer.full_name,
-							customerEmail: customer.email,
-							customerRut: customer.rut || '',
-							customerPhone: customer.phone || '',
-							customerAddress: order.shipping_address || customer.address || '',
-							items: order.items || [],
-							totalAmount: order.total_amount,
-							deliveryType: order.delivery_type,
-							commune: order.commune || '',
-							paymentId: String(paymentId)
-						});
-						console.log(`[MercadoPago Webhook] Correo de confirmación enviado exitosamente a ${customer.email}`);
-					}
-				} catch (mailErr) {
-					console.error('[MercadoPago Webhook] Error al enviar correo de notificación:', mailErr);
-				}
-			}
-
+			console.log(`[MercadoPago Webhook] Pago APROBADO para orden ${orderId}. Ejecutando conciliación unificada...`);
+			await reconcileApprovedOrder({
+				orderId,
+				paymentId: String(paymentId)
+			});
 		} else if (status === 'rejected' || status === 'cancelled') {
 			console.log(`[MercadoPago Webhook] Pago ${status} para la orden ${orderId}`);
 			await supabaseAdmin
