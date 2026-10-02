@@ -325,12 +325,39 @@ const REGIONES_CHILE = [
 						<div class="p-4 rounded-xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-start gap-3">
 							<svg class="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
 							<div>
-								<p class="text-xs font-semibold text-white leading-relaxed">
-									Todas las compras incluyen <strong class="text-brand-cyan">Factura Electrónica</strong> conforme a las directrices del Servicio de Impuestos Internos (SII).
+								<p id="sii-notice-title" class="text-xs font-semibold text-white leading-relaxed">
+									Todas las compras incluyen <strong class="text-brand-cyan">Factura o Boleta Electrónica</strong> conforme a las directrices del Servicio de Impuestos Internos (SII).
 								</p>
-								<p class="text-[11px] text-slate-400 mt-1">
-									Por normativa legal, el RUT es obligatorio. Los datos quedarán vinculados a tu cuenta para futuros pedidos.
+								<p id="sii-notice-desc" class="text-[11px] text-slate-400 mt-1">
+									Por normativa legal chilena, debes identificarte con tu RUT o Pasaporte. Si compras con pasaporte, se emitirá Boleta Electrónica a consumidor final extranjero.
 								</p>
+							</div>
+						</div>
+
+						<!-- Identification Type Selector (RUT Chileno vs Pasaporte Extranjero) -->
+						<div class="space-y-2">
+							<span class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+								Identificación Tributaria (SII) *
+							</span>
+							<div class="grid grid-cols-2 gap-2 sm:gap-3 p-1.5 rounded-xl bg-black/60 border border-white/10">
+								<button
+									type="button"
+									id="btn-doc-type-rut"
+									class="doc-type-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer bg-brand-green/20 text-brand-green border border-brand-green/40 shadow-sm"
+									data-type="rut"
+								>
+									<span>🇨🇱</span>
+									<span>RUT Chileno</span>
+								</button>
+								<button
+									type="button"
+									id="btn-doc-type-pasaporte"
+									class="doc-type-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+									data-type="pasaporte"
+								>
+									<span>🌐</span>
+									<span>Pasaporte (Extranjero)</span>
+								</button>
 							</div>
 						</div>
 
@@ -350,7 +377,7 @@ const REGIONES_CHILE = [
 							</div>
 
 							<div>
-								<label for="rut" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+								<label for="rut" id="rut-label" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
 									RUT Chileno (Persona o Empresa) *
 								</label>
 								<input 
@@ -362,6 +389,7 @@ const REGIONES_CHILE = [
 									class="w-full px-4 py-3 rounded-xl bg-black/70 border border-white/15 text-white text-sm focus:border-brand-green focus:outline-none transition-colors font-mono"
 								/>
 								<span id="rut-error" class="hidden text-[11px] text-red-400 mt-1 font-medium">RUT inválido. Verifica el dígito verificador.</span>
+								<p id="rut-doc-hint" class="text-[11px] text-slate-400 mt-1">Válido para Factura o Boleta Electrónica con RUT chileno.</p>
 							</div>
 
 							<div>
@@ -577,7 +605,7 @@ const REGIONES_CHILE = [
 					<span id="modal-display-name" class="font-bold text-white">---</span>
 				</div>
 				<div class="flex justify-between border-b border-white/10 pb-2">
-					<span class="text-slate-400">RUT (SII):</span>
+					<span id="modal-label-doc" class="text-slate-400">RUT (SII):</span>
 					<span id="modal-display-rut" class="font-bold text-brand-cyan font-mono">---</span>
 				</div>
 				<div class="flex justify-between border-b border-white/10 pb-2">
@@ -676,7 +704,7 @@ const REGIONES_CHILE = [
 <script>
 	import { supabase } from '../lib/supabase';
 	import { getCart, removeFromCart, updateItemQuantity, clearCart, addToCart } from '../lib/cart';
-	import { cleanChileanPhone, isValidChileanPhone, formatChileanPhone } from '../lib/rut';
+	import { cleanChileanPhone, isValidChileanPhone, formatChileanPhone, cleanPassport, validatePassport, isValidInternationalPhone } from '../lib/rut';
 
 	// Algoritmo de validación de RUT Chileno (Módulo 11)
 	function isValidChileanRut(rutStr: string): boolean {
@@ -723,8 +751,6 @@ const REGIONES_CHILE = [
 		return `${formatted}-${dv}`;
 	}
 
-
-
 	// Elementos DOM
 	const deliveryOptions = document.querySelectorAll('.delivery-option');
 	const despachoFields = document.getElementById('despacho-fields');
@@ -738,10 +764,67 @@ const REGIONES_CHILE = [
 
 	const fullNameInput = document.getElementById('full_name') as HTMLInputElement;
 	const rutInput = document.getElementById('rut') as HTMLInputElement;
+	const rutLabel = document.getElementById('rut-label');
+	const rutDocHint = document.getElementById('rut-doc-hint');
 	const rutError = document.getElementById('rut-error');
+	const docTypeBtns = document.querySelectorAll('.doc-type-btn');
+	const modalLabelDoc = document.getElementById('modal-label-doc');
 	const emailInput = document.getElementById('email') as HTMLInputElement;
 	const phoneInput = document.getElementById('phone') as HTMLInputElement;
 	const phoneError = document.getElementById('phone-error');
+
+	let currentDocType: 'rut' | 'pasaporte' = 'rut';
+
+	function setDocType(type: 'rut' | 'pasaporte') {
+		currentDocType = type;
+		docTypeBtns.forEach(btn => {
+			const btnType = btn.getAttribute('data-type');
+			if (btnType === type) {
+				btn.classList.add('bg-brand-green/20', 'text-brand-green', 'border-brand-green/40', 'shadow-sm');
+				btn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-white/5', 'border-transparent');
+			} else {
+				btn.classList.remove('bg-brand-green/20', 'text-brand-green', 'border-brand-green/40', 'shadow-sm');
+				btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-white/5', 'border-transparent');
+			}
+		});
+
+		// Limpiar errores visuales al cambiar de tipo
+		rutError?.classList.add('hidden');
+		rutInput?.classList.remove('border-brand-green', 'border-red-500');
+
+		if (type === 'rut') {
+			if (rutLabel) rutLabel.textContent = 'RUT Chileno (Persona o Empresa) *';
+			if (rutInput) rutInput.placeholder = 'Ej: 12.345.678-9';
+			if (rutDocHint) rutDocHint.textContent = 'Válido para Factura o Boleta Electrónica con RUT chileno.';
+			if (rutError) rutError.textContent = 'RUT inválido. Verifica el dígito verificador.';
+			if (rutInput && rutInput.value) {
+				rutInput.value = formatRut(rutInput.value);
+				if (rutInput.value.length >= 8 && isValidChileanRut(rutInput.value)) {
+					rutInput.classList.add('border-brand-green');
+				}
+			}
+		} else {
+			if (rutLabel) rutLabel.textContent = 'Número de Pasaporte / Documento Extranjero *';
+			if (rutInput) rutInput.placeholder = 'Ej: A12345678 o PAS987654';
+			if (rutDocHint) rutDocHint.textContent = 'Para extranjeros sin RUT se emitirá Boleta Electrónica a consumidor final conforme a la normativa del SII.';
+			if (rutError) rutError.textContent = 'Pasaporte inválido. Debe tener entre 3 y 20 caracteres alfanuméricos.';
+			if (rutInput && rutInput.value) {
+				rutInput.value = cleanPassport(rutInput.value);
+				if (validatePassport(rutInput.value)) {
+					rutInput.classList.add('border-brand-green');
+				}
+			}
+		}
+	}
+
+	docTypeBtns.forEach(btn => {
+		btn.addEventListener('click', () => {
+			const type = btn.getAttribute('data-type') as 'rut' | 'pasaporte';
+			if (type && type !== currentDocType) {
+				setDocType(type);
+			}
+		});
+	});
 
 	const summarySubtotal = document.getElementById('summary-subtotal');
 	const summaryShipping = document.getElementById('summary-shipping');
@@ -859,23 +942,43 @@ const REGIONES_CHILE = [
 		}
 	});
 
-	// Formateo y validación de RUT en tiempo real
+	// Formateo y validación de Documento (RUT o Pasaporte) en tiempo real
 	rutInput?.addEventListener('input', () => {
-		const formatted = formatRut(rutInput.value);
-		rutInput.value = formatted;
-		if (formatted.length >= 8) {
-			if (isValidChileanRut(formatted)) {
-				rutError?.classList.add('hidden');
-				rutInput.classList.remove('border-red-500');
-				rutInput.classList.add('border-brand-green');
+		if (currentDocType === 'rut') {
+			const formatted = formatRut(rutInput.value);
+			rutInput.value = formatted;
+			if (formatted.length >= 8) {
+				if (isValidChileanRut(formatted)) {
+					rutError?.classList.add('hidden');
+					rutInput.classList.remove('border-red-500');
+					rutInput.classList.add('border-brand-green');
+				} else {
+					rutError?.classList.remove('hidden');
+					rutInput.classList.remove('border-brand-green');
+					rutInput.classList.add('border-red-500');
+				}
 			} else {
-				rutError?.classList.remove('hidden');
-				rutInput.classList.remove('border-brand-green');
-				rutInput.classList.add('border-red-500');
+				rutError?.classList.add('hidden');
+				rutInput.classList.remove('border-brand-green', 'border-red-500');
 			}
 		} else {
-			rutError?.classList.add('hidden');
-			rutInput.classList.remove('border-brand-green', 'border-red-500');
+			// Modo Pasaporte
+			const cleaned = cleanPassport(rutInput.value);
+			rutInput.value = cleaned;
+			if (cleaned.length >= 3) {
+				if (validatePassport(cleaned)) {
+					rutError?.classList.add('hidden');
+					rutInput.classList.remove('border-red-500');
+					rutInput.classList.add('border-brand-green');
+				} else {
+					rutError?.classList.remove('hidden');
+					rutInput.classList.remove('border-brand-green');
+					rutInput.classList.add('border-red-500');
+				}
+			} else {
+				rutError?.classList.add('hidden');
+				rutInput.classList.remove('border-brand-green', 'border-red-500');
+			}
 		}
 	});
 
@@ -1023,9 +1126,16 @@ const REGIONES_CHILE = [
 				if (customer) {
 					if (fullNameInput && customer.full_name) fullNameInput.value = customer.full_name;
 					if (rutInput && customer.rut) {
-						rutInput.value = customer.rut;
-						if (isValidChileanRut(customer.rut)) {
+						if (customer.document_type === 'pasaporte' || (!isValidChileanRut(customer.rut) && validatePassport(customer.rut))) {
+							setDocType('pasaporte');
+							rutInput.value = customer.rut;
 							rutInput.classList.add('border-brand-green');
+						} else {
+							setDocType('rut');
+							rutInput.value = customer.rut;
+							if (isValidChileanRut(customer.rut)) {
+								rutInput.classList.add('border-brand-green');
+							}
 						}
 					}
 					if (phoneInput && customer.phone) {
@@ -1189,9 +1299,14 @@ const REGIONES_CHILE = [
 	function openConfirmModal() {
 		// Populate modal values
 		if (modalDisplayName) modalDisplayName.textContent = fullNameInput.value.trim();
+		if (modalLabelDoc) modalLabelDoc.textContent = currentDocType === 'rut' ? 'RUT (SII):' : 'Pasaporte (Boleta SII):';
 		if (modalDisplayRut) modalDisplayRut.textContent = rutInput.value.trim().toUpperCase();
 		if (modalDisplayEmail) modalDisplayEmail.textContent = emailInput.value.trim().toLowerCase();
-		if (modalDisplayPhone) modalDisplayPhone.textContent = formatChileanPhone(phoneInput.value) || phoneInput.value.trim();
+		if (modalDisplayPhone) {
+			modalDisplayPhone.textContent = currentDocType === 'rut'
+				? (formatChileanPhone(phoneInput.value) || phoneInput.value.trim())
+				: phoneInput.value.trim();
+		}
 		if (modalDisplayDelivery) {
 			modalDisplayDelivery.textContent = currentDelivery === 'retiro' ? 'Retiro en Oficina Técnica ($0)' : 'Envío por Pagar (Cobro en Destino)';
 		}
@@ -1281,15 +1396,28 @@ const REGIONES_CHILE = [
 			return;
 		}
 
-		if (!rutInput.value.trim() || !isValidChileanRut(rutInput.value)) {
-			rutInput.focus();
-			rutError?.classList.remove('hidden');
-			showSystemNotice({
-				title: 'RUT Inválido',
-				message: 'El RUT es obligatorio ante el SII y debe tener un formato válido con su dígito verificador (Módulo 11).',
-				type: 'warning'
-			});
-			return;
+		if (currentDocType === 'rut') {
+			if (!rutInput.value.trim() || !isValidChileanRut(rutInput.value)) {
+				rutInput.focus();
+				rutError?.classList.remove('hidden');
+				showSystemNotice({
+					title: 'RUT Inválido',
+					message: 'El RUT es obligatorio ante el SII y debe tener un formato válido con su dígito verificador (Módulo 11).',
+					type: 'warning'
+				});
+				return;
+			}
+		} else {
+			if (!rutInput.value.trim() || !validatePassport(rutInput.value)) {
+				rutInput.focus();
+				rutError?.classList.remove('hidden');
+				showSystemNotice({
+					title: 'Pasaporte Inválido',
+					message: 'Por favor ingresa un número de pasaporte válido (entre 3 y 20 caracteres alfanuméricos) para emitir tu boleta electrónica de venta.',
+					type: 'warning'
+				});
+				return;
+			}
 		}
 
 		if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
@@ -1302,14 +1430,20 @@ const REGIONES_CHILE = [
 			return;
 		}
 
-		if (!phoneInput.value.trim() || !isValidChileanPhone(phoneInput.value)) {
+		const isPhoneValid = currentDocType === 'pasaporte'
+			? (isValidInternationalPhone(phoneInput.value) || isValidChileanPhone(phoneInput.value))
+			: isValidChileanPhone(phoneInput.value);
+
+		if (!phoneInput.value.trim() || !isPhoneValid) {
 			phoneInput.focus();
 			phoneError?.classList.remove('hidden');
 			phoneInput.classList.remove('border-brand-green');
 			phoneInput.classList.add('border-red-500');
 			showSystemNotice({
 				title: 'Teléfono o Celular Inválido',
-				message: 'Por favor ingresa un número de teléfono válido de Chile (Celular/WhatsApp: +56 9 XXXX XXXX o Red Fija: 9 dígitos) para coordinar el despacho o entrega.',
+				message: currentDocType === 'pasaporte'
+					? 'Por favor ingresa un número de teléfono o celular válido (nacional de Chile o internacional con código de país) para coordinar la entrega o despacho.'
+					: 'Por favor ingresa un número de teléfono válido de Chile (Celular/WhatsApp: +56 9 XXXX XXXX o Red Fija: 9 dígitos) para coordinar el despacho o entrega.',
 				type: 'warning'
 			});
 			return;
@@ -1398,8 +1532,10 @@ const REGIONES_CHILE = [
 				customer: {
 					full_name: fullNameInput.value.trim(),
 					email: emailInput.value.trim().toLowerCase(),
-					phone: formatChileanPhone(phoneInput.value) || phoneInput.value.trim(),
+					phone: currentDocType === 'rut' ? (formatChileanPhone(phoneInput.value) || phoneInput.value.trim()) : phoneInput.value.trim(),
 					rut: rutInput.value.trim().toUpperCase(),
+					identification_type: currentDocType,
+					identification_number: rutInput.value.trim().toUpperCase(),
 					auth_user_id: currentUser ? currentUser.id : null,
 					address: addressVal,
 					commune: communeVal,

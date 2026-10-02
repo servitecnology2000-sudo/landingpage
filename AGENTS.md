@@ -4,6 +4,14 @@
 
 ---
 
+## 🌐 Identidad y Dominio Canónico
+
+- **Dominio Canónico Oficial:** `https://servitecnology.com` (**TERMINANTEMENTE PROHIBIDO** utilizar `.cl`).
+- **Correos Corporativos:** Dominio `@servitecnology.com` (`contacto@servitecnology.com`, `privacidad@servitecnology.com`, `notificaciones@servitecnology.com`).
+- Toda URL canónica, enlace externo, pantalla de consentimiento OAuth o remitente SMTP debe utilizar estrictamente `.com`.
+
+---
+
 ## 🛠️ Comandos Principales
 
 ```bash

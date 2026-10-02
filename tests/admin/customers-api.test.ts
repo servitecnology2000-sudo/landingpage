@@ -62,7 +62,7 @@ describe('Pruebas de Endpoints de Clientes y CRM (/api/admin/customers/*)', () =
         },
         body: JSON.stringify({
           full_name: 'Cliente Vitest CRM',
-          email: 'vitest_crm@servitecnology.cl',
+          email: 'vitest_crm@servitecnology.com',
           phone: '+56 9 1234 5678',
           rut: '11.111.111-1',
           address: 'Calle Técnica 100, Santiago',
@@ -95,7 +95,7 @@ describe('Pruebas de Endpoints de Clientes y CRM (/api/admin/customers/*)', () =
         body: JSON.stringify({
           id: createdCustomerId,
           full_name: 'Cliente Vitest CRM Modificado',
-          email: 'vitest_crm@servitecnology.cl',
+          email: 'vitest_crm@servitecnology.com',
           phone: '+56 9 9999 8888',
           rut: '11.111.111-1',
           address: 'Av. Providencia 400, Santiago',

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
 import { orderClient, preferenceClient, isMercadoPagoConfigured, isSandbox } from '../../../lib/mercadopago';
-import { validateRut, formatRut } from '../../../lib/rut';
+import { validateRut, formatRut, validatePassport, cleanPassport } from '../../../lib/rut';
 
 export const prerender = false;
 
@@ -76,26 +76,39 @@ export const POST: APIRoute = async ({ request, url }) => {
 		}
 
 		if (!customer && customerPayload) {
-			const { full_name, email, phone, rut, auth_user_id } = customerPayload;
+			const { full_name, email, phone, rut, identification_type, auth_user_id } = customerPayload;
+			const docType = (identification_type === 'pasaporte') ? 'pasaporte' : 'rut';
 
 			if (!full_name || typeof full_name !== 'string' || !full_name.trim()) {
 				return new Response(JSON.stringify({
 					success: false,
-					error: 'El Nombre y Apellido o Razón Social es obligatorio para la emisión de la factura SII.'
+					error: 'El Nombre y Apellido o Razón Social es obligatorio para la emisión de la factura/boleta SII.'
 				}), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				});
 			}
 
-			if (!rut || !validateRut(rut)) {
-				return new Response(JSON.stringify({
-					success: false,
-					error: 'El RUT ingresado no es válido según el algoritmo del SII (Módulo 11).'
-				}), {
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				});
+			if (docType === 'rut') {
+				if (!rut || !validateRut(rut)) {
+					return new Response(JSON.stringify({
+						success: false,
+						error: 'El RUT ingresado no es válido según el algoritmo del SII (Módulo 11).'
+					}), {
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
+			} else {
+				if (!rut || !validatePassport(rut)) {
+					return new Response(JSON.stringify({
+						success: false,
+						error: 'El número de pasaporte ingresado es inválido (debe tener entre 3 y 20 caracteres alfanuméricos).'
+					}), {
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
 			}
 
 			if (!email || typeof email !== 'string' || !email.includes('@')) {
@@ -108,7 +121,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				});
 			}
 
-			if (!phone || typeof phone !== 'string' || phone.trim().length < 8) {
+			if (!phone || typeof phone !== 'string' || phone.trim().length < 7) {
 				return new Response(JSON.stringify({
 					success: false,
 					error: 'El teléfono de contacto es obligatorio para la coordinación de despacho/entrega.'
@@ -119,13 +132,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 			}
 
 			const cleanEmail = email.trim().toLowerCase();
-			const formattedRut = formatRut(rut);
+			const formattedDoc = docType === 'rut' ? formatRut(rut) : cleanPassport(rut);
 
-			// Buscar si ya existe por RUT o Email
+			// Buscar si ya existe por RUT/Pasaporte o Email
 			const { data: existingCustomer } = await supabaseAdmin
 				.from('customers')
 				.select('*')
-				.or(`rut.eq.${formattedRut},email.eq.${cleanEmail}`)
+				.or(`rut.eq.${formattedDoc},email.eq.${cleanEmail}`)
 				.limit(1)
 				.maybeSingle();
 
@@ -134,6 +147,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 					full_name: full_name.trim(),
 					email: cleanEmail,
 					phone: phone.trim(),
+					rut: formattedDoc,
 					address: effectiveAddress,
 					updated_at: new Date().toISOString()
 				};
@@ -156,7 +170,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 						full_name: full_name.trim(),
 						email: cleanEmail,
 						phone: phone.trim(),
-						rut: formattedRut,
+						rut: formattedDoc,
 						address: effectiveAddress,
 						customer_type: auth_user_id ? 'registrado' : 'invitado',
 						auth_user_id: auth_user_id || null,
@@ -341,7 +355,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				payer: {
 					email: payerEmail,
 					identification: {
-						type: isSandbox ? 'Otro' : 'RUT',
+						type: isSandbox ? 'Otro' : (customerPayload?.identification_type === 'pasaporte' ? 'Otro' : 'RUT'),
 						number: isSandbox ? '123456789' : (customer.rut || '')
 					}
 				},
@@ -380,7 +394,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 					name: isSandbox ? 'Comprador de Prueba' : customer.full_name,
 					email: payerEmail,
 					identification: {
-						type: isSandbox ? 'Otro' : 'RUT',
+						type: isSandbox ? 'Otro' : (customerPayload?.identification_type === 'pasaporte' ? 'Otro' : 'RUT'),
 						number: isSandbox ? '123456789' : (customer.rut || '')
 					}
 				},

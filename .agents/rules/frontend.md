@@ -14,6 +14,7 @@ Este proyecto utiliza **Astro 5** (SSR con adaptador `@astrojs/vercel`) y **Tail
 - **Paleta de Colores y Modo Oscuro:** Fondo ultra-oscuro de alto contraste (`#121215`, `bg-zinc-950`) con acentos fluorescentes (`brand-green`, `brand-cyan`, esmeralda y ámbar).
 - **Tipografía:** Fuentes modernas de Google Fonts (`Outfit` para encabezados e `Inter` para cuerpos de texto). Nunca depender de las fuentes por defecto del navegador.
 - **Microinteracciones:** Transiciones fluidas en hover (`transition-all duration-300`), desenfoques de fondo (`backdrop-blur-md`), carruseles táctiles y marquesinas continuas.
+- **Dominio Canónico Oficial:** El único dominio de la plataforma es `https://servitecnology.com` (**TERMINANTEMENTE PROHIBIDO** usar `.cl`). Toda etiqueta canónica, JSON-LD, sitemap, enlace y redirección debe usar estrictamente `.com`.
 - **Microdatos SEO:** Implementar schema `Product` (Schema.org en JSON-LD) en fichas de producto (`/repuesto/[slug]`), meta descriptions precisas, etiquetas canonical y títulos dinámicos.
 
 ---

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanRut, validateRut, formatRut, normalizePhone, getWhatsAppUrl, cleanChileanPhone, isValidChileanPhone, formatChileanPhone, isCompanyRut } from '../../src/lib/rut';
+import { cleanRut, validateRut, formatRut, normalizePhone, getWhatsAppUrl, cleanChileanPhone, isValidChileanPhone, formatChileanPhone, isCompanyRut, cleanPassport, validatePassport, isValidInternationalPhone } from '../../src/lib/rut';
 
 describe('Pruebas Unitarias de Validación y Formateo (src/lib/rut.ts)', () => {
   describe('cleanRut()', () => {
@@ -126,4 +126,52 @@ describe('Pruebas Unitarias de Validación y Formateo (src/lib/rut.ts)', () => {
       expect(isCompanyRut(null as any)).toBe(false);
     });
   });
+
+  describe('cleanPassport() & validatePassport()', () => {
+    it('debe limpiar pasaportes y normalizar a mayúsculas', () => {
+      expect(cleanPassport(' a12345678 ')).toBe('A12345678');
+      expect(cleanPassport('pas-987.654')).toBe('PAS-987.654');
+      expect(cleanPassport('')).toBe('');
+      expect(cleanPassport(null as any)).toBe('');
+    });
+
+    it('debe validar números de pasaporte válidos (alfanuméricos, 3 a 20 caracteres)', () => {
+      expect(validatePassport('A12345678')).toBe(true);
+      expect(validatePassport('PAS987654')).toBe(true);
+      expect(validatePassport('123456789')).toBe(true);
+      expect(validatePassport('B-123.456')).toBe(true);
+      expect(validatePassport('ABC')).toBe(true);
+      expect(validatePassport('12345678901234567890')).toBe(true); // 20 caracteres
+    });
+
+    it('debe rechazar pasaportes con menos de 3 o más de 20 caracteres', () => {
+      expect(validatePassport('')).toBe(false);
+      expect(validatePassport('AB')).toBe(false);
+      expect(validatePassport('123456789012345678901')).toBe(false); // 21 caracteres
+    });
+
+    it('debe rechazar pasaportes con caracteres especiales inválidos', () => {
+      expect(validatePassport('A123#456')).toBe(false);
+      expect(validatePassport('PAS$987')).toBe(false);
+      expect(validatePassport('???')).toBe(false);
+    });
+  });
+
+  describe('isValidInternationalPhone()', () => {
+    it('debe aceptar teléfonos internacionales válidos con y sin prefijo +', () => {
+      expect(isValidInternationalPhone('+1 555 123 4567')).toBe(true);
+      expect(isValidInternationalPhone('+54 9 11 2345 6789')).toBe(true);
+      expect(isValidInternationalPhone('+34 612 34 56 78')).toBe(true);
+      expect(isValidInternationalPhone('15551234567')).toBe(true);
+      expect(isValidInternationalPhone('+56 9 1234 5678')).toBe(true);
+    });
+
+    it('debe rechazar números con menos de 7 o más de 16 dígitos', () => {
+      expect(isValidInternationalPhone('')).toBe(false);
+      expect(isValidInternationalPhone('123456')).toBe(false); // 6 dígitos
+      expect(isValidInternationalPhone('12345678901234567')).toBe(false); // 17 dígitos
+      expect(isValidInternationalPhone('abcd-efgh')).toBe(false);
+    });
+  });
 });
+

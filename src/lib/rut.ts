@@ -190,3 +190,34 @@ export function isCompanyRut(rut: string): boolean {
 	const num = parseInt(cuerpo, 10);
 	return !isNaN(num) && num >= 50000000;
 }
+
+/**
+ * Normaliza y limpia un número de pasaporte o documento de extranjero
+ */
+export function cleanPassport(passportStr: string): string {
+	if (!passportStr || typeof passportStr !== 'string') return '';
+	return passportStr.trim().toUpperCase();
+}
+
+/**
+ * Valida un número de pasaporte internacional para compras con Boleta SII.
+ * Longitud entre 3 y 20 caracteres alfanuméricos (admitiendo guiones y puntos).
+ */
+export function validatePassport(passportStr: string): boolean {
+	if (!passportStr || typeof passportStr !== 'string') return false;
+	const clean = passportStr.trim().toUpperCase();
+	if (clean.length < 3 || clean.length > 20) return false;
+	return /^[A-Z0-9\-\.]{3,20}$/.test(clean);
+}
+
+/**
+ * Valida un número telefónico internacional genérico (mínimo 7 y máximo 16 dígitos).
+ */
+export function isValidInternationalPhone(phoneStr: string): boolean {
+	if (!phoneStr || typeof phoneStr !== 'string') return false;
+	const trimmed = phoneStr.trim();
+	const digits = trimmed.replace(/\D/g, '');
+	if (digits.length < 7 || digits.length > 16) return false;
+	return /^\+?[0-9\s\-\(\)\.]{7,25}$/.test(trimmed);
+}
+

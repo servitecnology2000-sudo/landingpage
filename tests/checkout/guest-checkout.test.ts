@@ -301,4 +301,67 @@ describe('Pruebas de Checkout Pro en Modo Invitado (/api/mercadopago/create-pref
     expect(dbOrder.commune).toBe('Viña del Mar');
     expect(dbOrder.shipping_address).toBe('Av. Libertad 456, Depto 102');
   });
+
+  it('debe procesar exitosamente un pedido de Invitado con Pasaporte Extranjero sin exigir validación de Módulo 11', async () => {
+    const testEmail = `extranjero.pasaporte.${Date.now()}@testvitest.com`;
+    createdCustomerEmails.push(testEmail);
+
+    const req = new Request('http://localhost:4321/api/mercadopago/create-preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: {
+          full_name: 'John Doe Tourist',
+          email: testEmail,
+          phone: '+1 555 987 6543',
+          identification_type: 'pasaporte',
+          rut: 'PAS98765432' // Pasaporte extranjero (no pasa algoritmo Módulo 11 chileno)
+        },
+        delivery_type: 'retiro',
+        items: [{ sku: testSku, cantidad: 1 }]
+      })
+    });
+
+    const res = await createPreference({ request: req, url: new URL(req.url) } as any);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.orderId).toMatch(/^ST-2026-\d{4}$/);
+    createdOrderIds.push(data.orderId);
+
+    // Verificar en Supabase que el cliente se guardó con el pasaporte en el campo de identificación
+    const { data: dbCustomer } = await supabaseAdmin
+      .from('customers')
+      .select('*')
+      .eq('email', testEmail)
+      .single();
+
+    expect(dbCustomer).toBeDefined();
+    expect(dbCustomer.rut).toBe('PAS98765432');
+    expect(dbCustomer.customer_type).toBe('invitado');
+  });
+
+  it('debe rechazar con 400 si identification_type es pasaporte pero el número es inválido', async () => {
+    const req = new Request('http://localhost:4321/api/mercadopago/create-preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: {
+          full_name: 'Invalid Passport User',
+          email: 'invalid.passport@example.com',
+          phone: '+56 9 1234 5678',
+          identification_type: 'pasaporte',
+          rut: '??' // Menos de 3 caracteres y caracteres prohibidos
+        },
+        delivery_type: 'retiro',
+        items: [{ sku: testSku, cantidad: 1 }]
+      })
+    });
+
+    const res = await createPreference({ request: req, url: new URL(req.url) } as any);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.success).toBe(false);
+    expect(data.error).toContain('pasaporte');
+  });
 });
