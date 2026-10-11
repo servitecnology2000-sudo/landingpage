@@ -91,33 +91,50 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 		<slot />
 		
 		<script>
-			import { supabase } from '../lib/supabase';
-			
 			// Solo trackear si no estamos en el admin
 			if (!window.location.pathname.startsWith('/meson-servitecnology-st')) {
-				const trackEvent = async (tipo: string, elemento_id: string | null = null) => {
+				const trackEvent = (tipo: string, elemento_id: string | null = null) => {
 					try {
-						await supabase.from('metricas_eventos').insert([
-							{
-								tipo_evento: tipo,
-								elemento_id: elemento_id,
-								url_origen: window.location.pathname
-							}
-						]);
-					} catch(e) {
-						console.warn('Tracking error', e);
-					}
+						const payload = JSON.stringify({
+							tipo_evento: tipo,
+							elemento_id: elemento_id,
+							url_origen: window.location.pathname
+						});
+
+						if (navigator.sendBeacon) {
+							const blob = new Blob([payload], { type: 'application/json' });
+							navigator.sendBeacon('/api/track', blob);
+						} else {
+							fetch('/api/track', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: payload,
+								keepalive: true
+							}).catch(() => {});
+						}
+					} catch(e) {}
 				};
 
 				// 1. Registrar visita inicial
 				trackEvent('visita_pagina');
 
-				// 2. Escuchar clics delegados
+				// 2. Escuchar clics delegados (elementos con data-track-event o enlaces directos a WhatsApp)
 				document.addEventListener('click', (e) => {
-					const target = (e.target as HTMLElement).closest('[data-track-event]');
+					const target = (e.target as HTMLElement).closest('[data-track-event], a[href*="wa.me"], a[href*="whatsapp.com"]');
 					if (target) {
-						const tipo = target.getAttribute('data-track-event');
-						const elemento = target.getAttribute('data-element-id');
+						let tipo = target.getAttribute('data-track-event');
+						let elemento = target.getAttribute('data-element-id');
+						const href = target.getAttribute('href') || '';
+
+						// Si el enlace apunta a WhatsApp, garantizar que siempre se registre como conversión
+						if (href.includes('wa.me') || href.includes('whatsapp.com')) {
+							tipo = tipo || 'clic_boton';
+							if (!elemento) {
+								const cleanPath = window.location.pathname.replace(/^\/|\/$/g, '').replace(/\//g, '_') || 'home';
+								elemento = `btn_whatsapp_${target.id || cleanPath}`;
+							}
+						}
+
 						if (tipo) {
 							trackEvent(tipo, elemento);
 						}

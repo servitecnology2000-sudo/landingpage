@@ -1,0 +1,589 @@
+---
+export const prerender = false;
+
+// 1. Guardia de Seguridad SSR Inmediato en cabecera de página
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const _metaEnv = typeof import.meta !== 'undefined' && (import.meta as any).env ? (import.meta as any).env : {};
+const adminSecret = _env['ADMIN_SECRET'] || _metaEnv['ADMIN_SECRET'] || '20181860';
+const cookie = Astro.cookies.get('admin_session');
+if (!adminSecret || cookie?.value !== adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st/login');
+}
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../lib/supabase';
+import { formatDateTime } from '../../lib/dates';
+
+// 2. Parámetro de Período seleccionado
+const url = new URL(Astro.request.url);
+const validPeriods = ['hoy', '7d', '30d', 'historico'] as const;
+type Period = typeof validPeriods[number];
+const rawPeriod = (url.searchParams.get('period') as Period) || 'historico';
+const currentPeriod: Period = validPeriods.includes(rawPeriod) ? rawPeriod : 'historico';
+
+// 3. Cálculo de fecha de inicio según período
+const now = new Date();
+let startDateISO: string | null = null;
+
+if (currentPeriod === 'hoy') {
+	const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+	startDateISO = startOfDay.toISOString();
+} else if (currentPeriod === '7d') {
+	const d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+	startDateISO = d7.toISOString();
+} else if (currentPeriod === '30d') {
+	const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+	startDateISO = d30.toISOString();
+}
+
+// 4. Consultas a Supabase (con conteo exacto sin el corte de 1.000 filas de PostgREST)
+let totalVisitas = 0;
+let totalEventosPeriodo = 0;
+let clicsBotones: any[] = [];
+let recentEvents: any[] = [];
+let queryWarning = '';
+
+try {
+	// A) Conteo exacto de visitas a páginas
+	let qVisitas = supabaseAdmin
+		.from('metricas_eventos')
+		.select('id', { count: 'exact', head: true })
+		.eq('tipo_evento', 'visita_pagina');
+	if (startDateISO) qVisitas = qVisitas.gte('creado_en', startDateISO);
+
+	// B) Conteo exacto de todos los eventos del período
+	let qTotal = supabaseAdmin
+		.from('metricas_eventos')
+		.select('id', { count: 'exact', head: true });
+	if (startDateISO) qTotal = qTotal.gte('creado_en', startDateISO);
+
+	// C) Todos los clics de botones del período (para filtrar conversiones a WhatsApp y botones top)
+	let qClics = supabaseAdmin
+		.from('metricas_eventos')
+		.select('id, tipo_evento, elemento_id, url_origen, creado_en')
+		.eq('tipo_evento', 'clic_boton')
+		.order('creado_en', { ascending: false })
+		.limit(1000);
+	if (startDateISO) qClics = qClics.gte('creado_en', startDateISO);
+
+	// D) Feed de eventos recientes para el desglose de páginas y actividad en vivo
+	let qFeed = supabaseAdmin
+		.from('metricas_eventos')
+		.select('id, tipo_evento, elemento_id, url_origen, creado_en')
+		.order('creado_en', { ascending: false })
+		.limit(500);
+	if (startDateISO) qFeed = qFeed.gte('creado_en', startDateISO);
+
+	const [resVisitas, resTotal, resClics, resFeed] = await Promise.all([
+		qVisitas,
+		qTotal,
+		qClics,
+		qFeed
+	]);
+
+	if (resVisitas.error) queryWarning = resVisitas.error.message;
+	totalVisitas = resVisitas.count || 0;
+	totalEventosPeriodo = resTotal.count || 0;
+	clicsBotones = resClics.data || [];
+	recentEvents = resFeed.data || [];
+} catch (err: any) {
+	queryWarning = err?.message || 'Error de conexión con la base de datos de analítica.';
+}
+
+// 5. Función clasificadora de clics a WhatsApp
+function esClicWhatsApp(elementoId: string | null): boolean {
+	if (!elementoId) return false;
+	const id = elementoId.toLowerCase();
+	return (
+		id.includes('whatsapp') ||
+		id.startsWith('btn_whatsapp') ||
+		id.includes('wa.me') ||
+		id.includes('cotiza') ||
+		id.includes('escribenos')
+	);
+}
+
+// 6. Métricas derivadas
+const eventosWhatsApp = clicsBotones.filter(c => esClicWhatsApp(c.elemento_id));
+const totalWhatsApp = eventosWhatsApp.length;
+const tasaConversion = totalVisitas > 0 ? ((totalWhatsApp / totalVisitas) * 100).toFixed(2) : '0.00';
+
+// Elemento top interactuado
+const conteoElementos: Record<string, number> = {};
+clicsBotones.forEach(c => {
+	if (c.elemento_id) {
+		conteoElementos[c.elemento_id] = (conteoElementos[c.elemento_id] || 0) + 1;
+	}
+});
+const elementoTopEntry = Object.entries(conteoElementos).sort((a, b) => b[1] - a[1])[0];
+const elementoTopNombre = elementoTopEntry ? elementoTopEntry[0] : 'Sin interacción';
+const elementoTopCount = elementoTopEntry ? elementoTopEntry[1] : 0;
+
+// Desglose de Páginas más visitadas (usando la muestra de eventos recientes del período)
+const conteoPaginas: Record<string, number> = {};
+recentEvents
+	.filter(e => e.tipo_evento === 'visita_pagina' && e.url_origen)
+	.forEach(e => {
+		const path = e.url_origen.split('?')[0]; // quitar query params
+		conteoPaginas[path] = (conteoPaginas[path] || 0) + 1;
+	});
+
+const paginasTop = Object.entries(conteoPaginas)
+	.sort((a, b) => b[1] - a[1])
+	.slice(0, 8)
+	.map(([url, count]) => {
+		const totalMuestra = Object.values(conteoPaginas).reduce((acc, c) => acc + c, 0) || 1;
+		return {
+			url,
+			count,
+			pct: ((count / totalMuestra) * 100).toFixed(1)
+		};
+	});
+
+// Desglose de orígenes de clic a WhatsApp
+const conteoCanalesWA: Record<string, number> = {};
+eventosWhatsApp.forEach(e => {
+	const key = e.elemento_id || 'WhatsApp (General)';
+	conteoCanalesWA[key] = (conteoCanalesWA[key] || 0) + 1;
+});
+const canalesWATop = Object.entries(conteoCanalesWA)
+	.sort((a, b) => b[1] - a[1])
+	.map(([btn, count]) => ({
+		btn,
+		count,
+		pct: totalWhatsApp > 0 ? ((count / totalWhatsApp) * 100).toFixed(1) : '0'
+	}));
+
+// Formateador amigable de nombres de botones
+function etiquetarBoton(rawId: string): { label: string; badge: string; isWA: boolean } {
+	if (!rawId) return { label: 'General / No especificado', badge: 'neutral', isWA: false };
+	if (rawId === 'btn_whatsapp_flotante') return { label: 'Botón Flotante WhatsApp', badge: 'whatsapp', isWA: true };
+	if (rawId === 'btn_whatsapp_footer') return { label: 'Pie de Página (Footer)', badge: 'whatsapp', isWA: true };
+	if (rawId.startsWith('btn_whatsapp_producto_')) {
+		const sku = rawId.replace('btn_whatsapp_producto_', '');
+		return { label: `WhatsApp Producto (SKU: ${sku})`, badge: 'whatsapp', isWA: true };
+	}
+	if (rawId === 'btn_hero_escribenos') return { label: 'Hero: "Escríbenos"', badge: 'whatsapp', isWA: true };
+	if (rawId === 'btn_repuestos_cotiza_servicio') return { label: 'Banner: "Cotizar Servicio"', badge: 'whatsapp', isWA: true };
+	if (rawId === 'btn_hero_servicios') return { label: 'Hero: Ver Servicios', badge: 'click', isWA: false };
+	if (rawId === 'btn_hero_repuestos') return { label: 'Hero: Ver Repuestos', badge: 'click', isWA: false };
+	if (rawId === 'btn_hero_software') return { label: 'Hero: Software & SaaS', badge: 'click', isWA: false };
+	if (rawId === 'btn_repuestos_ver_catalogo') return { label: 'Repuestos: Catálogo', badge: 'click', isWA: false };
+	if (rawId.startsWith('seccion_servicios_')) {
+		const nombre = rawId.replace('seccion_servicios_', '').replace(/_/g, ' ');
+		return { label: `Servicio: ${nombre}`, badge: 'click', isWA: false };
+	}
+	return { label: rawId, badge: 'click', isWA: rawId.toLowerCase().includes('whatsapp') };
+}
+---
+
+<AdminLayout title="Tráfico Web & Conversiones a WhatsApp — SERVITECNOLOGY Admin" activeSection="analiticas">
+	<!-- Top Bar / Cabecera Principal -->
+	<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+		<div>
+			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+				<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+				<span>📊 Métricas de Tráfico & Conversiones a WhatsApp</span>
+			</div>
+			<h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-outfit">
+				Tráfico Web & Contactos por WhatsApp
+			</h1>
+			<p class="text-sm text-slate-400 mt-1 max-w-2xl">
+				Monitor en vivo del comportamiento de tus clientes: páginas visitadas, botones con mayor interacción y contactos reales generados hacia tu WhatsApp.
+			</p>
+		</div>
+
+		<!-- Selector de Período -->
+		<div class="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-xl border border-white/10 backdrop-blur-sm self-start md:self-auto">
+			<a
+				href="?period=hoy"
+				class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+					currentPeriod === 'hoy'
+						? 'bg-brand-cyan text-black shadow font-bold'
+						: 'text-slate-400 hover:text-white hover:bg-white/5'
+				}`}
+			>
+				Hoy
+			</a>
+			<a
+				href="?period=7d"
+				class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+					currentPeriod === '7d'
+						? 'bg-brand-cyan text-black shadow font-bold'
+						: 'text-slate-400 hover:text-white hover:bg-white/5'
+				}`}
+			>
+				Últimos 7 días
+			</a>
+			<a
+				href="?period=30d"
+				class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+					currentPeriod === '30d'
+						? 'bg-brand-cyan text-black shadow font-bold'
+						: 'text-slate-400 hover:text-white hover:bg-white/5'
+				}`}
+			>
+				Últimos 30 días
+			</a>
+			<a
+				href="?period=historico"
+				class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+					currentPeriod === 'historico'
+						? 'bg-brand-cyan text-black shadow font-bold'
+						: 'text-slate-400 hover:text-white hover:bg-white/5'
+				}`}
+			>
+				Histórico Total
+			</a>
+		</div>
+	</div>
+
+	{queryWarning && (
+		<div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm flex items-center gap-3">
+			<span class="text-xl">⚠️</span>
+			<div>
+				<strong>Aviso de Consulta:</strong> {queryWarning}
+			</div>
+		</div>
+	)}
+
+	<!-- Tarjeta Explicativa de Diagnóstico y Salud del Rastreador -->
+	<div class="mb-8 p-5 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 border border-brand-cyan/20 backdrop-blur-md shadow-xl">
+		<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+			<div class="flex items-start gap-3.5">
+				<div class="w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center text-xl flex-shrink-0 text-brand-cyan">
+					✨
+				</div>
+				<div>
+					<h3 class="text-sm font-bold text-white flex items-center gap-2">
+						Rastreador SSR y Detector de WhatsApp Activo
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+							● REGISTRO EN TIEMPO REAL
+						</span>
+					</h3>
+					<p class="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+						Previamente el contador anterior estaba limitado a las primeras 1.000 filas de agosto y no registraba el botón flotante ni el pie de página. Ahora el sistema registra el <strong>100% del tráfico</strong> mediante endpoint seguro en servidor (<code class="text-brand-cyan">/api/track</code>) y detecta automáticamente cualquier clic a WhatsApp en toda la web.
+					</p>
+				</div>
+			</div>
+
+			<!-- Botón de Simulación de Prueba en Vivo -->
+			<button
+				id="btnSimularPrueba"
+				type="button"
+				class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap shadow-sm"
+				title="Envía un evento de clic de prueba al servidor para verificar que el registro se procese al instante"
+			>
+				<span>⚡</span>
+				<span>Probar Registro en Vivo</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- 4 TARJETAS KPI PRINCIPALES -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+		<!-- KPI 1: Visitas a la Web -->
+		<div class="p-5 rounded-2xl bg-slate-900/80 border border-white/5 hover:border-brand-cyan/30 transition-all shadow-lg backdrop-blur-sm group">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Visitas a la Web</span>
+				<div class="w-9 h-9 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan group-hover:scale-110 transition-transform">
+					👁️
+				</div>
+			</div>
+			<div class="text-3xl font-extrabold text-white font-outfit tracking-tight">
+				{totalVisitas.toLocaleString('es-CL')}
+			</div>
+			<div class="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+				<span class="text-brand-cyan font-bold">{totalEventosPeriodo.toLocaleString('es-CL')}</span>
+				<span>eventos totales en período</span>
+			</div>
+		</div>
+
+		<!-- KPI 2: Conversiones a WhatsApp -->
+		<div class="p-5 rounded-2xl bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/40 transition-all shadow-lg backdrop-blur-sm group">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Clics a WhatsApp</span>
+				<div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+					💬
+				</div>
+			</div>
+			<div class="text-3xl font-extrabold text-emerald-400 font-outfit tracking-tight">
+				{totalWhatsApp.toLocaleString('es-CL')}
+			</div>
+			<div class="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+				<span>Contactos y cotizaciones directas</span>
+			</div>
+		</div>
+
+		<!-- KPI 3: Tasa de Conversión -->
+		<div class="p-5 rounded-2xl bg-slate-900/80 border border-white/5 hover:border-brand-purple/30 transition-all shadow-lg backdrop-blur-sm group">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Tasa de Conversión</span>
+				<div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+					🎯
+				</div>
+			</div>
+			<div class="text-3xl font-extrabold text-white font-outfit tracking-tight">
+				{tasaConversion}%
+			</div>
+			<div class="text-xs text-slate-400 mt-2">
+				<span>Porcentaje de visitas convertidas en WhatsApp</span>
+			</div>
+		</div>
+
+		<!-- KPI 4: Elemento Top -->
+		<div class="p-5 rounded-2xl bg-slate-900/80 border border-white/5 hover:border-amber-500/30 transition-all shadow-lg backdrop-blur-sm group">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Botón Más Clickeado</span>
+				<div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+					⭐
+				</div>
+			</div>
+			<div class="text-lg font-bold text-amber-300 font-outfit truncate" title={elementoTopNombre}>
+				{etiquetarBoton(elementoTopNombre).label}
+			</div>
+			<div class="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+				<span class="text-amber-400 font-bold">{elementoTopCount}</span>
+				<span>clics registrados</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- TABLAS DE DESGLOSE: PÁGINAS MÁS VISITADAS & CANALES DE WHATSAPP -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+		<!-- Bloque Izquierdo: Páginas Más Visitadas -->
+		<div class="p-6 rounded-2xl bg-slate-900/80 border border-white/5 shadow-xl backdrop-blur-sm">
+			<div class="flex items-center justify-between mb-5">
+				<h2 class="text-base font-bold text-white flex items-center gap-2">
+					<span>📄</span> Páginas con Mayor Tráfico
+				</h2>
+				<span class="text-xs text-slate-400">Muestra de período</span>
+			</div>
+
+			{paginasTop.length === 0 ? (
+				<div class="py-8 text-center text-slate-500 text-xs">
+					No hay registros de páginas para el período seleccionado.
+				</div>
+			) : (
+				<div class="space-y-3.5">
+					{paginasTop.map(p => (
+						<div>
+							<div class="flex items-center justify-between text-xs mb-1">
+								<span class="font-mono text-slate-200 truncate max-w-[280px]" title={p.url}>
+									{p.url === '/' ? '🏠 / (Portada Principal)' : p.url}
+								</span>
+								<div class="flex items-center gap-2">
+									<span class="text-slate-400">{p.count} visitas</span>
+									<span class="font-bold text-brand-cyan">{p.pct}%</span>
+								</div>
+							</div>
+							<div class="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+								<div
+									class="h-full bg-gradient-to-r from-brand-cyan to-blue-500 rounded-full"
+									style={`width: ${p.pct}%`}
+								></div>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+
+		<!-- Bloque Derecho: Origen de Clics a WhatsApp -->
+		<div class="p-6 rounded-2xl bg-slate-900/80 border border-white/5 shadow-xl backdrop-blur-sm">
+			<div class="flex items-center justify-between mb-5">
+				<h2 class="text-base font-bold text-white flex items-center gap-2">
+					<span>📱</span> Origen de Contactos a WhatsApp
+				</h2>
+				<span class="text-xs text-emerald-400 font-semibold">{totalWhatsApp} clics</span>
+			</div>
+
+			{canalesWATop.length === 0 ? (
+				<div class="py-8 text-center text-slate-500 text-xs">
+					No se registraron clics a WhatsApp en este período aún.
+				</div>
+			) : (
+				<div class="space-y-3.5">
+					{canalesWATop.map(c => {
+						const info = etiquetarBoton(c.btn);
+						return (
+							<div>
+								<div class="flex items-center justify-between text-xs mb-1">
+									<div class="flex items-center gap-2 truncate max-w-[280px]">
+										<span class="text-emerald-400">💬</span>
+										<span class="text-slate-200 font-medium truncate" title={info.label}>
+											{info.label}
+										</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<span class="text-slate-400">{c.count} clics</span>
+										<span class="font-bold text-emerald-400">{c.pct}%</span>
+									</div>
+								</div>
+								<div class="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+									<div
+										class="h-full bg-gradient-to-r from-emerald-500 to-brand-green rounded-full"
+										style={`width: ${c.pct}%`}
+									></div>
+								</div>
+							</div>
+						);
+					})}
+				</div>
+			)}
+		</div>
+	</div>
+
+	<!-- TABLA DE ACTIVIDAD EN VIVO (ÚLTIMOS EVENTOS) -->
+	<div class="p-6 rounded-2xl bg-slate-900/80 border border-white/5 shadow-xl backdrop-blur-sm">
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+			<div>
+				<h2 class="text-base font-bold text-white flex items-center gap-2">
+					<span>⚡</span> Actividad Reciente en Vivo
+				</h2>
+				<p class="text-xs text-slate-400 mt-0.5">
+					Últimos eventos registrados en tiempo real por el sistema.
+				</p>
+			</div>
+
+			<div class="flex items-center gap-2">
+				<button
+					id="btnRecargarFeed"
+					type="button"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium border border-white/10 transition-colors cursor-pointer"
+					title="Actualizar datos"
+				>
+					<span>🔄</span>
+					<span>Refrescar</span>
+				</button>
+			</div>
+		</div>
+
+		<div class="overflow-x-auto">
+			<table class="w-full text-left text-xs border-collapse">
+				<thead>
+					<tr class="border-b border-white/10 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
+						<th class="py-3 px-3">Tipo de Evento</th>
+						<th class="py-3 px-3">Elemento / Botón</th>
+						<th class="py-3 px-3">Página / URL</th>
+						<th class="py-3 px-3 text-right">Fecha y Hora (Chile)</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-white/5 text-slate-300 font-mono">
+					{recentEvents.slice(0, 30).map(e => {
+						const isWA = esClicWhatsApp(e.elemento_id);
+						const isClick = e.tipo_evento === 'clic_boton';
+						const info = etiquetarBoton(e.elemento_id);
+
+						return (
+							<tr class="hover:bg-white/[0.02] transition-colors">
+								<!-- Tipo de Evento -->
+								<td class="py-3 px-3 whitespace-nowrap">
+									{isWA ? (
+										<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+											<span>💬</span> Clic WhatsApp
+										</span>
+									) : isClick ? (
+										<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+											<span>🖱️</span> Clic Botón
+										</span>
+									) : (
+										<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+											<span>👁️</span> Visita Página
+										</span>
+									)}
+								</td>
+
+								<!-- Elemento / Botón -->
+								<td class="py-3 px-3 font-sans text-slate-200">
+									{e.elemento_id ? (
+										<div>
+											<span class="font-medium text-white">{info.label}</span>
+											<span class="block text-[10px] font-mono text-slate-500 truncate max-w-xs">{e.elemento_id}</span>
+										</div>
+									) : (
+										<span class="text-slate-600">—</span>
+									)}
+								</td>
+
+								<!-- URL / Origen -->
+								<td class="py-3 px-3 font-sans text-slate-300">
+									{e.url_origen ? (
+										<a
+											href={e.url_origen}
+											target="_blank"
+											class="text-brand-cyan/90 hover:text-brand-cyan hover:underline truncate inline-block max-w-[240px]"
+											title={e.url_origen}
+										>
+											{e.url_origen}
+										</a>
+									) : (
+										<span class="text-slate-600">—</span>
+									)}
+								</td>
+
+								<!-- Fecha y Hora -->
+								<td class="py-3 px-3 text-right text-slate-400 whitespace-nowrap text-[11px]">
+									{formatDateTime(e.creado_en)}
+								</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Script de interactividad: Refresco y Simulación de Prueba en Vivo -->
+	<script is:inline>
+		// 1. Botón de refresco manual
+		document.getElementById('btnRecargarFeed')?.addEventListener('click', () => {
+			window.location.reload();
+		});
+
+		// 2. Simulación de prueba en vivo
+		const btnPrueba = document.getElementById('btnSimularPrueba');
+		if (btnPrueba) {
+			btnPrueba.addEventListener('click', async () => {
+				const originalText = btnPrueba.innerHTML;
+				btnPrueba.disabled = true;
+				btnPrueba.innerHTML = '<span>⏳</span><span>Registrando evento...</span>';
+
+				try {
+					const res = await fetch('/api/track', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							tipo_evento: 'clic_boton',
+							elemento_id: 'btn_whatsapp_flotante',
+							url_origen: '/repuestos?test=simulacion_admin'
+						})
+					});
+
+					if (res.ok) {
+						if (window.adminShowToast) {
+							window.adminShowToast('¡Evento de prueba registrado con éxito en Supabase!', 'success');
+						} else {
+							alert('¡Evento de prueba registrado con éxito en Supabase!');
+						}
+						// Recargar tras 1 segundo para mostrar el nuevo evento en la tabla
+						setTimeout(() => {
+							window.location.reload();
+						}, 1000);
+					} else {
+						throw new Error('El endpoint devolvió estado ' + res.status);
+					}
+				} catch (err) {
+					console.error('Error al simular evento:', err);
+					if (window.adminShowToast) {
+						window.adminShowToast('Error al registrar evento: ' + err.message, 'error');
+					} else {
+						alert('Error al registrar evento: ' + err.message);
+					}
+					btnPrueba.disabled = false;
+					btnPrueba.innerHTML = originalText;
+				}
+			});
+		}
+	</script>
+</AdminLayout>

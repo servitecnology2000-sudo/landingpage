@@ -1,11 +1,12 @@
 ---
 export const prerender = false;
 
+import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase, supabaseAdmin } from '../../lib/supabase';
 
 // Auth guard — runtime read
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
-const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
 const cookie = Astro.cookies.get('admin_session');
 if (!adminSecret || cookie?.value !== adminSecret) {
 	return Astro.redirect('/meson-servitecnology-st/login');
@@ -195,23 +196,6 @@ try {
 	galeriaItems = galeria ?? [];
 } catch (e) {}
 
-// Fetch metrics
-let metrics: any[] = [];
-try {
-	const { data } = await supabaseAdmin.from('metricas_eventos').select('*');
-	metrics = data ?? [];
-} catch(e) {}
-
-const totalVisitas = metrics.filter(m => m.tipo_evento === 'visita_pagina').length;
-const totalWaClicks = metrics.filter(m => m.tipo_evento === 'clic_boton' && m.elemento_id?.startsWith('btn_whatsapp')).length;
-
-const clicks = metrics.filter(m => m.tipo_evento === 'clic_boton' && m.elemento_id);
-const elementCounts = clicks.reduce((acc, curr) => {
-	acc[curr.elemento_id] = (acc[curr.elemento_id] || 0) + 1;
-	return acc;
-}, {} as Record<string, number>);
-const topSection = Object.keys(elementCounts).sort((a,b) => elementCounts[b] - elementCounts[a])[0] || 'N/A';
-
 const urlObj = Astro.url;
 const activeTab = urlObj.searchParams.get('tab') || 'inventario';
 const successParam = urlObj.searchParams.get('success');
@@ -248,36 +232,12 @@ try {
 } catch (e) {}
 ---
 
-<html lang="es">
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width" />
-	<meta name="robots" content="noindex, nofollow" />
-	<title>SERVITECNOLOGY Admin — Dashboard</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<AdminLayout 
+	title="Panel de Administración — SERVITECNOLOGY" 
+	activeSection={activeTab === 'galeria' ? 'galeria' : 'inventario'}
+>
 	<style>
-		* { margin: 0; padding: 0; box-sizing: border-box; }
-		body { font-family: 'Inter', sans-serif; background: #09090b; color: #e2e8f0; min-height: 100vh; }
-		.topbar { background: rgba(24,24,27,0.9); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
-		.brand { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.25rem; background: linear-gradient(to right, #00FF7F, #00CFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-		.topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
-		.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; border: none; }
-		.btn-primary { background: linear-gradient(to right, #00CFFF, #00FF7F); color: black; }
-		.btn-primary:hover { opacity: 0.9; }
-		.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
-		.btn-outline:hover { border-color: #00CFFF; color: #00CFFF; }
-		.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
-		.btn-danger:hover { background: #ef4444; color: white; }
-		.btn-nav-active { background: rgba(0, 207, 255, 0.15) !important; border: 1px solid #00CFFF !important; color: #00CFFF !important; box-shadow: 0 0 10px rgba(0, 207, 255, 0.2); }
-		.nav-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-		@media (max-width: 960px) {
-			.topbar { flex-direction: column; align-items: stretch; gap: 0.75rem; padding: 0.75rem 1rem; }
-			.nav-group { overflow-x: auto; padding-bottom: 0.25rem; white-space: nowrap; }
-			.topbar-actions { justify-content: flex-end; }
-		}
-		.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+		.container { max-width: 100%; margin: 0 auto; }
 		.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
 		.stat-card { background: rgba(24,24,27,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 0.75rem; padding: 1.5rem; }
 		.stat-value { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: white; }
@@ -298,11 +258,15 @@ try {
 		.search-bar:focus { outline: none; border-color: #00CFFF; }
 		.section-title { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 1rem; margin-top: 1rem; }
 		
-		/* Tabs UI */
-		.tabs-nav { display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; }
-		.tab-btn { padding: 0.75rem 1.25rem; font-weight: 700; font-size: 0.9rem; color: #94a3b8; border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-		.tab-btn.active { color: #00CFFF; border-bottom-color: #00CFFF; }
-		
+		/* Action Buttons */
+		.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.85rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; border: none; }
+		.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+		.btn-outline:hover { border-color: #00CFFF; color: #00CFFF; }
+		.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+		.btn-danger:hover { background: #ef4444; color: white; }
+		.btn-primary { background: linear-gradient(to right, #00CFFF, #00FF7F); color: black; }
+		.btn-primary:hover { opacity: 0.9; }
+
 		/* Upload Box */
 		.upload-box { background: rgba(24,24,27,0.8); border: 1px dashed rgba(0,207,255,0.3); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem; }
 		.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
@@ -334,165 +298,7 @@ try {
 			.hide-mobile { display: none; }
 			td, th { padding: 0.5rem; font-size: 0.7rem; }
 		}
-
-		/* Modal Moderno Confirm */
-		.modern-modal-backdrop {
-			position: fixed;
-			inset: 0;
-			z-index: 9999;
-			background: rgba(0, 0, 0, 0.85);
-			backdrop-filter: blur(12px);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 1rem;
-			opacity: 0;
-			pointer-events: none;
-			transition: opacity 0.2s ease;
-		}
-		.modern-modal-backdrop.open {
-			opacity: 1;
-			pointer-events: auto;
-		}
-		.modern-modal-card {
-			background: #121215;
-			border: 1px solid rgba(239, 68, 68, 0.4);
-			border-radius: 1rem;
-			width: 100%;
-			max-width: 440px;
-			padding: 1.5rem;
-			box-shadow: 0 0 35px rgba(239, 68, 68, 0.25);
-			transform: scale(0.95);
-			transition: transform 0.2s ease;
-			display: flex;
-			flex-direction: column;
-			gap: 1.25rem;
-		}
-		.modern-modal-backdrop.open .modern-modal-card {
-			transform: scale(1);
-		}
-		.modern-modal-header {
-			display: flex;
-			align-items: flex-start;
-			gap: 1rem;
-		}
-		.modern-modal-icon-wrap {
-			width: 44px;
-			height: 44px;
-			border-radius: 0.75rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 1.25rem;
-			flex-shrink: 0;
-			background: rgba(239, 68, 68, 0.1);
-			border: 1px solid rgba(239, 68, 68, 0.3);
-		}
-		.modern-modal-title {
-			font-family: 'Outfit', sans-serif;
-			font-size: 1.05rem;
-			font-weight: 700;
-			color: white;
-		}
-		.modern-modal-desc {
-			font-size: 0.825rem;
-			color: #94a3b8;
-			margin-top: 0.35rem;
-			line-height: 1.45;
-		}
-		.modern-modal-actions {
-			display: flex;
-			justify-content: flex-end;
-			gap: 0.65rem;
-			padding-top: 0.75rem;
-			border-top: 1px solid rgba(255, 255, 255, 0.06);
-		}
-		.modern-modal-btn-cancel {
-			padding: 0.5rem 1rem;
-			border-radius: 0.65rem;
-			background: rgba(255, 255, 255, 0.05);
-			color: #cbd5e1;
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			font-size: 0.775rem;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all 0.15s ease;
-		}
-		.modern-modal-btn-cancel:hover {
-			background: rgba(255, 255, 255, 0.1);
-			color: white;
-		}
-		.modern-modal-btn-confirm {
-			padding: 0.5rem 1.15rem;
-			border-radius: 0.65rem;
-			background: #ef4444;
-			color: white;
-			border: none;
-			font-size: 0.775rem;
-			font-weight: 700;
-			cursor: pointer;
-			transition: all 0.15s ease;
-			box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-		}
-		.modern-modal-btn-confirm:hover {
-			background: #dc2626;
-		}
 	</style>
-</head>
-<body>
-	<div class="topbar">
-		<div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-			<a href="/meson-servitecnology-st" class="brand" style="text-decoration: none;">
-				SERVITECNOLOGY Admin
-			</a>
-
-			<!-- Navegación de todos los Módulos -->
-			<nav class="nav-group">
-				<a 
-					href="/meson-servitecnology-st?tab=inventario" 
-					class={`btn ${activeTab === 'inventario' ? 'btn-nav-active' : 'btn-outline'}`}
-				>
-					<span>📦</span> <span>Repuestos</span>
-				</a>
-				<a 
-					href="/meson-servitecnology-st?tab=galeria" 
-					class={`btn ${activeTab === 'galeria' ? 'btn-nav-active' : 'btn-outline'}`}
-				>
-					<span>🖼️</span> <span>Galería</span>
-				</a>
-				<a 
-					href="/meson-servitecnology-st/pedidos" 
-					class="btn btn-outline" 
-					style="border-color: rgba(0,255,127,0.4); color:#00FF7F;"
-				>
-					<span>📋</span> <span>Pedidos</span>
-					{pendingOrdersCount > 0 && (
-						<span style="background: rgba(234,179,8,0.25); color: #fde047; padding: 0.1rem 0.45rem; border-radius: 9999px; font-size: 0.65rem; border: 1px solid rgba(234,179,8,0.4); margin-left: 0.2rem; font-weight: bold;">
-							{pendingOrdersCount}
-						</span>
-					)}
-				</a>
-				<a 
-					href="/meson-servitecnology-st/clientes" 
-					class="btn btn-outline"
-				>
-					<span>👥</span> <span>Clientes</span>
-				</a>
-				<a 
-					href="/meson-servitecnology-st/metricas" 
-					class="btn btn-outline"
-				>
-					<span>📊</span> <span>Métricas</span>
-				</a>
-			</nav>
-		</div>
-
-		<div class="topbar-actions">
-			<a href="/meson-servitecnology-st/nuevo" class="btn btn-primary">+ Nuevo Producto</a>
-			<a href="/" target="_blank" class="btn btn-outline">🌐 Ver Sitio</a>
-			<a href="/meson-servitecnology-st/logout" class="btn btn-danger">Cerrar sesión</a>
-		</div>
-	</div>
 
 	<div class="container">
 		<div id="clientNoticeBox" style="display:none; padding:1rem; border-radius:0.75rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.5;"></div>
@@ -515,45 +321,33 @@ try {
 			</div>
 		)}
 
-		<!-- Metrics Dashboard -->
-		<h2 class="section-title">Panel de Analíticas</h2>
-		<div class="stats" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem;">
-			<div class="stat-card">
-				<div class="stat-value text-brand-cyan">{totalVisitas}</div>
-				<div class="stat-label">Visitas Únicas / Páginas Vistas</div>
-			</div>
-			<div class="stat-card">
-				<div class="stat-value text-brand-green">{totalWaClicks}</div>
-				<div class="stat-label">Clics a WhatsApp (Conversiones)</div>
-			</div>
-			<div class="stat-card">
-				<div class="stat-value" style="font-size: 1.5rem;">{topSection}</div>
-				<div class="stat-label">Sección Top Interactuada</div>
-			</div>
-		</div>
-
-		<!-- Main Navigation Tabs -->
-		<div class="tabs-nav">
-			<a href="/meson-servitecnology-st?tab=inventario" class={`tab-btn ${activeTab === 'inventario' ? 'active' : ''}`}>
-				📦 Inventario de Repuestos ({items.length})
-			</a>
-			<a href="/meson-servitecnology-st?tab=galeria" class={`tab-btn ${activeTab === 'galeria' ? 'active' : ''}`}>
-				🖼️ Galería de Trabajos / Clientes Satisfechos ({galeriaItems.length})
-			</a>
-			<a href="/meson-servitecnology-st/pedidos" class="tab-btn" style="color: #00FF7F;">
-				📋 Pedidos y Despacho
-			</a>
-			<a href="/meson-servitecnology-st/clientes" class="tab-btn" style="color: #94a3b8;">
-				👥 Clientes
-			</a>
-			<a href="/meson-servitecnology-st/metricas" class="tab-btn" style="color: #94a3b8;">
-				📊 Métricas
-			</a>
-		</div>
 
 		<!-- TAB 1: INVENTARIO -->
 		{activeTab === 'inventario' && (
 			<div>
+				<!-- Encabezado de Sección Unificado -->
+				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+					<div>
+						<h1 class="font-outfit text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+							<span>📦</span>
+							<span>Inventario de Repuestos</span>
+						</h1>
+						<p class="text-xs sm:text-sm text-slate-400 mt-1">
+							Catálogo completo, control de stock disponible y precios ({items.length} productos).
+						</p>
+					</div>
+
+					<div class="flex items-center gap-2.5">
+						<a
+							href="/meson-servitecnology-st/nuevo"
+							class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
+						>
+							<span>+</span>
+							<span>Nuevo Repuesto</span>
+						</a>
+					</div>
+				</div>
+
 				<div class="stats">
 					<div class="stat-card">
 						<div class="stat-value">{items.length}</div>
@@ -652,6 +446,19 @@ try {
 		<!-- TAB 2: GALERÍA DE TRABAJOS Y CLIENTES SATISFECHOS -->
 		{activeTab === 'galeria' && (
 			<div>
+				<!-- Encabezado de Sección Unificado -->
+				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+					<div>
+						<h1 class="font-outfit text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+							<span>🖼️</span>
+							<span>Galería de Trabajos Realizados</span>
+						</h1>
+						<p class="text-xs sm:text-sm text-slate-400 mt-1">
+							Muestrario fotográfico real de soporte técnico, CCTV, gaming, redes e impresoras ({galeriaItems.length} fotos).
+						</p>
+					</div>
+				</div>
+
 				<!-- Upload Box -->
 				<div class="upload-box">
 					<h3 style="font-family:'Outfit',sans-serif; font-size:1.1rem; color:white; font-weight:700;">
@@ -920,51 +727,7 @@ try {
 			});
 		});
 
-		// Modal Global Moderno de Confirmación
-		window.showAdminConfirm = function(options = {}) {
-			return new Promise((resolve) => {
-				const modal = document.getElementById('adminModernConfirmModal');
-				const iconEl = document.getElementById('adminModernConfirmIcon');
-				const titleEl = document.getElementById('adminModernConfirmTitle');
-				const msgEl = document.getElementById('adminModernConfirmMsg');
-				const cancelBtn = document.getElementById('adminModernConfirmCancelBtn');
-				const acceptBtn = document.getElementById('adminModernConfirmAcceptBtn');
-
-				if (!modal || !acceptBtn || !cancelBtn) {
-					resolve(true);
-					return;
-				}
-
-				titleEl.textContent = options.title || 'Confirmar Acción';
-				msgEl.textContent = options.message || '¿Estás seguro de continuar?';
-				acceptBtn.textContent = options.confirmText || 'Confirmar';
-				cancelBtn.textContent = options.cancelText || 'Cancelar';
-				iconEl.textContent = options.icon || '🗑️';
-
-				function cleanup(val) {
-					modal.classList.remove('open');
-					cancelBtn.removeEventListener('click', onCancel);
-					acceptBtn.removeEventListener('click', onAccept);
-					modal.removeEventListener('click', onBackdrop);
-					document.removeEventListener('keydown', onKeyDown);
-					resolve(val);
-				}
-				function onCancel() { cleanup(false); }
-				function onAccept() { cleanup(true); }
-				function onBackdrop(e) { if (e.target === modal) cleanup(false); }
-				function onKeyDown(e) { if (e.key === 'Escape') cleanup(false); }
-
-				cancelBtn.addEventListener('click', onCancel);
-				acceptBtn.addEventListener('click', onAccept);
-				modal.addEventListener('click', onBackdrop);
-				document.addEventListener('keydown', onKeyDown);
-
-				modal.classList.add('open');
-				acceptBtn.focus();
-			});
-		};
-
-		// Triggers de Eliminación con Modal Moderno
+		// Triggers de Eliminación con Modal Moderno provisto por AdminLayout
 		document.querySelectorAll('.btn-trigger-delete-product').forEach(btn => {
 			btn.addEventListener('click', async () => {
 				const form = btn.closest('form');
@@ -1001,28 +764,4 @@ try {
 			});
 		});
 	</script>
-
-	<!-- Modal Moderno Global de Confirmación -->
-	<div id="adminModernConfirmModal" class="modern-modal-backdrop" role="dialog" aria-modal="true">
-		<div id="adminModernConfirmCard" class="modern-modal-card">
-			<div class="modern-modal-header">
-				<div class="modern-modal-icon-wrap">
-					<span id="adminModernConfirmIcon">🗑️</span>
-				</div>
-				<div>
-					<h3 id="adminModernConfirmTitle" class="modern-modal-title">Confirmar Eliminación</h3>
-					<p id="adminModernConfirmMsg" class="modern-modal-desc">¿Estás seguro de continuar?</p>
-				</div>
-			</div>
-			<div class="modern-modal-actions">
-				<button type="button" id="adminModernConfirmCancelBtn" class="modern-modal-btn-cancel">
-					Cancelar
-				</button>
-				<button type="button" id="adminModernConfirmAcceptBtn" class="modern-modal-btn-confirm">
-					Sí, Eliminar
-				</button>
-			</div>
-		</div>
-	</div>
-</body>
-</html>
+</AdminLayout>

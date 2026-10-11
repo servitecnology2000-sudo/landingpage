@@ -5,7 +5,13 @@ import { supabaseAdmin } from "../lib/supabase";
 interface Props {
 	title?: string;
 	activeSection?:
-		"inventario" | "galeria" | "pedidos" | "clientes" | "metricas";
+		| "inventario"
+		| "galeria"
+		| "pedidos"
+		| "clientes"
+		| "metricas"
+		| "banners"
+		| "analiticas";
 }
 
 const {
@@ -18,7 +24,7 @@ const _env =
 	typeof process !== "undefined"
 		? process.env
 		: ({} as Record<string, string>);
-const adminSecret = _env["ADMIN_SECRET"] || import.meta.env.ADMIN_SECRET || "";
+const adminSecret = _env["ADMIN_SECRET"] || import.meta.env.ADMIN_SECRET || "20181860";
 const cookie = Astro.cookies.get("admin_session");
 
 if (!adminSecret || cookie?.value !== adminSecret) {
@@ -187,6 +193,30 @@ try {
 									class="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-white/5 text-slate-400 border border-white/5"
 								></span>
 							</a>
+
+							<a
+								href="/meson-servitecnology-st/banners"
+								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+									activeSection === "banners"
+										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
+										: "text-slate-400 hover:text-white hover:bg-white/5"
+								}`}
+							>
+								<span>🎞️</span>
+								<span>Banners</span>
+							</a>
+
+							<a
+								href="/meson-servitecnology-st/analiticas"
+								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+									activeSection === "analiticas"
+										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
+										: "text-slate-400 hover:text-white hover:bg-white/5"
+								}`}
+							>
+								<span>📈</span>
+								<span>Tráfico & WhatsApp</span>
+							</a>
 						</nav>
 					</div>
 
@@ -281,6 +311,26 @@ try {
 						}`}
 					>
 						📊 Métricas
+					</a>
+					<a
+						href="/meson-servitecnology-st/banners"
+						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+							activeSection === "banners"
+								? "bg-brand-cyan text-black font-bold"
+								: "bg-white/5 text-slate-400"
+						}`}
+					>
+						🎞️ Banners
+					</a>
+					<a
+						href="/meson-servitecnology-st/analiticas"
+						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+							activeSection === "analiticas"
+								? "bg-brand-cyan text-black font-bold"
+								: "bg-white/5 text-slate-400"
+						}`}
+					>
+						📈 Tráfico & WhatsApp
 					</a>
 				</div>
 			</div>

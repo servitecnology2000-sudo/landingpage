@@ -1,0 +1,501 @@
+---
+import { supabase } from '../lib/supabase';
+
+// 1. Consulta de Banners Activos EXCLUSIVOS de la sección 'repuestos'
+let dbBanners: Array<{
+	id: string;
+	titulo: string;
+	descripcion?: string;
+	imagen_url: string;
+	link_url?: string;
+	alt_text?: string;
+	orden?: number;
+	badge?: string;
+	cta_text?: string;
+	is_hero?: boolean;
+}> = [];
+
+try {
+	const { data, error } = await supabase
+		.from('hero_banners')
+		.select('*')
+		.eq('seccion', 'repuestos')
+		.eq('activo', true)
+		.order('orden', { ascending: true })
+		.order('created_at', { ascending: false });
+
+	if (!error && data && data.length > 0) {
+		dbBanners = data;
+	}
+} catch (e) {
+	// Fallback silencioso y seguro
+}
+
+// 2. Diapositivas de Respaldo Curadas para la Tienda de Repuestos
+// Incluye la imagen original (/imagenes/soportepc.jpg) y las 6 imágenes oficiales de Banners
+const defaultRepuestosBanners = [
+	{
+		id: 'rep-slide-0-soporte',
+		titulo: 'No tienes que hacerlo solo',
+		descripcion: 'Instalamos y configuramos tus repuestos y componentes. Cotiza la instalación con nosotros.',
+		imagen_url: '/imagenes/soportepc.jpg',
+		alt_text: 'No tienes que hacerlo solo. Instalamos y configuramos tus repuestos',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20deseo%20cotizar%20la%20instalaci%C3%B3n%20y%20configuraci%C3%B3n%20de%20mis%20repuestos...',
+		badge: 'Servicio Técnico Garantizado',
+		cta_text: 'Cotiza tu servicio',
+		is_hero: true
+	},
+	{
+		id: 'rep-slide-1-impresora',
+		titulo: 'Oferta de Impresora Epson con Instalación Gratis',
+		descripcion: 'Calidad excepcional y mayor velocidad. $199.000 con instalación técnica gratis.',
+		imagen_url: '/imagenes/banners/1.jpg',
+		alt_text: 'Oferta de Impresora Epson $199.000 con Instalación Gratis',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20me%20interesa%20la%20Oferta%20de%20Impresora%20Epson%20por%20$199.000%20con%20instalaci%C3%B3n%20gratis',
+		badge: 'Oferta Especial · $199.000',
+		cta_text: 'Pedir con Instalación Gratis',
+		is_hero: false
+	},
+	{
+		id: 'rep-slide-2-ecommerce',
+		titulo: 'Ecommerce de Repuestos y Hardware Informático',
+		descripcion: 'Componentes testeados con garantía oficial. Retiro en oficina o despacho a domicilio.',
+		imagen_url: '/imagenes/banners/2.jpg',
+		alt_text: 'Ecommerce de Repuestos y Hardware Informático - SERVITECNOLOGY',
+		link_url: '#catalogo',
+		badge: 'Tienda Oficial · Garantía',
+		cta_text: 'Ver Catálogo de Repuestos',
+		is_hero: false
+	},
+	{
+		id: 'rep-slide-3-mercusys-mc200',
+		titulo: 'Cámara Mercusys MC200 con Instalación 50% DCTO',
+		descripcion: 'Detección precisa, visión nocturna nítida, audio bidireccional y 1080P Full HD. $21.900.',
+		imagen_url: '/imagenes/banners/3.jpg',
+		alt_text: 'Cámara Mercusys MC200 $21.900 con 50% DCTO en instalación',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20deseo%20cotizar%20la%20C%C3%A1mara%20Mercusys%20MC200%20por%20$21.900%20con%20instalaci%C3%B3n',
+		badge: 'Seguridad CCTV · $21.900',
+		cta_text: 'Cotizar con Instalación 50% DCTO',
+		is_hero: false
+	},
+	{
+		id: 'rep-slide-4-soporte-monitor',
+		titulo: 'Soporte Doble para Monitor con Instalación Gratis',
+		descripcion: 'Soporte ergonómico de doble brazo para monitores. $20.900 con instalación técnica gratis.',
+		imagen_url: '/imagenes/banners/4.jpg',
+		alt_text: 'Soporte Doble para Monitor $20.900 con Instalación Gratis',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20me%20interesa%20el%20Soporte%20Doble%20para%20Monitor%20por%20$20.900%20con%20instalaci%C3%B3n%20gratis',
+		badge: 'Accesorios & Ergonomía · $20.900',
+		cta_text: 'Pedir con Instalación Gratis',
+		is_hero: false
+	},
+	{
+		id: 'rep-slide-5-imou-ranger',
+		titulo: 'Cámara IMOU Ranger 2 (3MP) con Instalación 50% DCTO',
+		descripcion: 'Indoor Smart Security Camera 3MP con 50% de descuento en instalación. $25.900.',
+		imagen_url: '/imagenes/banners/5.jpg',
+		alt_text: 'Cámara IMOU Ranger 2 3MP $25.900 con Instalación 50% DCTO',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20deseo%20adquirir%20la%20C%C3%A1mara%20IMOU%20Ranger%202%20de%203MP%20con%20instalaci%C3%B3n',
+		badge: 'Seguridad Inteligente · $25.900',
+		cta_text: 'Cotizar con Instalación 50% DCTO',
+		is_hero: false
+	},
+	{
+		id: 'rep-slide-6-kit-mercusys-sd',
+		titulo: 'Kit Cámara Mercusys MC200 + Tarjeta MicroSD 64GB IMOU',
+		descripcion: 'Kit completo de vigilancia con envío a domicilio y pago fácil. $41.900.',
+		imagen_url: '/imagenes/banners/6.jpg',
+		alt_text: 'Kit Cámara Mercusys MC200 y Tarjeta MicroSD 64GB IMOU $41.900',
+		link_url: 'https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20deseo%20el%20Kit%20C%C3%A1mara%20Mercusys%20MC200%20con%20MicroSD%2064GB%20por%20$41.900',
+		badge: 'Kit Completo · $41.900',
+		cta_text: 'Pedir Kit con Envío a Domicilio',
+		is_hero: false
+	}
+];
+
+const slides = dbBanners.length > 0 ? dbBanners : defaultRepuestosBanners;
+---
+
+<section 
+	id="repuestos-banner-hero" 
+	class="repuestos-carousel-section relative min-h-[75vh] sm:min-h-[82vh] flex items-center justify-center overflow-hidden bg-black select-none border-b border-white/5"
+	aria-label="Carrusel de banners y catálogo de repuestos SERVITECNOLOGY"
+>
+	<!-- Resplandores Ambientales Tecnológicos Controlados -->
+	<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] md:w-[900px] h-[350px] md:h-[500px] bg-brand-cyan/15 rounded-full blur-[170px] pointer-events-none z-0"></div>
+	<div class="absolute bottom-1/4 left-1/2 -translate-x-1/2 translate-y-1/4 w-[500px] md:w-[750px] h-[300px] md:h-[450px] bg-brand-green/10 rounded-full blur-[170px] pointer-events-none z-0"></div>
+	<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0"></div>
+
+	<!-- ============================================================ -->
+	<!-- 1. CAPA DE DIAPOSITIVAS DEL CARRUSEL (SLIDES INTERACTIVOS) -->
+	<!-- ============================================================ -->
+	<div id="repuestosCarouselTrack" class="absolute inset-0 z-10">
+		{slides.map((slide, index) => {
+			const isHeroSlide = Boolean(
+				slide.is_hero || 
+				slide.storage_path?.includes('soportepc') || 
+				slide.imagen_url?.includes('soportepc') || 
+				slide.titulo?.toLowerCase().includes('no tienes que hacerlo solo')
+			);
+
+			return (
+				<div
+					class={`repuestos-slide absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-10 pointer-events-none'}`}
+					data-slide-index={index}
+					aria-hidden={index !== 0 ? 'true' : 'false'}
+				>
+					{isHeroSlide ? (
+						/* ======================================================= */
+						/* SLIDE HERO INTRO CON IMAGEN Y COPY COMERCIAL DINÁMICO */
+						/* ======================================================= */
+						<div class="relative w-full h-full flex items-center justify-center">
+							<!-- Imagen de Fondo con degradados de contraste -->
+							<div class="absolute inset-0 z-0">
+								<div class="absolute inset-0 bg-black/75 z-10"></div>
+								<div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/70 z-10"></div>
+								<div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-black/85 z-10"></div>
+								<img
+									src={slide.imagen_url}
+									alt={slide.alt_text || slide.titulo}
+									class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-[8000ms] ease-out will-change-transform"
+									loading={index === 0 ? "eager" : "lazy"}
+									fetchpriority={index === 0 ? "high" : "auto"}
+								/>
+							</div>
+
+							<!-- Contenido Hero Central -->
+							<div class="relative z-20 mx-auto max-w-5xl px-6 w-full text-center flex flex-col items-center justify-center space-y-6 sm:space-y-8 mt-4 sm:mt-6">
+								<!-- Top Pill Badge de Repuestos y Soporte -->
+								<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/25 bg-brand-cyan/10 text-brand-cyan text-xs sm:text-sm font-semibold uppercase tracking-wider backdrop-blur-md shadow-[0_0_20px_rgba(0,207,255,0.2)]">
+									<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+									<span>SERVITECNOLOGY · Repuestos Hardware & Servicio Técnico de Instalación</span>
+								</div>
+
+								<!-- Título Comercial Principal -->
+								<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] sm:leading-[1.05] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] max-w-4xl mx-auto font-outfit">
+									<span class="block text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-brand-cyan drop-shadow-[0_2px_18px_rgba(0,207,255,0.4)]">
+										{slide.titulo?.includes(' - ') ? slide.titulo.split(' - ')[0] : (slide.titulo?.toLowerCase().includes('no tienes') ? 'No tienes que hacerlo solo.' : (slide.titulo || 'No tienes que hacerlo solo.'))}
+									</span>
+									<span class="block mt-1 sm:mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-brand-cyan to-brand-green">
+										{slide.titulo?.includes(' - ') ? slide.titulo.split(' - ')[1] : (slide.titulo?.toLowerCase().includes('no tienes') ? 'Instalamos y configuramos tus repuestos' : '')}
+									</span>
+								</h1>
+
+								<!-- Texto Explicativo Comercial -->
+								<p class="text-base sm:text-lg md:text-xl text-slate-200 max-w-2xl sm:max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-normal">
+									{slide.descripcion || 'Cotiza la instalación de tus productos con nosotros y concéntrate en tus proyectos. Te ayudamos con la instalación, configuración y puesta en marcha de tus componentes en Santiago.'}
+								</p>
+
+								<!-- Botones de Acción (CTAs Oficiales) -->
+								<div class="flex flex-wrap gap-4 pt-1 sm:pt-3 justify-center items-center w-full max-w-3xl">
+									<!-- CTA Principal: Cotiza tu servicio a WhatsApp -->
+									<a
+										id="repuestos-cta-cotizar"
+										data-track-event="clic_boton"
+										data-element-id="btn_repuestos_cotiza_servicio"
+										href={slide.link_url || "https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20deseo%20cotizar%20la%20instalaci%C3%B3n%20y%20configuraci%C3%B3n%20de%20mis%20repuestos..."}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-base font-black uppercase tracking-wide bg-gradient-to-r from-brand-cyan to-brand-green text-black shadow-[0_0_30px_rgba(0,207,255,0.35)] hover:shadow-[0_0_40px_rgba(0,255,127,0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+									>
+										<svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
+											<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+										</svg>
+										<span>Cotiza tu servicio</span>
+									</a>
+
+									<!-- CTA Secundario: Explorar Catálogo de Repuestos -->
+									<a
+										href="#catalogo"
+										data-track-event="clic_boton"
+										data-element-id="btn_repuestos_ver_catalogo"
+										class="inline-flex items-center gap-2 px-7 py-4 rounded-xl text-base font-bold bg-zinc-900/80 hover:bg-zinc-800 text-white border border-white/20 hover:border-brand-cyan/50 backdrop-blur-md shadow-lg transition-all duration-300 cursor-pointer"
+									>
+										<span>Ver Catálogo de Repuestos</span>
+										<span class="text-brand-cyan">↓</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					) : (
+						/* ======================================================= */
+						/* SLIDES GRÁFICOS OFICIALES EN ALTA CALIDAD */
+						/* ======================================================= */
+						<a
+							href={slide.link_url || '#catalogo'}
+							target={slide.link_url?.startsWith('http') ? '_blank' : '_self'}
+							rel={slide.link_url?.startsWith('http') ? 'noopener noreferrer' : ''}
+							class="group/banner relative w-full h-full flex items-center justify-center overflow-hidden cursor-pointer block"
+							title={`Ver detalles de: ${slide.titulo}`}
+						>
+							<!-- Imagen de Fondo Ambientada (Blur Estilizado) -->
+							<div class="absolute inset-0 z-0 overflow-hidden opacity-30">
+								<img
+									src={slide.imagen_url}
+									alt=""
+									aria-hidden="true"
+									class="w-full h-full object-cover blur-2xl transform scale-110"
+								/>
+							</div>
+
+							<!-- Degradados de marco cinematográfico sutiles -->
+							<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 z-10 pointer-events-none"></div>
+							<div class="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 z-10 pointer-events-none"></div>
+
+							<!-- Contenedor del Banner Principal a Escala Óptima (1376x768) -->
+							<div class="relative z-20 max-w-6xl w-full h-full max-h-[72vh] sm:max-h-[78vh] flex items-center justify-center p-3 sm:p-6">
+								<img
+									src={slide.imagen_url}
+									alt={slide.alt_text || slide.titulo}
+									class="w-full h-full object-contain object-center rounded-2xl shadow-[0_15px_60px_rgba(0,0,0,0.85)] border border-white/10 group-hover/banner:scale-[1.01] transition-transform duration-500 ease-out"
+									loading={index === 0 ? "eager" : "lazy"}
+									fetchpriority={index === 0 ? "high" : "auto"}
+								/>
+							</div>
+
+							<!-- Pastilla Flotante de Acción Rápida (Floating Action Pill) -->
+							<div class="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+								<div class="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-black/85 border border-brand-cyan/40 text-white backdrop-blur-xl shadow-[0_0_30px_rgba(0,207,255,0.25)] group-hover/banner:border-brand-green group-hover/banner:shadow-[0_0_40px_rgba(0,255,127,0.35)] transition-all duration-300">
+									{slide.badge && (
+										<span class="px-2.5 py-0.5 rounded-full bg-brand-cyan/20 text-brand-cyan text-xs font-bold uppercase tracking-wider">
+											{slide.badge}
+										</span>
+									)}
+									<span class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-1.5">
+										<span>{slide.cta_text || 'Consultar o Pedir por WhatsApp'}</span>
+										<span class="text-brand-green group-hover/banner:translate-x-1 transition-transform">→</span>
+									</span>
+								</div>
+							</div>
+						</a>
+					)}
+				</div>
+			);
+		})}
+	</div>
+
+
+	<!-- ============================================================ -->
+	<!-- 3. CONTROLES DE NAVEGACIÓN Y AUTO-PLAY DEL CARRUSEL -->
+	<!-- ============================================================ -->
+	<!-- Flecha Izquierda (Anterior) -->
+	<button
+		id="repuestosCarouselPrev"
+		type="button"
+		class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-13 sm:h-13 flex items-center justify-center rounded-full bg-black/70 border border-white/20 text-white hover:bg-brand-cyan hover:text-black hover:border-brand-cyan transition-all duration-300 backdrop-blur-md shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-cyan cursor-pointer"
+		aria-label="Diapositiva anterior"
+	>
+		<svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+		</svg>
+	</button>
+
+	<!-- Flecha Derecha (Siguiente) -->
+	<button
+		id="repuestosCarouselNext"
+		type="button"
+		class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-13 sm:h-13 flex items-center justify-center rounded-full bg-black/70 border border-white/20 text-white hover:bg-brand-cyan hover:text-black hover:border-brand-cyan transition-all duration-300 backdrop-blur-md shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-cyan cursor-pointer"
+		aria-label="Diapositiva siguiente"
+	>
+		<svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+		</svg>
+	</button>
+
+	<!-- Barra Flotante: Indicadores (Dots) y Control de Auto-Reproducción -->
+	<div class="absolute bottom-2.5 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-black/85 border border-white/15 px-4 py-1.5 rounded-full backdrop-blur-xl shadow-2xl">
+		<!-- Dots de Navegación -->
+		<div id="repuestosCarouselDots" class="flex items-center gap-2" role="tablist" aria-label="Indicadores del carrusel">
+			{slides.map((_, i) => (
+				<button
+					type="button"
+					role="tab"
+					class={`repuestos-carousel-dot w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${i === 0 ? 'bg-brand-cyan w-6' : 'bg-white/30 hover:bg-white/60'}`}
+					data-dot-index={i}
+					aria-label={`Ir al banner ${i + 1}`}
+					aria-selected={i === 0 ? "true" : "false"}
+				/>
+			))}
+		</div>
+
+		<!-- Separador -->
+		<div class="w-px h-3.5 bg-white/20"></div>
+
+		<!-- Botón para Pausar / Reanudar Auto-Reproducción -->
+		<button
+			id="repuestosAutoplayToggle"
+			type="button"
+			class="flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-brand-cyan transition-colors focus:outline-none cursor-pointer"
+			title="Pausar o reanudar la reproducción automática del carrusel"
+			aria-label="Pausar auto-reproducción"
+		>
+			<span id="repuestosAutoplayIcon" class="text-xs">⏸️</span>
+			<span id="repuestosAutoplayText" class="hidden sm:inline">Auto</span>
+		</button>
+	</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. LÓGICA DE CONTROL DEL CARRUSEL EN EL CLIENTE -->
+<!-- ============================================================ -->
+<script>
+	function initRepuestosCarousel() {
+		const slides = document.querySelectorAll<HTMLElement>('.repuestos-slide');
+		const dots = document.querySelectorAll<HTMLElement>('.repuestos-carousel-dot');
+		const prevBtn = document.getElementById('repuestosCarouselPrev');
+		const nextBtn = document.getElementById('repuestosCarouselNext');
+		const autoplayToggle = document.getElementById('repuestosAutoplayToggle');
+		const autoplayIcon = document.getElementById('repuestosAutoplayIcon');
+		const section = document.getElementById('repuestos-banner-hero');
+
+		if (!slides.length) return;
+
+		let currentIndex = 0;
+		let isAutoplayActive = true;
+		let autoplayTimer: number | null = null;
+		const intervalTime = 6000; // 6 segundos por diapositiva
+
+		function showSlide(index: number) {
+			if (index < 0) {
+				currentIndex = slides.length - 1;
+			} else if (index >= slides.length) {
+				currentIndex = 0;
+			} else {
+				currentIndex = index;
+			}
+
+			// Actualizar visibilidad de diapositivas
+			slides.forEach((slide, i) => {
+				if (i === currentIndex) {
+					slide.classList.remove('opacity-0', 'z-10', 'pointer-events-none');
+					slide.classList.add('opacity-100', 'z-20', 'pointer-events-auto');
+					slide.setAttribute('aria-hidden', 'false');
+				} else {
+					slide.classList.remove('opacity-100', 'z-20', 'pointer-events-auto');
+					slide.classList.add('opacity-0', 'z-10', 'pointer-events-none');
+					slide.setAttribute('aria-hidden', 'true');
+				}
+			});
+
+			// Actualizar dots
+			dots.forEach((dot, i) => {
+				if (i === currentIndex) {
+					dot.classList.remove('bg-white/30', 'w-2.5');
+					dot.classList.add('bg-brand-cyan', 'w-6');
+					dot.setAttribute('aria-selected', 'true');
+				} else {
+					dot.classList.remove('bg-brand-cyan', 'w-6');
+					dot.classList.add('bg-white/30', 'w-2.5');
+					dot.setAttribute('aria-selected', 'false');
+				}
+			});
+		}
+
+		function startAutoplay() {
+			if (autoplayTimer) clearInterval(autoplayTimer);
+			if (!isAutoplayActive) return;
+			autoplayTimer = window.setInterval(() => {
+				showSlide(currentIndex + 1);
+			}, intervalTime);
+		}
+
+		function stopAutoplay() {
+			if (autoplayTimer) {
+				clearInterval(autoplayTimer);
+				autoplayTimer = null;
+			}
+		}
+
+		function toggleAutoplay() {
+			isAutoplayActive = !isAutoplayActive;
+			if (isAutoplayActive) {
+				if (autoplayIcon) autoplayIcon.textContent = '⏸️';
+				if (autoplayToggle) autoplayToggle.setAttribute('aria-label', 'Pausar auto-reproducción');
+				startAutoplay();
+			} else {
+				if (autoplayIcon) autoplayIcon.textContent = '▶️';
+				if (autoplayToggle) autoplayToggle.setAttribute('aria-label', 'Reanudar auto-reproducción');
+				stopAutoplay();
+			}
+		}
+
+		// Eventos de botones prev / next
+		prevBtn?.addEventListener('click', (e) => {
+			e.stopPropagation();
+			showSlide(currentIndex - 1);
+			if (isAutoplayActive) startAutoplay();
+		});
+
+		nextBtn?.addEventListener('click', (e) => {
+			e.stopPropagation();
+			showSlide(currentIndex + 1);
+			if (isAutoplayActive) startAutoplay();
+		});
+
+		// Clic en dots
+		dots.forEach((dot) => {
+			dot.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const targetIndex = parseInt(dot.getAttribute('data-dot-index') || '0', 10);
+				showSlide(targetIndex);
+				if (isAutoplayActive) startAutoplay();
+			});
+		});
+
+		// Botón de toggle autoplay
+		autoplayToggle?.addEventListener('click', (e) => {
+			e.stopPropagation();
+			toggleAutoplay();
+		});
+
+		// Pausar con hover del mouse en escritorio
+		section?.addEventListener('mouseenter', () => {
+			if (isAutoplayActive) stopAutoplay();
+		});
+
+		section?.addEventListener('mouseleave', () => {
+			if (isAutoplayActive) startAutoplay();
+		});
+
+		// Navegación por teclado
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowLeft') {
+				showSlide(currentIndex - 1);
+			} else if (e.key === 'ArrowRight') {
+				showSlide(currentIndex + 1);
+			}
+		});
+
+		// Soporte táctil (Touch Swipe) en móviles
+		let touchStartX = 0;
+		let touchEndX = 0;
+
+		section?.addEventListener('touchstart', (e) => {
+			touchStartX = e.changedTouches[0].screenX;
+		}, { passive: true });
+
+		section?.addEventListener('touchend', (e) => {
+			touchEndX = e.changedTouches[0].screenX;
+			const diff = touchStartX - touchEndX;
+			if (Math.abs(diff) > 50) {
+				if (diff > 0) {
+					showSlide(currentIndex + 1);
+				} else {
+					showSlide(currentIndex - 1);
+				}
+				if (isAutoplayActive) startAutoplay();
+			}
+		}, { passive: true });
+
+		// Iniciar ciclo de reproducción
+		startAutoplay();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initRepuestosCarousel);
+	} else {
+		initRepuestosCarousel();
+	}
+
+	document.addEventListener('astro:page-load', initRepuestosCarousel);
+</script>

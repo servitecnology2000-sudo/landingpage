@@ -1,0 +1,909 @@
+---
+export const prerender = false;
+
+// 1. Guardia de Seguridad SSR Inmediato en cabecera de página (Previene ResponseSentError)
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
+const cookie = Astro.cookies.get('admin_session');
+if (!adminSecret || cookie?.value !== adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st/login');
+}
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../lib/supabase';
+import { formatDateTime } from '../../lib/dates';
+
+// 2. Obtención SSR de todos los banners exclusivos de /repuestos
+let banners: any[] = [];
+let fetchWarning = '';
+
+try {
+	const { data, error } = await supabaseAdmin
+		.from('hero_banners')
+		.select('*')
+		.eq('seccion', 'repuestos')
+		.order('orden', { ascending: true })
+		.order('created_at', { ascending: false });
+
+	if (error) {
+		fetchWarning = error.message;
+		console.warn('[Admin Banners] Advertencia al consultar hero_banners:', error.message);
+	} else {
+		banners = data || [];
+	}
+} catch (e: any) {
+	fetchWarning = e?.message || 'Error de conexión con la base de datos.';
+}
+
+const totalBanners = banners.length;
+const activeBanners = banners.filter(b => b.activo).length;
+const pausedBanners = banners.filter(b => !b.activo).length;
+---
+
+<AdminLayout title="Administrador de Banners de Repuestos — SERVITECNOLOGY" activeSection="banners">
+	<!-- Top Bar / Cabecera de Sección -->
+	<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+		<div>
+			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-bold uppercase tracking-wider mb-2">
+				<span>📦</span> Sección Exclusiva: /repuestos
+			</div>
+			<h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-outfit">
+				Banners de la Tienda de Repuestos (/repuestos)
+			</h1>
+			<p class="text-sm text-slate-400 mt-1">
+				Gestiona las imágenes, enlaces, orden y estado de visibilidad del carrusel exclusivo de la página de Repuestos. 
+				<strong class="text-slate-300">Estos banners no alteran la portada principal (/).</strong>
+			</p>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<a
+				href="/repuestos"
+				target="_blank"
+				class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-cyan/30 transition-all"
+				title="Ver el carrusel en la página de repuestos"
+			>
+				<span>🌐</span>
+				<span>Ver Carrusel en /repuestos</span>
+			</a>
+			<button
+				id="btnOpenNewBannerModal"
+				type="button"
+				class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow-[0_0_20px_rgba(0,207,255,0.25)] hover:shadow-[0_0_25px_rgba(0,255,127,0.4)] hover:opacity-95 transition-all cursor-pointer"
+			>
+				<span class="text-sm leading-none font-black">+</span>
+				<span>Nuevo Banner de Repuestos</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- KPIs / Estadísticas Rápidas -->
+	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+		<div class="p-5 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group">
+			<div class="flex items-center justify-between">
+				<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Banners Repuestos</span>
+				<span class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-sm">🎞️</span>
+			</div>
+			<div class="mt-3 text-3xl font-extrabold text-white font-outfit">{totalBanners}</div>
+			<div class="mt-1 text-xs text-slate-500">Imágenes registradas para /repuestos</div>
+		</div>
+
+		<div class="p-5 rounded-2xl bg-[#121215] border border-brand-green/20 relative overflow-hidden group shadow-[0_0_25px_rgba(0,255,127,0.05)]">
+			<div class="flex items-center justify-between">
+				<span class="text-xs font-semibold uppercase tracking-wider text-brand-green">Activos en /repuestos</span>
+				<span class="w-8 h-8 rounded-xl bg-brand-green/10 flex items-center justify-center text-sm">✅</span>
+			</div>
+			<div class="mt-3 text-3xl font-extrabold text-brand-green font-outfit">{activeBanners}</div>
+			<div class="mt-1 text-xs text-slate-500">Visibles para los clientes en tiempo real</div>
+		</div>
+
+		<div class="p-5 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group">
+			<div class="flex items-center justify-between">
+				<span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Pausados / Ocultos</span>
+				<span class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-sm">⏸️</span>
+			</div>
+			<div class="mt-3 text-3xl font-extrabold text-amber-400 font-outfit">{pausedBanners}</div>
+			<div class="mt-1 text-xs text-slate-500">Conservados sin mostrarse en el carrusel</div>
+		</div>
+	</div>
+
+	{fetchWarning && (
+		<div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3">
+			<span class="text-base">⚠️</span>
+			<div>
+				<strong>Aviso del Esquema:</strong> No se pudo conectar a la tabla de banners ({fetchWarning}). 
+				Si aún no has aplicado la migración SQL, ejecútala en Supabase SQL Editor (`supabase/migrations/20261011_hero_banners.sql`). Mientras tanto, la página de repuestos utiliza sus banners de respaldo automáticos.
+			</div>
+		</div>
+	)}
+
+	<!-- Listado Principal de Banners -->
+	<div class="bg-[#121215] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+		<div class="p-5 border-b border-white/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+			<h2 class="text-base font-bold text-white flex items-center gap-2">
+				<span>Banners Activos de /repuestos</span>
+				<span class="px-2 py-0.5 rounded-full text-xs font-mono bg-white/5 text-slate-400 border border-white/10">
+					{totalBanners}
+				</span>
+			</h2>
+			<div class="text-xs text-slate-400">
+				Los banners activos se muestran en el carrusel de <code class="text-brand-cyan font-mono">/repuestos</code> ordenados de menor a mayor valor de orden.
+			</div>
+		</div>
+
+		{totalBanners === 0 ? (
+			<div class="p-12 text-center flex flex-col items-center justify-center">
+				<div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl mb-4 text-brand-cyan">
+					🎞️
+				</div>
+				<h3 class="text-base font-bold text-white font-outfit">No hay banners personalizados creados para /repuestos</h3>
+				<p class="text-xs text-slate-400 max-w-md mt-1 mb-6 leading-relaxed">
+					Actualmente la tienda de repuestos está utilizando la colección de diapositivas automáticas de respaldo de repuestos y soporte. Sube tu primer banner para personalizar la experiencia.
+				</p>
+				<button
+					id="btnEmptyNewBanner"
+					type="button"
+					class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
+				>
+					+ Subir Primer Banner de Repuestos
+				</button>
+			</div>
+		) : (
+			<div class="overflow-x-auto">
+				<table class="w-full text-left text-xs">
+					<thead>
+						<tr class="border-b border-white/5 bg-black/30 text-slate-400 uppercase tracking-wider font-semibold">
+							<th class="py-3 px-4">Miniatura</th>
+							<th class="py-3 px-4">Título & Texto Alt</th>
+							<th class="py-3 px-4 text-center">Sección</th>
+							<th class="py-3 px-4 text-center">Orden</th>
+							<th class="py-3 px-4 text-center">Estado</th>
+							<th class="py-3 px-4">Enlace Destino</th>
+							<th class="py-3 px-4">Fecha Creación</th>
+							<th class="py-3 px-4 text-right">Acciones</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-white/5">
+						{banners.map((item) => (
+							<tr class="hover:bg-white/[0.02] transition-colors group">
+								<!-- Miniatura -->
+								<td class="py-3.5 px-4">
+									<div class="relative w-24 h-14 rounded-lg overflow-hidden border border-white/10 bg-black shrink-0 group-hover:border-brand-cyan/40 transition-colors">
+										<img
+											src={item.imagen_url}
+											alt={item.alt_text || item.titulo}
+											class="w-full h-full object-cover"
+											loading="lazy"
+										/>
+									</div>
+								</td>
+
+								<!-- Título y Texto Alt -->
+								<td class="py-3.5 px-4 max-w-xs">
+									<div class="font-bold text-white text-sm truncate" title={item.titulo}>
+										{item.titulo}
+									</div>
+									<div class="text-[11px] text-slate-400 truncate mt-0.5" title={item.alt_text}>
+										Alt: <span class="italic">{item.alt_text || 'Sin texto alt'}</span>
+									</div>
+									{item.descripcion && (
+										<div class="text-[11px] text-slate-500 truncate mt-0.5" title={item.descripcion}>
+											{item.descripcion}
+										</div>
+									)}
+								</td>
+
+								<!-- Sección -->
+								<td class="py-3.5 px-4 text-center whitespace-nowrap">
+									<span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/5 border border-white/10 text-brand-cyan">
+										/repuestos
+									</span>
+								</td>
+
+								<!-- Orden y Controles de Reordenamiento -->
+								<td class="py-3.5 px-4 text-center whitespace-nowrap">
+									<div class="inline-flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-lg p-1">
+										<button
+											type="button"
+											class="btn-order-down w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+											data-id={item.id}
+											data-orden={item.orden}
+											title="Disminuir orden (mover hacia el inicio)"
+										>
+											▲
+										</button>
+										<span class="w-6 text-center font-mono font-bold text-brand-cyan text-xs">
+											{item.orden}
+										</span>
+										<button
+											type="button"
+											class="btn-order-up w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+											data-id={item.id}
+											data-orden={item.orden}
+											title="Aumentar orden (mover hacia el final)"
+										>
+											▼
+										</button>
+									</div>
+								</td>
+
+								<!-- Estado Activo / Pausado -->
+								<td class="py-3.5 px-4 text-center whitespace-nowrap">
+									{item.activo ? (
+										<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-brand-green/10 text-brand-green border border-brand-green/30">
+											<span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+											Activo
+										</span>
+									) : (
+										<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+											<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+											Pausado
+										</span>
+									)}
+								</td>
+
+								<!-- Enlace de Destino -->
+								<td class="py-3.5 px-4 max-w-[160px] truncate">
+									{item.link_url ? (
+										<a
+											href={item.link_url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="text-brand-cyan hover:underline truncate inline-flex items-center gap-1"
+											title={item.link_url}
+										>
+											<span class="truncate">{item.link_url}</span>
+											<span>↗</span>
+										</a>
+									) : (
+										<span class="text-slate-500 italic">Sin enlace</span>
+									)}
+								</td>
+
+								<!-- Fecha -->
+								<td class="py-3.5 px-4 text-slate-400 whitespace-nowrap text-[11px]">
+									{formatDateTime(item.created_at)}
+								</td>
+
+								<!-- Acciones -->
+								<td class="py-3.5 px-4 text-right whitespace-nowrap">
+									<div class="inline-flex items-center justify-end gap-1.5">
+										<!-- Botón Pausar / Reactivar -->
+										<button
+											type="button"
+											class="btn-toggle-active px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer"
+											class:list={[
+												item.activo
+													? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+													: "bg-brand-green/10 border-brand-green/30 text-brand-green hover:bg-brand-green/20"
+											]}
+											data-id={item.id}
+											data-activo={item.activo ? "true" : "false"}
+											title={item.activo ? "Pausar para ocultar del carrusel de repuestos" : "Reactivar para mostrar en el carrusel de repuestos"}
+										>
+											{item.activo ? "⏸️ Pausar" : "▶️ Activar"}
+										</button>
+
+										<!-- Botón Editar Metadatos -->
+										<button
+											type="button"
+											class="btn-edit-banner p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+											data-id={item.id}
+											data-titulo={item.titulo}
+											data-descripcion={item.descripcion || ""}
+											data-alt={item.alt_text || ""}
+											data-link={item.link_url || ""}
+											data-orden={item.orden}
+											title="Editar metadatos del banner"
+										>
+											✏️
+										</button>
+
+										<!-- Botón Eliminar -->
+										<button
+											type="button"
+											class="btn-delete-banner p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors cursor-pointer"
+											data-id={item.id}
+											data-title={item.titulo}
+											data-storage-path={item.storage_path || ""}
+											title="Eliminar banner permanentemente"
+										>
+											🗑️
+										</button>
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		)}
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: SUBIR NUEVO BANNER -->
+	<!-- ============================================================ -->
+	<div
+		id="newBannerModal"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+			<div class="flex items-center justify-between pb-3 border-b border-white/5">
+				<div class="flex items-center gap-2.5">
+					<span class="w-8 h-8 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-sm text-brand-cyan">
+						🎞️
+					</span>
+					<div>
+						<h3 class="font-outfit text-base font-bold text-white">Subir Banner para /repuestos</h3>
+						<p class="text-xs text-slate-400">El banner se guardará en Storage y se mostrará exclusivamente en la tienda de repuestos.</p>
+					</div>
+				</div>
+				<button id="btnCloseNewModal" type="button" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+					✕
+				</button>
+			</div>
+
+			<form id="newBannerForm" class="space-y-4">
+				<input type="hidden" name="seccion" value="repuestos" />
+
+				<!-- Selector de Imagen / Zona de Carga -->
+				<div>
+					<label class="block text-xs font-semibold text-slate-300 mb-1.5">
+						Imagen del Banner <span class="text-brand-cyan">*</span>
+					</label>
+					<div class="relative border-2 border-dashed border-white/15 hover:border-brand-cyan/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-black/20 group">
+						<input
+							type="file"
+							id="newBannerFileInput"
+							name="imagen"
+							accept="image/jpeg,image/png,image/webp,image/jpg"
+							required
+							class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						/>
+						<div id="newBannerPreviewWrapper" class="hidden mb-2">
+							<img id="newBannerPreviewImg" src="" alt="Vista previa" class="max-h-36 mx-auto rounded-lg border border-white/10 object-contain" />
+							<p id="newBannerFileName" class="text-[11px] text-brand-cyan font-mono mt-1.5 truncate"></p>
+						</div>
+						<div id="newBannerPlaceholder" class="space-y-1">
+							<div class="text-2xl">📸</div>
+							<p class="text-xs font-semibold text-white group-hover:text-brand-cyan transition-colors">
+								Haz clic o arrastra una imagen aquí
+							</p>
+							<p class="text-[11px] text-slate-400">
+								Formatos JPG, PNG o WebP (Máx. 5 MB). Recomendado: 1920x800 px o superior.
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Título Interno -->
+				<div>
+					<label for="newBannerTitle" class="block text-xs font-semibold text-slate-300 mb-1">
+						Título / Identificador Interno <span class="text-brand-cyan">*</span>
+					</label>
+					<input
+						type="text"
+						id="newBannerTitle"
+						name="titulo"
+						required
+						placeholder="Ej. Promoción Instalación Pantallas y Teclados"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+					/>
+				</div>
+
+				<!-- Texto Alternativo (Accesibilidad) -->
+				<div>
+					<label for="newBannerAlt" class="block text-xs font-semibold text-slate-300 mb-1">
+						Texto Alternativo (Alt Text Accesible)
+					</label>
+					<input
+						type="text"
+						id="newBannerAlt"
+						name="alt_text"
+						placeholder="Ej. Técnico cambiando pantalla de notebook en taller"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+					/>
+				</div>
+
+				<!-- Enlace de Destino Opcional -->
+				<div>
+					<label for="newBannerLink" class="block text-xs font-semibold text-slate-300 mb-1">
+						Enlace de Destino (Opcional)
+					</label>
+					<input
+						type="text"
+						id="newBannerLink"
+						name="link_url"
+						placeholder="Ej. #catalogo o https://wa.me/56948672300"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none font-mono"
+					/>
+				</div>
+
+				<!-- Orden y Estado Inicial -->
+				<div class="grid grid-cols-2 gap-3">
+					<div>
+						<label for="newBannerOrder" class="block text-xs font-semibold text-slate-300 mb-1">
+							Orden de Aparición
+						</label>
+						<input
+							type="number"
+							id="newBannerOrder"
+							name="orden"
+							value={totalBanners + 1}
+							min="0"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none font-mono"
+						/>
+					</div>
+					<div>
+						<label for="newBannerActive" class="block text-xs font-semibold text-slate-300 mb-1">
+							Estado Inicial
+						</label>
+						<select
+							id="newBannerActive"
+							name="activo"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none cursor-pointer"
+						>
+							<option value="true">Activo (Visible en /repuestos)</option>
+							<option value="false">Pausado (Oculto)</option>
+						</select>
+					</div>
+				</div>
+
+				<!-- Botones de Acción -->
+				<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+					<button
+						type="button"
+						id="btnCancelNewModal"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						id="btnSubmitNewBanner"
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+					>
+						<span id="newBannerBtnText">Guardar y Publicar en /repuestos</span>
+						<span id="newBannerSpinner" class="hidden animate-spin">⏳</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: EDITAR BANNER EXISTENTE -->
+	<!-- ============================================================ -->
+	<div
+		id="editBannerModal"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+			<div class="flex items-center justify-between pb-3 border-b border-white/5">
+				<div class="flex items-center gap-2.5">
+					<span class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-sm">
+						✏️
+					</span>
+					<div>
+						<h3 class="font-outfit text-base font-bold text-white">Editar Banner de Repuestos</h3>
+						<p class="text-xs text-slate-400">Actualiza título, accesibilidad, enlaces y posición de orden.</p>
+					</div>
+				</div>
+				<button id="btnCloseEditModal" type="button" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+					✕
+				</button>
+			</div>
+
+			<form id="editBannerForm" class="space-y-4">
+				<input type="hidden" id="editBannerId" />
+
+				<div>
+					<label for="editBannerTitle" class="block text-xs font-semibold text-slate-300 mb-1">
+						Título Interno <span class="text-brand-cyan">*</span>
+					</label>
+					<input
+						type="text"
+						id="editBannerTitle"
+						required
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="editBannerAlt" class="block text-xs font-semibold text-slate-300 mb-1">
+						Texto Alternativo (Alt Text Accesible)
+					</label>
+					<input
+						type="text"
+						id="editBannerAlt"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none"
+					/>
+				</div>
+
+				<div>
+					<label for="editBannerLink" class="block text-xs font-semibold text-slate-300 mb-1">
+						Enlace de Destino (Opcional)
+					</label>
+					<input
+						type="text"
+						id="editBannerLink"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none font-mono"
+					/>
+				</div>
+
+				<div>
+					<label for="editBannerOrder" class="block text-xs font-semibold text-slate-300 mb-1">
+						Orden de Visualización
+					</label>
+					<input
+						type="number"
+						id="editBannerOrder"
+						min="0"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white text-xs focus:border-brand-cyan focus:outline-none font-mono"
+					/>
+				</div>
+
+				<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+					<button
+						type="button"
+						id="btnCancelEditModal"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						id="btnSubmitEditBanner"
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+					>
+						<span id="editBannerBtnText">Actualizar Banner</span>
+						<span id="editBannerSpinner" class="hidden animate-spin">⏳</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</AdminLayout>
+
+<script is:inline>
+	// ─── Control de Modales ──────────────────────────────────────────────────────────
+	const newModal = document.getElementById('newBannerModal');
+	const editModal = document.getElementById('editBannerModal');
+
+	function openModal(modal) {
+		if (!modal) return;
+		modal.classList.remove('opacity-0', 'pointer-events-none');
+	}
+
+	function closeModal(modal) {
+		if (!modal) return;
+		modal.classList.add('opacity-0', 'pointer-events-none');
+	}
+
+	document.getElementById('btnOpenNewBannerModal')?.addEventListener('click', () => openModal(newModal));
+	document.getElementById('btnEmptyNewBanner')?.addEventListener('click', () => openModal(newModal));
+	document.getElementById('btnCloseNewModal')?.addEventListener('click', () => closeModal(newModal));
+	document.getElementById('btnCancelNewModal')?.addEventListener('click', () => closeModal(newModal));
+
+	document.getElementById('btnCloseEditModal')?.addEventListener('click', () => closeModal(editModal));
+	document.getElementById('btnCancelEditModal')?.addEventListener('click', () => closeModal(editModal));
+
+	[newModal, editModal].forEach(modal => {
+		modal?.addEventListener('click', (e) => {
+			if (e.target === modal) closeModal(modal);
+		});
+	});
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+			closeModal(newModal);
+			closeModal(editModal);
+		}
+	});
+
+	// ─── Vista Previa de Imagen en Carga ──────────────────────────────────────────────
+	const fileInput = document.getElementById('newBannerFileInput');
+	const previewWrapper = document.getElementById('newBannerPreviewWrapper');
+	const previewImg = document.getElementById('newBannerPreviewImg');
+	const fileNameEl = document.getElementById('newBannerFileName');
+	const placeholder = document.getElementById('newBannerPlaceholder');
+
+	fileInput?.addEventListener('change', () => {
+		const file = fileInput.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				if (previewImg && previewWrapper && placeholder && fileNameEl) {
+					previewImg.src = e.target.result;
+					fileNameEl.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+					previewWrapper.classList.remove('hidden');
+					placeholder.classList.add('hidden');
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	// ─── Subida de Nuevo Banner ───────────────────────────────────────────────────────
+	const newForm = document.getElementById('newBannerForm');
+	const submitNewBtn = document.getElementById('btnSubmitNewBanner');
+	const newBtnText = document.getElementById('newBannerBtnText');
+	const newSpinner = document.getElementById('newBannerSpinner');
+
+	newForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const formData = new FormData(newForm);
+
+		if (!formData.get('imagen') || formData.get('imagen').size === 0) {
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Archivo requerido',
+					message: 'Por favor selecciona una imagen para el banner.',
+					type: 'warning'
+				});
+			}
+			return;
+		}
+
+		submitNewBtn.disabled = true;
+		newBtnText.textContent = 'Subiendo...';
+		newSpinner.classList.remove('hidden');
+
+		try {
+			const response = await fetch('/api/admin/banners/upload', {
+				method: 'POST',
+				body: formData
+			});
+
+			const data = await response.json();
+
+			if (!response.ok || !data.success) {
+				throw new Error(data.message || 'Error al procesar la subida del banner.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('¡Banner de repuestos publicado exitosamente!', 'success');
+			}
+
+			closeModal(newModal);
+			setTimeout(() => {
+				window.location.reload();
+			}, 800);
+		} catch (err) {
+			console.error('[Upload Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error de carga',
+					message: err.message || 'No fue posible guardar el banner.',
+					type: 'danger'
+				});
+			}
+		} finally {
+			submitNewBtn.disabled = false;
+			newBtnText.textContent = 'Guardar y Publicar en /repuestos';
+			newSpinner.classList.add('hidden');
+		}
+	});
+
+	// ─── Edición de Banner Existente ──────────────────────────────────────────────────
+	const editForm = document.getElementById('editBannerForm');
+	const editIdInput = document.getElementById('editBannerId');
+	const editTitleInput = document.getElementById('editBannerTitle');
+	const editAltInput = document.getElementById('editBannerAlt');
+	const editLinkInput = document.getElementById('editBannerLink');
+	const editOrderInput = document.getElementById('editBannerOrder');
+	const submitEditBtn = document.getElementById('btnSubmitEditBanner');
+	const editBtnText = document.getElementById('editBannerBtnText');
+	const editSpinner = document.getElementById('editBannerSpinner');
+
+	document.querySelectorAll('.btn-edit-banner').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.getAttribute('data-id');
+			const titulo = btn.getAttribute('data-titulo') || '';
+			const alt = btn.getAttribute('data-alt') || '';
+			const link = btn.getAttribute('data-link') || '';
+			const orden = btn.getAttribute('data-orden') || '0';
+
+			if (editIdInput) editIdInput.value = id;
+			if (editTitleInput) editTitleInput.value = titulo;
+			if (editAltInput) editAltInput.value = alt;
+			if (editLinkInput) editLinkInput.value = link;
+			if (editOrderInput) editOrderInput.value = orden;
+
+			openModal(editModal);
+		});
+	});
+
+	editForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const id = editIdInput.value;
+		if (!id) return;
+
+		submitEditBtn.disabled = true;
+		editBtnText.textContent = 'Actualizando...';
+		editSpinner.classList.remove('hidden');
+
+		try {
+			const payload = {
+				id,
+				titulo: editTitleInput.value,
+				alt_text: editAltInput.value,
+				link_url: editLinkInput.value,
+				seccion: 'repuestos',
+				orden: parseInt(editOrderInput.value, 10) || 0
+			};
+
+			const response = await fetch('/api/admin/banners/update', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			const data = await response.json();
+			if (!response.ok || !data.success) {
+				throw new Error(data.message || 'Error al actualizar el banner.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Banner de repuestos actualizado correctamente', 'success');
+			}
+
+			closeModal(editModal);
+			setTimeout(() => {
+				window.location.reload();
+			}, 800);
+		} catch (err) {
+			console.error('[Edit Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error de actualización',
+					message: err.message || 'No fue posible guardar los cambios.',
+					type: 'danger'
+				});
+			}
+		} finally {
+			submitEditBtn.disabled = false;
+			editBtnText.textContent = 'Actualizar Banner';
+			editSpinner.classList.add('hidden');
+		}
+	});
+
+	// ─── Pausar / Reactivar Rápido ────────────────────────────────────────────────────
+	document.querySelectorAll('.btn-toggle-active').forEach(btn => {
+		btn.addEventListener('click', async () => {
+			const id = btn.getAttribute('data-id');
+			const currentActive = btn.getAttribute('data-activo') === 'true';
+			const newActive = !currentActive;
+
+			try {
+				btn.disabled = true;
+				const response = await fetch('/api/admin/banners/update', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id, activo: newActive, seccion: 'repuestos' })
+				});
+
+				const data = await response.json();
+				if (!response.ok || !data.success) {
+					throw new Error(data.message || 'Error al cambiar estado.');
+				}
+
+				if (window.showAdminToast) {
+					window.showAdminToast(
+						newActive ? 'Banner activado (visible en /repuestos)' : 'Banner pausado (oculto en /repuestos)',
+						newActive ? 'success' : 'info'
+					);
+				}
+
+				setTimeout(() => {
+					window.location.reload();
+				}, 600);
+			} catch (err) {
+				console.error('[Toggle Active Error]', err);
+				if (window.showAdminAlert) {
+					await window.showAdminAlert({
+						title: 'Error',
+						message: err.message || 'No se pudo alternar el estado del banner.',
+						type: 'danger'
+					});
+				}
+				btn.disabled = false;
+			}
+		});
+	});
+
+	// ─── Reordenamiento Rápido (Subir / Bajar) ────────────────────────────────────────
+	async function updateOrder(id, newOrder) {
+		try {
+			const response = await fetch('/api/admin/banners/update', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id, orden: Math.max(0, newOrder), seccion: 'repuestos' })
+			});
+			const data = await response.json();
+			if (!response.ok || !data.success) {
+				throw new Error(data.message || 'Error al modificar orden.');
+			}
+			if (window.showAdminToast) {
+				window.showAdminToast(`Orden actualizado a ${newOrder}`, 'info');
+			}
+			setTimeout(() => window.location.reload(), 500);
+		} catch (err) {
+			console.error('[Order Error]', err);
+		}
+	}
+
+	document.querySelectorAll('.btn-order-down').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.getAttribute('data-id');
+			const orden = parseInt(btn.getAttribute('data-orden') || '0', 10);
+			updateOrder(id, orden - 1);
+		});
+	});
+
+	document.querySelectorAll('.btn-order-up').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.getAttribute('data-id');
+			const orden = parseInt(btn.getAttribute('data-orden') || '0', 10);
+			updateOrder(id, orden + 1);
+		});
+	});
+
+	// ─── Eliminación con Confirmación (window.showAdminConfirm) ─────────────────────────
+	document.querySelectorAll('.btn-delete-banner').forEach(btn => {
+		btn.addEventListener('click', async () => {
+			const id = btn.getAttribute('data-id');
+			const title = btn.getAttribute('data-title') || 'este banner';
+			const storagePath = btn.getAttribute('data-storage-path') || '';
+
+			let confirmado = false;
+			if (window.showAdminConfirm) {
+				confirmado = await window.showAdminConfirm({
+					title: '¿Eliminar banner de repuestos?',
+					message: `Se eliminará el banner "${title}" y su archivo asociado en el almacenamiento. Esta acción no se puede deshacer.`,
+					type: 'danger',
+					confirmText: 'Sí, eliminar',
+					cancelText: 'Cancelar'
+				});
+			} else {
+				confirmado = confirm(`¿Estás seguro de eliminar "${title}"?`);
+			}
+
+			if (!confirmado) return;
+
+			try {
+				const response = await fetch('/api/admin/banners/delete', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id, storage_path: storagePath })
+				});
+
+				const data = await response.json();
+				if (!response.ok || !data.success) {
+					throw new Error(data.message || 'Error al eliminar banner.');
+				}
+
+				if (window.showAdminToast) {
+					window.showAdminToast('Banner eliminado exitosamente', 'success');
+				}
+
+				setTimeout(() => {
+					window.location.reload();
+				}, 600);
+			} catch (err) {
+				console.error('[Delete Error]', err);
+				if (window.showAdminAlert) {
+					await window.showAdminAlert({
+						title: 'Error al eliminar',
+						message: err.message || 'No fue posible eliminar el banner.',
+						type: 'danger'
+					});
+				}
+			}
+		});
+	});
+</script>

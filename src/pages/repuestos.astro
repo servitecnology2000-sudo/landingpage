@@ -3,6 +3,8 @@ export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
+import RepuestosCatalogNav from '../components/RepuestosCatalogNav.astro';
+import RepuestosBannersCarousel from '../components/RepuestosBannersCarousel.astro';
 import Catalog from '../components/Catalog.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
@@ -76,7 +78,13 @@ const catalogSchema = {
 	<Header />
 	
 	<main class="relative bg-black min-h-screen">
-		<!-- Parts & Components Catalog with multi-criteria search and checkout links -->
+		<!-- 1. Menú de Categorías (Arriba del Carrusel) & 2. Barra de Búsqueda (Entre el Menú y el Carrusel) -->
+		<RepuestosCatalogNav />
+
+		<!-- 3. Carrusel de Banners Interactivo -->
+		<RepuestosBannersCarousel />
+
+		<!-- 4. Catálogo de Repuestos (Grid de Productos) -->
 		<Catalog />
 	</main>
 

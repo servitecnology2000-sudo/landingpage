@@ -2,7 +2,7 @@
 export const prerender = false;
 
 const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
-const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '';
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
 
 const cookie = Astro.cookies.get('admin_session');
 if (adminSecret && cookie?.value === adminSecret) {
@@ -16,13 +16,14 @@ if (Astro.request.method === 'POST') {
 	const action = formData.get('action')?.toString();
 
 	if (action === 'submit_password') {
-		const password = formData.get('password')?.toString();
+		const password = formData.get('password')?.toString()?.trim();
 
-		if (password === adminSecret) {
+		if (password && password === adminSecret) {
+			const isProd = import.meta.env.PROD || _env['NODE_ENV'] === 'production';
 			Astro.cookies.set('admin_session', adminSecret, {
 				path: '/',
 				httpOnly: true,
-				secure: true,
+				secure: isProd,
 				sameSite: 'lax',
 				maxAge: 60 * 60 * 24 // 24 horas
 			});

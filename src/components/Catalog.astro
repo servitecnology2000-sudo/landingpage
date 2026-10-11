@@ -33,92 +33,12 @@ const categories = [
 const phone = "56948672300";
 ---
 
-<section id="catalogo" class="relative py-20 md:py-24 bg-black overflow-hidden border-t border-white/5">
+<section id="catalogo" class="relative pt-8 pb-20 md:pb-24 bg-black overflow-hidden border-t border-white/5">
 	<!-- Background glows -->
 	<div class="absolute top-0 left-1/3 w-[500px] h-[500px] bg-brand-green/5 rounded-full blur-[160px] pointer-events-none"></div>
 	<div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
 
 	<div class="relative z-10 mx-auto max-w-7xl px-6 w-full">
-
-		<!-- UNIVERSAL ADVANCED SEARCH BAR (Directly above section header and title) -->
-		<div class="max-w-3xl mx-auto mb-10 w-full">
-			<div class="relative group">
-				<!-- Outer glow effect on focus / hover -->
-				<div class="absolute -inset-0.5 bg-gradient-to-r from-brand-cyan via-brand-green to-brand-cyan rounded-2xl blur opacity-30 group-hover:opacity-60 group-focus-within:opacity-85 transition duration-500"></div>
-				
-				<!-- Search Container -->
-				<div class="relative flex items-center bg-zinc-950/90 border border-white/15 focus-within:border-brand-cyan rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300">
-					<svg class="w-5 h-5 sm:w-6 sm:h-6 text-brand-cyan shrink-0 mr-3.5 transition-transform duration-300 group-focus-within:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-					</svg>
-					
-					<input 
-						id="catalog-search-input"
-						type="text" 
-						placeholder="Buscar repuesto por SKU, modelo, marca o palabra clave (ej: ThinkPad, cargador, Dell, pantalla 15.6)..."
-						class="w-full bg-transparent text-white placeholder-slate-400 text-sm sm:text-base font-medium focus:outline-none pr-10"
-						autocomplete="off"
-						spellcheck="false"
-					/>
-					
-					<button 
-						id="catalog-search-clear" 
-						type="button" 
-						class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all text-xs focus:outline-none"
-						title="Limpiar búsqueda"
-						aria-label="Limpiar búsqueda"
-					>
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-					</button>
-				</div>
-			</div>
-
-			<!-- Dynamic Feedback Bar -->
-			<div id="search-feedback" class="flex items-center justify-between mt-2.5 px-2 text-xs text-slate-400">
-				<div class="flex items-center gap-2">
-					<span id="search-status-dot" class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
-					<span id="search-counter-text" class="font-medium text-slate-300">Explorando catálogo completo</span>
-				</div>
-				<span class="hidden sm:inline text-slate-500 font-normal">
-					Atajo rápido: pulsa <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-brand-cyan font-mono text-[10px] border border-white/10">/</kbd> para buscar
-				</span>
-			</div>
-		</div>
-
-		<!-- Section Header -->
-		<div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
-			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-semibold uppercase tracking-wider">
-				Tienda Ecommerce Oficial
-			</div>
-			<h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
-				Ecommerce de Repuestos y <br class="hidden sm:inline" />
-				<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-green to-brand-cyan">
-					Hardware Informático
-				</span>
-			</h1>
-			<p class="text-slate-400 text-base md:text-lg">
-				Componentes y repuestos testeados con garantía oficial. Compra segura con transferencia bancaria directa, opción de retiro en oficina técnica o despacho a domicilio en la Región Metropolitana.
-			</p>
-		</div>
-
-		<!-- Filter Buttons -->
-		{categories.length > 1 && (
-			<div class="flex flex-wrap items-center justify-center gap-3 mb-12">
-				{categories.map((cat) => (
-					<button
-						data-filter={cat.id}
-						class:list={[
-							"catalog-filter px-5 py-2.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer border",
-							cat.id === "todos"
-								? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_15px_rgba(0,207,255,0.3)]"
-								: "bg-white/5 text-slate-400 border-white/10 hover:text-white hover:border-brand-cyan/30 hover:bg-white/10"
-						]}
-					>
-						{cat.label}
-					</button>
-				))}
-			</div>
-		)}
 
 		<!-- Products Grid -->
 		{items.length === 0 ? (
@@ -517,6 +437,14 @@ const phone = "56948672300";
 			activeCategory = filter;
 			updateFilterUI(filter);
 			applyFilterAndSearch();
+
+			const catalogEl = document.getElementById('catalogo');
+			if (catalogEl) {
+				const rect = catalogEl.getBoundingClientRect();
+				if (rect.top > 300) {
+					catalogEl.scrollIntoView({ behavior: 'smooth' });
+				}
+			}
 		});
 	});
 
