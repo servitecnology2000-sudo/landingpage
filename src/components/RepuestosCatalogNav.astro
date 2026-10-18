@@ -50,7 +50,7 @@ try {
 <nav 
 	id="repuestos-top-nav" 
 	aria-label="Navegación de categorías y búsqueda de repuestos"
-	class="relative z-30 mx-auto max-w-7xl px-4 sm:px-6 w-full pt-6 sm:pt-8 pb-4"
+	class="relative z-30 mx-auto max-w-7xl px-4 sm:px-6 w-full pt-6 sm:pt-8 pb-4 overflow-hidden"
 >
 	<!-- Ambient Glow sutil -->
 	<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[150px] bg-brand-cyan/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
@@ -58,13 +58,13 @@ try {
 	<!-- ============================================================ -->
 	<!-- 1. MENÚ DE CATEGORÍAS (UBICADO ARRIBA DEL CARRUSEL) -->
 	<!-- ============================================================ -->
-	<div class="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-6">
+	<div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5 mb-5 sm:mb-6 px-1">
 		{categories.map((cat) => (
 			<button
 				type="button"
 				data-filter={cat.id}
 				class:list={[
-					"catalog-filter px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer border select-none focus:outline-none",
+					"catalog-filter px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer border select-none focus:outline-none",
 					cat.id === "todos"
 						? "bg-brand-cyan text-black border-brand-cyan shadow-[0_0_15px_rgba(0,207,255,0.35)]"
 						: "bg-zinc-900/80 text-slate-300 border-white/10 hover:text-white hover:border-brand-cyan/40 hover:bg-white/10 shadow-sm"
@@ -84,7 +84,7 @@ try {
 			<div class="absolute -inset-0.5 bg-gradient-to-r from-brand-cyan via-brand-green to-brand-cyan rounded-2xl blur opacity-30 group-hover:opacity-60 group-focus-within:opacity-85 transition duration-500"></div>
 			
 			<!-- Contenedor del Input de Búsqueda -->
-			<div class="relative flex items-center bg-zinc-950/95 border border-white/15 focus-within:border-brand-cyan rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-all duration-300">
+			<div class="relative flex items-center bg-zinc-950/95 border border-white/15 focus-within:border-brand-cyan rounded-2xl px-3.5 sm:px-5 py-2.5 sm:py-3.5 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-all duration-300">
 				<svg class="w-5 h-5 text-brand-cyan shrink-0 mr-3 transition-transform duration-300 group-focus-within:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 				</svg>
@@ -92,8 +92,8 @@ try {
 				<input 
 					id="catalog-search-input"
 					type="text" 
-					placeholder="Buscar repuesto por SKU, modelo, marca o palabra clave (ej: ThinkPad, cargador, Dell, pantalla 15.6)..."
-					class="w-full bg-transparent text-white placeholder-slate-400 text-sm sm:text-base font-medium focus:outline-none pr-10"
+					placeholder="Buscar por SKU, modelo o repuesto (ej: ThinkPad, cargador, pantalla)..."
+					class="w-full bg-transparent text-white placeholder-slate-400 text-xs sm:text-base font-medium focus:outline-none pr-10"
 					autocomplete="off"
 					spellcheck="false"
 				/>
@@ -111,12 +111,12 @@ try {
 		</div>
 
 		<!-- Feedback Dinámico de Búsqueda -->
-		<div id="search-feedback" class="flex items-center justify-between mt-2.5 px-2 text-xs text-slate-400">
-			<div class="flex items-center gap-2">
-				<span id="search-status-dot" class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
-				<span id="search-counter-text" class="font-medium text-slate-300">Explorando catálogo completo</span>
+		<div id="search-feedback" class="flex items-center justify-between mt-2.5 px-2 text-xs text-slate-400 min-w-0">
+			<div class="flex items-center gap-2 min-w-0">
+				<span id="search-status-dot" class="w-2 h-2 rounded-full bg-brand-green animate-pulse shrink-0"></span>
+				<span id="search-counter-text" class="font-medium text-slate-300 truncate">Explorando catálogo completo</span>
 			</div>
-			<span class="hidden sm:inline text-slate-500 font-normal">
+			<span class="hidden sm:inline text-slate-500 font-normal shrink-0">
 				Atajo rápido: pulsa <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-brand-cyan font-mono text-[10px] border border-white/10">/</kbd> para buscar
 			</span>
 		</div>

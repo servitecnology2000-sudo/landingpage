@@ -214,9 +214,15 @@ const productSchema = product ? {
 				<div class="space-y-6">
 					<!-- Badges -->
 					<div class="flex flex-wrap gap-2">
-						<span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20">
-							{product.estado || 'Usado Verificado'}
-						</span>
+						{product.estado?.toLowerCase() === 'nuevo' ? (
+							<span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border text-emerald-300 bg-emerald-500/15 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)] shrink-0">
+								Nuevo
+							</span>
+						) : (
+							<span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border text-amber-300 bg-amber-500/15 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)] shrink-0">
+								{product.estado || 'Usado Verificado'}
+							</span>
+						)}
 						{product.stock_cantidad <= 0 && (
 							<span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border text-red-400 bg-red-500/10 border-red-500/20">
 								Agotado

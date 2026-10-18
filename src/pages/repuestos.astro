@@ -77,7 +77,7 @@ const catalogSchema = {
 	<!-- Fixed Header -->
 	<Header />
 	
-	<main class="relative bg-black min-h-screen">
+	<main class="relative bg-black min-h-screen overflow-x-clip">
 		<!-- 1. Menú de Categorías (Arriba del Carrusel) & 2. Barra de Búsqueda (Entre el Menú y el Carrusel) -->
 		<RepuestosCatalogNav />
 
@@ -94,3 +94,18 @@ const catalogSchema = {
 	<!-- Floating WhatsApp CTA -->
 	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por repuestos en la tienda Ecommerce..." />
 </Layout>
+
+<style is:global>
+	/* Adaptación responsiva aislada exclusivamente para /repuestos en tablets (768px - 1023px) */
+	@media (min-width: 768px) and (max-width: 1023px) {
+		header nav.md\:flex {
+			gap: 0.5rem !important;
+		}
+		header nav.md\:flex > a,
+		header nav.md\:flex > div > button {
+			font-size: 0.75rem !important;
+			padding-left: 0.25rem !important;
+			padding-right: 0.25rem !important;
+		}
+	}
+</style>
