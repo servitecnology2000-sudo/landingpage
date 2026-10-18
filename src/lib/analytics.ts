@@ -19,8 +19,11 @@ export interface AnalyticsOrder {
 	id: string;
 	total_amount: number | string;
 	shipping_cost?: number | string | null;
+	delivery_type?: 'retiro' | 'delivery_rm' | 'envio_nacional' | string | null;
 	shipping_method?: 'retiro' | 'delivery_rm' | 'envio_nacional' | string | null;
 	payment_method?: 'mercadopago' | 'transferencia' | string | null;
+	mp_preference_id?: string | null;
+	mp_payment_id?: string | null;
 	payment_status: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | string;
 	order_status?: string | null;
 	items?: OrderItemJSON[] | string | null;
@@ -36,6 +39,8 @@ export interface FinancialKPIs {
 	approvalRate: number;
 	averageTicket: number;
 	totalUnitsSold: number;
+	totalUnitsDispatched: number;
+	dispatchedOrdersCount: number;
 }
 
 export interface ProductSales {
@@ -84,24 +89,76 @@ export interface TopCustomer {
 }
 
 /**
+ * Normaliza una fila de orden proveniente de Supabase
+ * adaptando columnas reales (delivery_type, mp_payment_id) al modelo analítico.
+ */
+export function normalizeOrderForAnalytics(raw: any): AnalyticsOrder {
+	if (!raw || typeof raw !== 'object') {
+		return {
+			id: '',
+			total_amount: 0,
+			shipping_cost: 0,
+			delivery_type: 'retiro',
+			shipping_method: 'retiro',
+			payment_method: 'transferencia',
+			payment_status: 'pendiente',
+			created_at: new Date().toISOString()
+		};
+	}
+
+	const shipping_method = raw.shipping_method || raw.delivery_type || 'retiro';
+	const hasMp = Boolean(raw.mp_payment_id || raw.mp_preference_id);
+	const payment_method = raw.payment_method || (hasMp ? 'mercadopago' : 'transferencia');
+
+	return {
+		id: String(raw.id || ''),
+		total_amount: Number(raw.total_amount) || 0,
+		shipping_cost: Number(raw.shipping_cost) || 0,
+		delivery_type: raw.delivery_type || shipping_method,
+		shipping_method,
+		payment_method,
+		mp_preference_id: raw.mp_preference_id || null,
+		mp_payment_id: raw.mp_payment_id || null,
+		payment_status: String(raw.payment_status || 'pendiente'),
+		order_status: raw.order_status ? String(raw.order_status) : null,
+		items: parseOrderItems(raw.items),
+		customer_id: raw.customer_id || null,
+		created_at: String(raw.created_at || '')
+	};
+}
+
+/**
  * Parsea de forma segura el campo items de una orden (sea array o string JSON).
  */
 export function parseOrderItems(rawItems: any): OrderItemJSON[] {
 	if (!rawItems) return [];
-	if (Array.isArray(rawItems)) return rawItems;
-	if (typeof rawItems === 'string') {
+	let itemsArray: any[] = [];
+	if (Array.isArray(rawItems)) {
+		itemsArray = rawItems;
+	} else if (typeof rawItems === 'string') {
 		try {
 			const parsed = JSON.parse(rawItems);
-			return Array.isArray(parsed) ? parsed : [];
+			if (Array.isArray(parsed)) itemsArray = parsed;
 		} catch {
 			return [];
 		}
+	} else if (typeof rawItems === 'object') {
+		itemsArray = [rawItems];
 	}
-	return [];
+
+	return itemsArray
+		.filter(item => item && typeof item === 'object')
+		.map(item => ({
+			sku: String(item.sku || 'SIN-SKU'),
+			titulo: String(item.titulo || 'Repuesto'),
+			precio_venta: Number(item.precio_venta) || 0,
+			cantidad: Math.max(0, parseInt(String(item.cantidad), 10) || 0),
+			imagen: item.imagen ? String(item.imagen) : undefined
+		}));
 }
 
 /**
- * Filtra órdenes por rango temporal seleccionado.
+ * Filtra órdenes por rango temporal seleccionado con tolerancia de reloj controlada.
  */
 export function filterOrdersByPeriod(
 	orders: AnalyticsOrder[],
@@ -112,14 +169,24 @@ export function filterOrdersByPeriod(
 	if (period === 'historico') return orders;
 
 	const now = new Date(referenceDate.getTime());
+	// Tolerancia de reloj controlada: hasta 15 minutos en el futuro por desfase de servidores
+	const CLOCK_TOLERANCE_MS = 15 * 60 * 1000;
 
 	let startDate: Date;
+	let maxAllowedDate: Date;
+
 	if (period === 'este_mes') {
 		startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+		// Fin del mes en curso: primer día del mes siguiente a las 00:00:00
+		const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+		// No permitir que supere el fin de mes ni exceda la tolerancia del momento actual
+		maxAllowedDate = new Date(Math.min(endOfMonth.getTime(), now.getTime() + CLOCK_TOLERANCE_MS));
 	} else if (period === 'ultimos_30') {
 		startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+		maxAllowedDate = new Date(now.getTime() + CLOCK_TOLERANCE_MS);
 	} else if (period === 'trimestre') {
 		startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+		maxAllowedDate = new Date(now.getTime() + CLOCK_TOLERANCE_MS);
 	} else {
 		return orders;
 	}
@@ -127,7 +194,8 @@ export function filterOrdersByPeriod(
 	return orders.filter(o => {
 		if (!o.created_at) return false;
 		const orderDate = new Date(o.created_at);
-		return orderDate >= startDate && orderDate <= now;
+		if (isNaN(orderDate.getTime())) return false;
+		return orderDate >= startDate && orderDate <= maxAllowedDate;
 	});
 }
 
@@ -143,7 +211,9 @@ export function calculateFinancialKPIs(orders: AnalyticsOrder[]): FinancialKPIs 
 			totalOrdersCount: 0,
 			approvalRate: 0,
 			averageTicket: 0,
-			totalUnitsSold: 0
+			totalUnitsSold: 0,
+			totalUnitsDispatched: 0,
+			dispatchedOrdersCount: 0
 		};
 	}
 
@@ -152,8 +222,18 @@ export function calculateFinancialKPIs(orders: AnalyticsOrder[]): FinancialKPIs 
 	let shippingRevenue = 0;
 	let approvedOrdersCount = 0;
 	let totalUnitsSold = 0;
+	let totalUnitsDispatched = 0;
+	let dispatchedOrdersCount = 0;
+
+	// Hitos logísticos del sistema que representan salida / entrega cumplida
+	const DISPATCHED_STATUSES = new Set(['despachado', 'listo_retiro', 'entregado']);
+	const processedOrderIds = new Set<string>();
 
 	for (const order of orders) {
+		// Prevenir sumatorias de órdenes duplicadas
+		if (order.id && processedOrderIds.has(order.id)) continue;
+		if (order.id) processedOrderIds.add(order.id);
+
 		const isApproved = order.payment_status === 'aprobado';
 		if (isApproved) {
 			approvedOrdersCount++;
@@ -161,14 +241,20 @@ export function calculateFinancialKPIs(orders: AnalyticsOrder[]): FinancialKPIs 
 			shippingRevenue += Number(order.shipping_cost) || 0;
 
 			const items = parseOrderItems(order.items);
-			for (const item of items) {
-				totalUnitsSold += Math.max(0, parseInt(String(item.cantidad), 10) || 0);
+			const orderUnits = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+			totalUnitsSold += orderUnits;
+
+			const isDispatched = order.order_status && DISPATCHED_STATUSES.has(order.order_status.toLowerCase().trim());
+			if (isDispatched) {
+				dispatchedOrdersCount++;
+				totalUnitsDispatched += orderUnits;
 			}
 		}
 	}
 
 	const averageTicket = approvedOrdersCount > 0 ? Math.round(totalRevenue / approvedOrdersCount) : 0;
-	const approvalRate = totalOrdersCount > 0 ? Math.round((approvedOrdersCount / totalOrdersCount) * 1000) / 10 : 0;
+	const rawApprovalRate = totalOrdersCount > 0 ? (approvedOrdersCount / totalOrdersCount) * 100 : 0;
+	const approvalRate = Math.min(100, Math.max(0, Math.round(rawApprovalRate * 10) / 10));
 
 	return {
 		totalRevenue,
@@ -177,7 +263,9 @@ export function calculateFinancialKPIs(orders: AnalyticsOrder[]): FinancialKPIs 
 		totalOrdersCount,
 		approvalRate,
 		averageTicket,
-		totalUnitsSold
+		totalUnitsSold,
+		totalUnitsDispatched,
+		dispatchedOrdersCount
 	};
 }
 
@@ -371,7 +459,7 @@ export function aggregateMethodDistribution(orders: AnalyticsOrder[]): MethodDis
 	// Pagos
 	const payCounts = new Map<string, { count: number; revenue: number }>();
 	for (const o of approvedOrders) {
-		const method = o.payment_method || 'desconocido';
+		const method = o.payment_method || (o.mp_payment_id || o.mp_preference_id ? 'mercadopago' : 'transferencia');
 		const cur = payCounts.get(method) || { count: 0, revenue: 0 };
 		cur.count += 1;
 		cur.revenue += Number(o.total_amount) || 0;
@@ -396,7 +484,7 @@ export function aggregateMethodDistribution(orders: AnalyticsOrder[]): MethodDis
 	// Envíos (sobre todas las órdenes creadas)
 	const shipCounts = new Map<string, number>();
 	for (const o of orders) {
-		const method = o.shipping_method || 'retiro';
+		const method = o.shipping_method || o.delivery_type || 'retiro';
 		shipCounts.set(method, (shipCounts.get(method) || 0) + 1);
 	}
 

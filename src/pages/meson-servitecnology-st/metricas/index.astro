@@ -1,6 +1,14 @@
 ---
 export const prerender = false;
 
+// 1. Guardia de Seguridad SSR Inmediato en cabecera (Previene ResponseSentError)
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
+const cookie = Astro.cookies.get('admin_session');
+if (!adminSecret || cookie?.value !== adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st/login');
+}
+
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { supabaseAdmin } from '../../../lib/supabase';
 import {
@@ -11,6 +19,7 @@ import {
 	aggregateMethodDistribution,
 	aggregateTopCustomers,
 	detectInventoryAlerts,
+	normalizeOrderForAnalytics,
 	type PeriodKey,
 	type AnalyticsOrder
 } from '../../../lib/analytics';
@@ -21,16 +30,17 @@ const validPeriods: PeriodKey[] = ['este_mes', 'ultimos_30', 'trimestre', 'histo
 const rawPeriod = url.searchParams.get('period') as PeriodKey;
 const selectedPeriod: PeriodKey = validPeriods.includes(rawPeriod) ? rawPeriod : 'este_mes';
 
-// 2. Cargar datos en paralelo desde Supabase
+// 2. Cargar datos en paralelo desde Supabase con manejo explícito de errores
 let allOrders: AnalyticsOrder[] = [];
 let catalogProducts: any[] = [];
 let customersMap = new Map<string, any>();
+let fetchError: string | null = null;
 
 try {
 	const [ordersRes, catalogRes, customersRes] = await Promise.all([
 		supabaseAdmin
 			.from('orders')
-			.select('id, total_amount, shipping_cost, shipping_method, payment_method, payment_status, order_status, items, customer_id, created_at')
+			.select('id, total_amount, shipping_cost, delivery_type, mp_preference_id, mp_payment_id, payment_status, order_status, items, customer_id, created_at')
 			.order('created_at', { ascending: false }),
 		supabaseAdmin
 			.from('repuestos_productos')
@@ -40,16 +50,29 @@ try {
 			.select('id, full_name, rut, phone, email, razon_social')
 	]);
 
-	allOrders = (ordersRes.data || []) as AnalyticsOrder[];
-	catalogProducts = catalogRes.data || [];
+	if (ordersRes.error) {
+		console.error('Error al consultar orders en Supabase:', ordersRes.error);
+		fetchError = `Error al consultar pedidos: ${ordersRes.error.message}`;
+	} else {
+		allOrders = (ordersRes.data || []).map(normalizeOrderForAnalytics);
+	}
 
-	if (customersRes.data) {
+	if (catalogRes.error) {
+		console.warn('Aviso al consultar catálogo de repuestos:', catalogRes.error);
+	} else {
+		catalogProducts = catalogRes.data || [];
+	}
+
+	if (customersRes.error) {
+		console.warn('Aviso al consultar clientes:', customersRes.error);
+	} else if (customersRes.data) {
 		for (const c of customersRes.data) {
 			customersMap.set(c.id, c);
 		}
 	}
-} catch (e) {
-	console.error('Error cargando datos de analítica en Supabase:', e);
+} catch (e: any) {
+	console.error('Excepción cargando datos de analítica en Supabase:', e);
+	fetchError = e?.message || 'Error de conexión con la base de datos.';
 }
 
 // 3. Procesar datos con el motor analítico
@@ -156,6 +179,14 @@ const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
 			</div>
 		</div>
 
+		<!-- Banner de Error Explícito (si ocurre fallo en base de datos) -->
+		{fetchError && (
+			<div class="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono flex items-center justify-between">
+				<span>⚠️ {fetchError}</span>
+				<a href={Astro.request.url} class="underline hover:text-red-300 font-bold">Reintentar Consulta</a>
+			</div>
+		)}
+
 		<!-- Grid de KPIs Superiores -->
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 			<!-- 1. Ingresos Netos Aprobados -->
@@ -170,7 +201,7 @@ const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
 					${kpis.totalRevenue.toLocaleString('es-CL')} CLP
 				</div>
 				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
-					<span>{kpis.approvedOrdersCount} pedidos pagados</span>
+					<span>{kpis.approvedOrdersCount} {kpis.approvedOrdersCount === 1 ? 'pedido pagado' : 'pedidos pagados'}</span>
 					<span class="font-mono text-emerald-400">100% conciliado</span>
 				</div>
 			</div>
@@ -192,7 +223,7 @@ const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
 				</div>
 			</div>
 
-			<!-- 3. Repuestos Vendidos & Fletes -->
+			<!-- 3. Repuestos Despachados & Fletes -->
 			<div class="p-6 rounded-2xl bg-[#121215] border border-white/5 relative overflow-hidden group hover:border-amber-500/30 transition-all">
 				<div class="flex items-center justify-between">
 					<span class="text-xs uppercase font-mono text-slate-500">Repuestos Despachados</span>
@@ -201,11 +232,11 @@ const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
 					</span>
 				</div>
 				<div class="font-outfit text-2xl sm:text-3xl font-black text-amber-400 mt-3 tracking-tight">
-					{kpis.totalUnitsSold} unidades
+					{kpis.totalUnitsDispatched} {kpis.totalUnitsDispatched === 1 ? 'unidad' : 'unidades'}
 				</div>
 				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
-					<span>Fletes: ${kpis.shippingRevenue.toLocaleString('es-CL')} CLP</span>
-					<span class="font-mono text-amber-400/80">logística</span>
+					<span>{kpis.dispatchedOrdersCount} {kpis.dispatchedOrdersCount === 1 ? 'pedido despachado' : 'pedidos despachados'}</span>
+					<span class="font-mono text-amber-400/80">Fletes: ${kpis.shippingRevenue.toLocaleString('es-CL')} CLP</span>
 				</div>
 			</div>
 
@@ -221,7 +252,7 @@ const periodLabels: Record<PeriodKey, { title: string; desc: string }> = {
 					{kpis.approvalRate}%
 				</div>
 				<div class="flex items-center justify-between text-xs text-slate-400 mt-3 pt-3 border-t border-white/5">
-					<span>{kpis.totalOrdersCount} órdenes generadas</span>
+					<span>{kpis.approvedOrdersCount} de {kpis.totalOrdersCount} {kpis.totalOrdersCount === 1 ? 'orden' : 'órdenes'}</span>
 					<span class="font-mono text-purple-300">conversión</span>
 				</div>
 			</div>

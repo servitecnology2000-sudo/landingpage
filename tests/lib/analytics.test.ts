@@ -7,6 +7,8 @@ import {
 	aggregateMethodDistribution,
 	aggregateTopCustomers,
 	detectInventoryAlerts,
+	normalizeOrderForAnalytics,
+	parseOrderItems,
 	type AnalyticsOrder
 } from '../../src/lib/analytics';
 
@@ -258,6 +260,221 @@ describe('Pruebas del Motor Analítico (src/lib/analytics.ts)', () => {
 			expect(alerts.map(a => a.sku)).toContain('HP-TONER-02');
 			expect(alerts.map(a => a.sku)).toContain('TOS-ROLLER-01');
 			expect(alerts.map(a => a.sku)).not.toContain('RICOH-GEAR-03'); // Este está 'ok' con 15 unidades
+		});
+	});
+
+	describe('7. Escenarios Específicos de Auditoría y Reparación de Métricas', () => {
+		// Escenario 1: Orden con pago aprobado
+		it('debe contabilizar correctamente una orden con pago aprobado', () => {
+			const singleOrder: AnalyticsOrder[] = [{
+				id: 'ST-APROBADA-01',
+				total_amount: 35000,
+				shipping_cost: 3000,
+				delivery_type: 'delivery_rm',
+				payment_status: 'aprobado',
+				order_status: 'entregado',
+				created_at: '2026-10-18T10:00:00Z',
+				items: [{ sku: 'SKU-01', titulo: 'Teclado', precio_venta: 32000, cantidad: 1 }]
+			}];
+
+			const kpis = calculateFinancialKPIs(singleOrder);
+			expect(kpis.totalRevenue).toBe(35000);
+			expect(kpis.averageTicket).toBe(35000);
+			expect(kpis.approvedOrdersCount).toBe(1);
+			expect(kpis.totalOrdersCount).toBe(1);
+			expect(kpis.approvalRate).toBe(100);
+			expect(kpis.totalUnitsSold).toBe(1);
+			expect(kpis.totalUnitsDispatched).toBe(1);
+			expect(kpis.dispatchedOrdersCount).toBe(1);
+		});
+
+		// Escenario 2: Órdenes pendientes, rechazadas o canceladas
+		it('debe excluir de la facturación y ticket las órdenes pendientes, canceladas o rechazadas', () => {
+			const nonApprovedOrders: AnalyticsOrder[] = [
+				{
+					id: 'ST-PEND',
+					total_amount: 50000,
+					payment_status: 'pendiente',
+					created_at: '2026-10-18T10:00:00Z'
+				},
+				{
+					id: 'ST-CANC',
+					total_amount: 40000,
+					payment_status: 'cancelado',
+					created_at: '2026-10-18T10:00:00Z'
+				},
+				{
+					id: 'ST-RECH',
+					total_amount: 30000,
+					payment_status: 'rechazado',
+					created_at: '2026-10-18T10:00:00Z'
+				}
+			];
+
+			const kpis = calculateFinancialKPIs(nonApprovedOrders);
+			expect(kpis.totalRevenue).toBe(0);
+			expect(kpis.averageTicket).toBe(0);
+			expect(kpis.approvedOrdersCount).toBe(0);
+			expect(kpis.totalOrdersCount).toBe(3);
+			expect(kpis.approvalRate).toBe(0);
+			expect(kpis.totalUnitsSold).toBe(0);
+			expect(kpis.totalUnitsDispatched).toBe(0);
+		});
+
+		// Escenario 3 y 8: Pedido despachado/entregado frente a pedido en preparación (separación de unidades vs pedidos)
+		it('debe diferenciar unidades despachadas de unidades vendidas y contar pedidos únicos despachados', () => {
+			const mixedStatusOrders: AnalyticsOrder[] = [
+				{
+					id: 'ST-PREP',
+					total_amount: 20000,
+					payment_status: 'aprobado',
+					order_status: 'preparacion', // Aprobado pero NO despachado
+					created_at: '2026-10-18T10:00:00Z',
+					items: [{ sku: 'SKU-A', titulo: 'Pieza A', precio_venta: 10000, cantidad: 3 }]
+				},
+				{
+					id: 'ST-DESP',
+					total_amount: 30000,
+					payment_status: 'aprobado',
+					order_status: 'despachado', // Despachado
+					created_at: '2026-10-18T11:00:00Z',
+					items: [{ sku: 'SKU-B', titulo: 'Pieza B', precio_venta: 15000, cantidad: 2 }]
+				},
+				{
+					id: 'ST-ENTR',
+					total_amount: 15000,
+					payment_status: 'aprobado',
+					order_status: 'entregado', // Entregado
+					created_at: '2026-10-18T12:00:00Z',
+					items: [{ sku: 'SKU-C', titulo: 'Pieza C', precio_venta: 15000, cantidad: 1 }]
+				}
+			];
+
+			const kpis = calculateFinancialKPIs(mixedStatusOrders);
+			expect(kpis.totalRevenue).toBe(65000);
+			expect(kpis.approvedOrdersCount).toBe(3);
+			expect(kpis.totalOrdersCount).toBe(3);
+			// Total vendidas = 3 (prep) + 2 (desp) + 1 (entr) = 6
+			expect(kpis.totalUnitsSold).toBe(6);
+			// Total despachadas = 2 (desp) + 1 (entr) = 3 (la de preparación queda excluida de despacho)
+			expect(kpis.totalUnitsDispatched).toBe(3);
+			// Pedidos despachados = 2 pedidos (ST-DESP y ST-ENTR)
+			expect(kpis.dispatchedOrdersCount).toBe(2);
+		});
+
+		// Escenario 4 y 5: Base de datos sin pedidos y órdenes sin artículos
+		it('debe manejar bases de datos sin órdenes o con items vacíos/malformados sin arrojar excepción', () => {
+			const emptyDbKPIs = calculateFinancialKPIs([]);
+			expect(emptyDbKPIs.totalRevenue).toBe(0);
+			expect(emptyDbKPIs.averageTicket).toBe(0);
+			expect(emptyDbKPIs.approvalRate).toBe(0);
+			expect(emptyDbKPIs.totalUnitsDispatched).toBe(0);
+
+			const emptyItemsOrder: AnalyticsOrder[] = [{
+				id: 'ST-EMPTY-ITEMS',
+				total_amount: 10000,
+				payment_status: 'aprobado',
+				order_status: 'entregado',
+				created_at: '2026-10-18T10:00:00Z',
+				items: null
+			}];
+
+			const kpis = calculateFinancialKPIs(emptyItemsOrder);
+			expect(kpis.totalRevenue).toBe(10000);
+			expect(kpis.totalUnitsSold).toBe(0);
+			expect(kpis.totalUnitsDispatched).toBe(0);
+			expect(kpis.dispatchedOrdersCount).toBe(1);
+		});
+
+		// Escenario 6: Importes o cantidades malformados
+		it('debe sanitizar importes y cantidades malformados (string, NaN, negativo) de forma segura', () => {
+			const malformedOrder: AnalyticsOrder[] = [{
+				id: 'ST-MALFORMED',
+				total_amount: '25000' as any,
+				shipping_cost: 'invalid-number' as any,
+				payment_status: 'aprobado',
+				order_status: 'despachado',
+				created_at: '2026-10-18T10:00:00Z',
+				items: [
+					{ sku: 'SKU-OK', titulo: 'Ok', precio_venta: 15000, cantidad: '2' as any },
+					{ sku: 'SKU-BAD', titulo: 'Bad', precio_venta: 'NaN' as any, cantidad: -5 as any },
+					{ sku: 'SKU-STR', titulo: 'Str', precio_venta: 10000, cantidad: 'tres' as any }
+				]
+			}];
+
+			const kpis = calculateFinancialKPIs(malformedOrder);
+			expect(kpis.totalRevenue).toBe(25000);
+			expect(kpis.shippingRevenue).toBe(0);
+			// Solo la cantidad '2' es válida -> 2 unidades
+			expect(kpis.totalUnitsSold).toBe(2);
+			expect(kpis.totalUnitsDispatched).toBe(2);
+		});
+
+		// Escenario 7: Validación con la orden real ST-2026-4290
+		it('debe calcular exactamente los valores esperados para la orden real ST-2026-4290', () => {
+			const realOrder: AnalyticsOrder = {
+				id: 'ST-2026-4290',
+				total_amount: 25000,
+				shipping_cost: 0,
+				delivery_type: 'envio_nacional',
+				shipping_method: 'envio_nacional',
+				payment_method: 'mercadopago',
+				mp_preference_id: 'ORD01M50NRMXNSSRB8V55DG9TFT79',
+				mp_payment_id: '183342798963',
+				payment_status: 'aprobado',
+				order_status: 'entregado',
+				created_at: '2026-10-15T20:58:51.782+00:00',
+				customer_id: '9c6f18c9-e97b-4f3d-84fc-8dc7998ef416',
+				items: [
+					{
+						sku: 'DW98X',
+						titulo: 'tapa-pantalla-latitude-5420',
+						cantidad: 1,
+						precio_venta: 25000
+					}
+				]
+			};
+
+			const kpis = calculateFinancialKPIs([realOrder]);
+			expect(kpis.totalRevenue).toBe(25000);
+			expect(kpis.averageTicket).toBe(25000);
+			expect(kpis.approvedOrdersCount).toBe(1);
+			expect(kpis.totalOrdersCount).toBe(1);
+			expect(kpis.approvalRate).toBe(100);
+			expect(kpis.totalUnitsSold).toBe(1);
+			expect(kpis.totalUnitsDispatched).toBe(1);
+			expect(kpis.dispatchedOrdersCount).toBe(1);
+
+			// Comprobar filtro este_mes (referencia al 18 de octubre de 2026)
+			const refOct = new Date('2026-10-18T13:00:00-03:00');
+			const filtered = filterOrdersByPeriod([realOrder], 'este_mes', refOct);
+			expect(filtered.length).toBe(1);
+			expect(filtered[0].id).toBe('ST-2026-4290');
+		});
+
+		// Escenario 9: Normalizador con columnas reales de Supabase
+		it('debe mapear correctamente delivery_type y mp_payment_id mediante normalizeOrderForAnalytics', () => {
+			const rawSupabaseRow = {
+				id: 'ST-2026-4290',
+				total_amount: 25000,
+				shipping_cost: 0,
+				delivery_type: 'envio_nacional', // Columna real
+				mp_payment_id: '183342798963',   // Columna real
+				mp_preference_id: 'PREF-123',   // Columna real
+				payment_status: 'aprobado',
+				order_status: 'entregado',
+				customer_id: '9c6f18c9-e97b-4f3d-84fc-8dc7998ef416',
+				items: [{ sku: 'DW98X', titulo: 'Tapa', cantidad: 1, precio_venta: 25000 }],
+				created_at: '2026-10-15T20:58:51.782+00:00'
+			};
+
+			const normalized = normalizeOrderForAnalytics(rawSupabaseRow);
+			expect(normalized.id).toBe('ST-2026-4290');
+			expect(normalized.delivery_type).toBe('envio_nacional');
+			expect(normalized.shipping_method).toBe('envio_nacional');
+			expect(normalized.payment_method).toBe('mercadopago');
+			expect(normalized.total_amount).toBe(25000);
+			expect(normalized.payment_status).toBe('aprobado');
 		});
 	});
 });
