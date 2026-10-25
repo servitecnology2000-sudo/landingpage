@@ -1,6 +1,12 @@
 ---
 import { supabase } from '../lib/supabase';
 
+interface Props {
+	customBg?: string | null;
+}
+
+const { customBg = null } = Astro.props;
+
 // 1. Consulta de Banners Activos EXCLUSIVOS de la sección 'repuestos'
 let dbBanners: Array<{
 	id: string;
@@ -121,6 +127,18 @@ const slides = dbBanners.length > 0 ? dbBanners : defaultRepuestosBanners;
 	class="repuestos-carousel-section relative min-h-[75vh] sm:min-h-[82vh] flex items-center justify-center overflow-hidden bg-black select-none border-b border-white/5"
 	aria-label="Carrusel de banners y catálogo de repuestos SERVITECNOLOGY"
 >
+	{/* Fondo personalizado para el área del carrusel */}
+	{customBg && (
+		<div class="pointer-events-none select-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+			<img 
+				src={customBg} 
+				alt="" 
+				class="w-full h-full object-cover object-center" 
+			/>
+			<div class="absolute inset-0 bg-black/40 backdrop-blur-[0.5px]"></div>
+		</div>
+	)}
+
 	<!-- Resplandores Ambientales Tecnológicos Controlados -->
 	<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] md:w-[900px] h-[350px] md:h-[500px] bg-brand-cyan/15 rounded-full blur-[170px] pointer-events-none z-0"></div>
 	<div class="absolute bottom-1/4 left-1/2 -translate-x-1/2 translate-y-1/4 w-[500px] md:w-[750px] h-[300px] md:h-[450px] bg-brand-green/10 rounded-full blur-[170px] pointer-events-none z-0"></div>
@@ -151,16 +169,32 @@ const slides = dbBanners.length > 0 ? dbBanners : defaultRepuestosBanners;
 						<div class="relative w-full h-full flex items-center justify-center">
 							<!-- Imagen de Fondo con degradados de contraste -->
 							<div class="absolute inset-0 z-0">
-								<div class="absolute inset-0 bg-black/75 z-10"></div>
-								<div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/70 z-10"></div>
-								<div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-black/85 z-10"></div>
-								<img
-									src={slide.imagen_url}
-									alt={slide.alt_text || slide.titulo}
-									class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-[8000ms] ease-out will-change-transform"
-									loading={index === 0 ? "eager" : "lazy"}
-									fetchpriority={index === 0 ? "high" : "auto"}
-								/>
+								{customBg ? (
+									<>
+										<div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/60 z-10"></div>
+										<div class="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60 z-10"></div>
+										<img
+											src={customBg}
+											alt="Fondo personalizado carrusel"
+											class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-[8000ms] ease-out will-change-transform"
+											loading={index === 0 ? "eager" : "lazy"}
+											fetchpriority={index === 0 ? "high" : "auto"}
+										/>
+									</>
+								) : (
+									<>
+										<div class="absolute inset-0 bg-black/75 z-10"></div>
+										<div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/70 z-10"></div>
+										<div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-black/85 z-10"></div>
+										<img
+											src={slide.imagen_url}
+											alt={slide.alt_text || slide.titulo}
+											class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-[8000ms] ease-out will-change-transform"
+											loading={index === 0 ? "eager" : "lazy"}
+											fetchpriority={index === 0 ? "high" : "auto"}
+										/>
+									</>
+								)}
 							</div>
 
 							<!-- Contenido Hero Central -->
@@ -231,7 +265,7 @@ const slides = dbBanners.length > 0 ? dbBanners : defaultRepuestosBanners;
 							<!-- Imagen de Fondo Ambientada (Blur Estilizado) -->
 							<div class="absolute inset-0 z-0 overflow-hidden opacity-30">
 								<img
-									src={slide.imagen_url}
+									src={customBg ? customBg : slide.imagen_url}
 									alt=""
 									aria-hidden="true"
 									class="w-full h-full object-cover blur-2xl transform scale-110"

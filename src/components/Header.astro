@@ -1,5 +1,25 @@
 ---
 import Button from './Button.astro';
+import { supabase } from '../lib/supabase';
+
+// Consulta SSR del fondo activo del menú principal compartido
+let menuBgUrl: string | null = null;
+try {
+	const { data } = await supabase
+		.from('hero_banners')
+		.select('imagen_url')
+		.eq('seccion', 'menu_principal')
+		.eq('activo', true)
+		.order('created_at', { ascending: false })
+		.limit(1)
+		.maybeSingle();
+
+	if (data?.imagen_url) {
+		menuBgUrl = data.imagen_url;
+	}
+} catch (e) {
+	// Fallback silencioso al diseño original limpio
+}
 
 interface NavItem {
 	label: string;
@@ -29,8 +49,14 @@ const navItems: NavItem[] = [
 ];
 ---
 
-<header class="sticky top-0 z-50 w-full border-b border-white/5 bg-black/75 backdrop-blur-md transition-all duration-300">
-	<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+<header id="global-site-header" class="relative sticky top-0 z-50 w-full border-b border-white/5 bg-black/75 backdrop-blur-md transition-all duration-300 overflow-hidden">
+	{menuBgUrl && (
+		<div id="header-custom-bg" class="pointer-events-none select-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+			<img src={menuBgUrl} alt="" class="w-full h-full object-cover object-center" />
+			<div class="absolute inset-0 bg-black/70 backdrop-blur-[2px]"></div>
+		</div>
+	)}
+	<div class="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 		<!-- Brand Logo -->
 		<a href="/" class="flex items-center group" aria-label="SERVITECNOLOGY Inicio">
 			<img src="/imagenes/logost.png" alt="SERVITECNOLOGY Logo" class="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300" />
@@ -151,7 +177,7 @@ const navItems: NavItem[] = [
 	<!-- Mobile Menu Panel -->
 	<div 
 		id="mobile-menu" 
-		class="hidden w-full border-t border-white/5 bg-black/95 px-6 py-6 md:hidden transition-all duration-300 ease-in-out"
+		class="relative z-10 hidden w-full border-t border-white/5 bg-black/95 px-6 py-6 md:hidden transition-all duration-300 ease-in-out"
 	>
 		<nav class="flex flex-col gap-4">
 			<!-- Mobile YouTube Button -->
@@ -316,4 +342,35 @@ const navItems: NavItem[] = [
 		}
 	}
 	checkUserSession();
+
+	// Sincronización client-side del fondo del menú principal (soporte de páginas estáticas o caché)
+	async function syncHeaderBackground() {
+		try {
+			const res = await fetch('/api/menu-background');
+			const json = await res.json();
+			const header = document.getElementById('global-site-header');
+			let bgEl = document.getElementById('header-custom-bg');
+
+			if (json.active && json.imageUrl) {
+				if (!bgEl && header) {
+					bgEl = document.createElement('div');
+					bgEl.id = 'header-custom-bg';
+					bgEl.className = 'pointer-events-none select-none absolute inset-0 z-0 overflow-hidden';
+					bgEl.setAttribute('aria-hidden', 'true');
+					bgEl.innerHTML = `<img src="${json.imageUrl}" alt="" class="w-full h-full object-cover object-center" /><div class="absolute inset-0 bg-black/70 backdrop-blur-[2px]"></div>`;
+					header.prepend(bgEl);
+				} else if (bgEl) {
+					const img = bgEl.querySelector('img');
+					if (img && img.src !== json.imageUrl) {
+						img.src = json.imageUrl;
+					}
+				}
+			} else if (!json.active && bgEl) {
+				bgEl.remove();
+			}
+		} catch (e) {
+			// Fallback silencioso
+		}
+	}
+	syncHeaderBackground();
 </script>

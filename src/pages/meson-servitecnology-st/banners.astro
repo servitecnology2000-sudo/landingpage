@@ -38,6 +38,30 @@ try {
 const totalBanners = banners.length;
 const activeBanners = banners.filter(b => b.activo).length;
 const pausedBanners = banners.filter(b => !b.activo).length;
+
+// 3. Fondos Personalizados de /repuestos y Menú Principal Global
+let currentSearchBg: string | null = null;
+let currentCarouselBg: string | null = null;
+let currentMenuBg: string | null = null;
+
+try {
+	const { data: bgData } = await supabaseAdmin
+		.from('hero_banners')
+		.select('*')
+		.in('seccion', ['repuestos_fondo_busqueda', 'repuestos_fondo_carrusel', 'menu_principal'])
+		.eq('activo', true);
+
+	if (bgData) {
+		const sBg = bgData.find(b => b.seccion === 'repuestos_fondo_busqueda');
+		const cBg = bgData.find(b => b.seccion === 'repuestos_fondo_carrusel');
+		const mBg = bgData.find(b => b.seccion === 'menu_principal');
+		if (sBg) currentSearchBg = sBg.imagen_url;
+		if (cBg) currentCarouselBg = cBg.imagen_url;
+		if (mBg) currentMenuBg = mBg.imagen_url;
+	}
+} catch (e: any) {
+	console.warn('[Admin Banners] Error al consultar fondos personalizados:', e);
+}
 ---
 
 <AdminLayout title="Administrador de Banners de Repuestos — SERVITECNOLOGY" activeSection="banners">
@@ -56,16 +80,165 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 			</p>
 		</div>
 
-		<div class="flex items-center gap-3">
+		<div class="flex flex-wrap items-center gap-2.5">
 			<a
 				href="/repuestos"
 				target="_blank"
-				class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-cyan/30 transition-all"
-				title="Ver el carrusel en la página de repuestos"
+				class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-cyan/30 transition-all"
+				title="Ver el carrusel y tienda en la página de repuestos"
 			>
 				<span>🌐</span>
-				<span>Ver Carrusel en /repuestos</span>
+				<span class="hidden sm:inline">Ver /repuestos</span>
 			</a>
+
+			<!-- Botón 1: Fondo de búsqueda (con Tooltip de medidas) -->
+			<div class="relative group/tip inline-flex">
+				<button
+					id="btnOpenSearchBgModal"
+					type="button"
+					class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900/90 hover:bg-slate-800 border border-white/15 hover:border-brand-cyan/50 shadow-sm transition-all cursor-pointer"
+					title="Medida recomendada: 1980 x 800 px · Espacio visible: ancho 100% × ~220 px alto"
+					aria-describedby="tooltip-search-bg"
+				>
+					<span>🔍</span>
+					<span>Fondo de búsqueda</span>
+					{currentSearchBg && (
+						<span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" title="Fondo personalizado activo"></span>
+					)}
+				</button>
+
+				<!-- Tooltip Guía de Medidas Fondo de Búsqueda -->
+				<div
+					id="tooltip-search-bg"
+					role="tooltip"
+					class="pointer-events-none opacity-0 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100 transition-all duration-200 ease-out transform -translate-y-1 group-hover/tip:translate-y-0 absolute top-full mt-2.5 left-0 sm:left-1/2 sm:-translate-x-1/2 z-50 w-80 p-3.5 bg-[#0c0d12]/95 backdrop-blur-xl border border-brand-cyan/30 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] text-left"
+				>
+					<!-- Flecha superior -->
+					<div class="absolute -top-1.5 left-8 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 bg-[#0c0d12] border-t border-l border-brand-cyan/30 rotate-45"></div>
+
+					<!-- Cabecera -->
+					<div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
+						<div class="flex items-center gap-1.5">
+							<span class="text-sm">🔍</span>
+							<span class="text-xs font-bold text-white font-outfit">Fondo de Búsqueda</span>
+						</div>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30">
+							/repuestos
+						</span>
+					</div>
+
+					<!-- Medida Recomendada Principal -->
+					<div class="p-2.5 rounded-xl bg-black/60 border border-brand-cyan/20 mb-2.5">
+						<div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Medida recomendada para la foto</div>
+						<div class="text-sm font-extrabold text-brand-cyan font-mono tracking-wide flex items-center justify-between">
+							<span>1980 × 800 px</span>
+							<span class="text-[11px] font-normal text-slate-400 font-sans">Panorámica (~2.5:1)</span>
+						</div>
+					</div>
+
+					<!-- Ficha de Espacio Real -->
+					<div class="space-y-1.5 text-[11px] text-slate-300 mb-2.5">
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Espacio en pantalla:</span>
+							<span class="font-semibold text-white text-right">Ancho 100% × Alto ~220 px</span>
+						</div>
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Comportamiento:</span>
+							<span class="text-slate-300 text-right">Franja centrada (object-cover)</span>
+						</div>
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Formatos permitidos:</span>
+							<span class="text-slate-300 text-right font-mono">JPG, PNG, WebP (máx. 5MB)</span>
+						</div>
+					</div>
+
+					<!-- Consejo de Encuadre -->
+					<div class="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-slate-300 leading-relaxed">
+						💡 <strong class="text-white">Consejo:</strong> La franja visible ocupa los ~220 px centrales de la imagen. Mantén textos y gráficos en el centro vertical para que no se recorten.
+					</div>
+				</div>
+			</div>
+
+			<!-- Botón 2: Fondo del carrusel (con Tooltip de medidas) -->
+			<div class="relative group/tip inline-flex">
+				<button
+					id="btnOpenCarouselBgModal"
+					type="button"
+					class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-slate-900/90 hover:bg-slate-800 border border-white/15 hover:border-brand-green/50 shadow-sm transition-all cursor-pointer"
+					title="Medida recomendada: 1920 x 880 px (o 1920 x 1080 px) · Espacio visible: ancho 100% × alto 82vh (~850 px)"
+					aria-describedby="tooltip-carousel-bg"
+				>
+					<span>🎞️</span>
+					<span>Fondo del carrusel</span>
+					{currentCarouselBg && (
+						<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse" title="Fondo personalizado activo"></span>
+					)}
+				</button>
+
+				<!-- Tooltip Guía de Medidas Fondo del Carrusel -->
+				<div
+					id="tooltip-carousel-bg"
+					role="tooltip"
+					class="pointer-events-none opacity-0 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100 transition-all duration-200 ease-out transform -translate-y-1 group-hover/tip:translate-y-0 absolute top-full mt-2.5 left-1/2 -translate-x-1/2 z-50 w-80 p-3.5 bg-[#0c0d12]/95 backdrop-blur-xl border border-brand-green/30 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] text-left"
+				>
+					<!-- Flecha superior -->
+					<div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0c0d12] border-t border-l border-brand-green/30 rotate-45"></div>
+
+					<!-- Cabecera -->
+					<div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
+						<div class="flex items-center gap-1.5">
+							<span class="text-sm">🎞️</span>
+							<span class="text-xs font-bold text-white font-outfit">Fondo del Carrusel</span>
+						</div>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-green/15 text-brand-green border border-brand-green/30">
+							/repuestos
+						</span>
+					</div>
+
+					<!-- Medida Recomendada Principal -->
+					<div class="p-2.5 rounded-xl bg-black/60 border border-brand-green/20 mb-2.5">
+						<div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Medida recomendada para la foto</div>
+						<div class="text-sm font-extrabold text-brand-green font-mono tracking-wide flex items-center justify-between">
+							<span>1920 × 880 px</span>
+							<span class="text-[11px] font-normal text-slate-400 font-sans">o 1920 × 1080 Full HD</span>
+						</div>
+					</div>
+
+					<!-- Ficha de Espacio Real -->
+					<div class="space-y-1.5 text-[11px] text-slate-300 mb-2.5">
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Espacio en pantalla:</span>
+							<span class="font-semibold text-white text-right">Ancho 100% × Alto 82vh (~850 px)</span>
+						</div>
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Proporción área:</span>
+							<span class="text-slate-300 text-right">16:9 / ~2.2:1 panorámica</span>
+						</div>
+						<div class="flex items-start justify-between gap-2">
+							<span class="text-slate-400">Formatos permitidos:</span>
+							<span class="text-slate-300 text-right font-mono">JPG, PNG, WebP (máx. 5MB)</span>
+						</div>
+					</div>
+
+					<!-- Consejo de Encuadre -->
+					<div class="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-slate-300 leading-relaxed">
+						💡 <strong class="text-white">Consejo:</strong> Esta foto ambienta todo el fondo del carrusel de repuestos. Usa una imagen panorámica nítida con buena resolución en toda su superficie.
+					</div>
+				</div>
+			</div>
+
+			<!-- Botón 3: Volver a colores originales -->
+			<button
+				id="btnResetOriginalColors"
+				type="button"
+				class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 transition-all cursor-pointer"
+				title="Desactivar fondos personalizados y restaurar el diseño original de ambas áreas"
+			>
+				<span>🔄</span>
+				<span>Volver a colores originales</span>
+			</button>
+
+			<!-- Botón Principal: Nuevo Banner de Repuestos -->
 			<button
 				id="btnOpenNewBannerModal"
 				type="button"
@@ -104,6 +277,170 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 			</div>
 			<div class="mt-3 text-3xl font-extrabold text-amber-400 font-outfit">{pausedBanners}</div>
 			<div class="mt-1 text-xs text-slate-500">Conservados sin mostrarse en el carrusel</div>
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- APARTADO INDEPENDIENTE: APARIENCIA DEL MENÚ PRINCIPAL -->
+	<!-- ============================================================ -->
+	<div class="mb-8 p-6 rounded-2xl bg-[#121215] border border-white/10 relative shadow-xl">
+		<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/5">
+			<div class="space-y-1">
+				<div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 text-[11px] font-bold uppercase tracking-wider">
+					<span>🌐</span> Navegación Global Compartida
+				</div>
+				<h2 class="text-xl font-bold text-white tracking-tight font-outfit">
+					Apariencia del menú principal
+				</h2>
+				<p class="text-xs text-slate-400 max-w-2xl">
+					Personaliza el fondo visual del encabezado superior global que se muestra en todo el sitio web (portada, páginas de servicios, tienda y checkout). Su configuración y restauración son 100% independientes de los fondos de /repuestos.
+				</p>
+			</div>
+
+			<!-- Estado Actual y Acciones del Menú -->
+			<div class="flex flex-wrap items-center gap-3">
+				{currentMenuBg ? (
+					<div class="flex items-center gap-3 bg-black/40 border border-purple-500/30 px-3.5 py-2 rounded-xl">
+						<img src={currentMenuBg} alt="Fondo menú actual" class="w-12 h-7 object-cover rounded border border-white/10" />
+						<div>
+							<div class="text-[11px] font-bold text-purple-400 flex items-center gap-1.5">
+								<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+								Personalizado Activo
+							</div>
+							<div class="text-[10px] text-slate-400">Visible en todo el sitio</div>
+						</div>
+					</div>
+				) : (
+					<div class="flex items-center gap-2 bg-black/40 border border-white/10 px-3.5 py-2 rounded-xl">
+						<span class="text-xs">✨</span>
+						<div>
+							<div class="text-[11px] font-bold text-slate-300">Diseño Original Activo</div>
+							<div class="text-[10px] text-slate-500">Apariencia limpia predeterminada</div>
+						</div>
+					</div>
+				)}
+
+				<!-- Botón 3: Personalizar fondo del menú (con Tooltip de medidas) -->
+				<div class="relative group/tip inline-flex">
+					<button
+						id="btnOpenMenuBgModal"
+						type="button"
+						class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all cursor-pointer"
+						title="Medida recomendada: 1920 x 200 px · Espacio visible: ancho 100% × alto ~80 px (barra fija superior)"
+						aria-describedby="tooltip-menu-bg"
+					>
+						<span>🎨</span>
+						<span>Personalizar fondo del menú</span>
+					</button>
+
+					<!-- Tooltip Guía de Medidas Menú Global -->
+					<div
+						id="tooltip-menu-bg"
+						role="tooltip"
+						class="pointer-events-none opacity-0 group-hover/tip:opacity-100 group-focus-within/tip:opacity-100 transition-all duration-200 ease-out transform -translate-y-1 group-hover/tip:translate-y-0 absolute top-full mt-2.5 right-0 sm:left-1/2 sm:-translate-x-1/2 z-50 w-80 p-3.5 bg-[#0c0d12]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] text-left"
+					>
+						<!-- Flecha superior -->
+						<div class="absolute -top-1.5 right-8 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto w-3 h-3 bg-[#0c0d12] border-t border-l border-purple-500/30 rotate-45"></div>
+
+						<!-- Cabecera -->
+						<div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
+							<div class="flex items-center gap-1.5">
+								<span class="text-sm">🌐</span>
+								<span class="text-xs font-bold text-white font-outfit">Fondo del Menú Principal</span>
+							</div>
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">
+								Global
+							</span>
+						</div>
+
+						<!-- Medida Recomendada Principal -->
+						<div class="p-2.5 rounded-xl bg-black/60 border border-purple-500/20 mb-2.5">
+							<div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Medida recomendada para la foto</div>
+							<div class="text-sm font-extrabold text-purple-400 font-mono tracking-wide flex items-center justify-between">
+								<span>1920 × 200 px</span>
+								<span class="text-[11px] font-normal text-slate-400 font-sans">o hasta 1920 × 300</span>
+							</div>
+						</div>
+
+						<!-- Ficha de Espacio Real -->
+						<div class="space-y-1.5 text-[11px] text-slate-300 mb-2.5">
+							<div class="flex items-start justify-between gap-2">
+								<span class="text-slate-400">Espacio en pantalla:</span>
+								<span class="font-semibold text-white text-right">Ancho 100% × Alto ~80 px</span>
+							</div>
+							<div class="flex items-start justify-between gap-2">
+								<span class="text-slate-400">Proporción área:</span>
+								<span class="text-slate-300 text-right">Ultra-panorámica (~9:1)</span>
+							</div>
+							<div class="flex items-start justify-between gap-2">
+								<span class="text-slate-400">Formatos permitidos:</span>
+								<span class="text-slate-300 text-right font-mono">JPG, PNG, WebP (máx. 5MB)</span>
+							</div>
+						</div>
+
+						<!-- Consejo de Encuadre -->
+						<div class="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-slate-300 leading-relaxed">
+							💡 <strong class="text-white">Consejo:</strong> Es una barra fija delgada (~80 px). Usa texturas, degradados o patrones horizontales oscuros para que el logo y los textos se lean con total claridad.
+						</div>
+					</div>
+				</div>
+
+				{currentMenuBg && (
+					<button
+						id="btnResetMenuOriginal"
+						type="button"
+						class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all cursor-pointer"
+						title="Restaurar el diseño original del menú principal sin alterar los fondos de repuestos"
+					>
+						<span>🔄</span>
+						<span>Volver a colores originales</span>
+					</button>
+				)}
+			</div>
+		</div>
+
+		<div class="mt-3.5 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 gap-2">
+			<div class="flex items-center gap-2">
+				<span>Cobertura:</span>
+				<strong class="text-slate-300">Todas las páginas con encabezado superior global</strong>
+			</div>
+			<div class="text-[11px] text-slate-500">
+				Recomendado: Formato panorámico (ej. 1920x200 px o superior). Se aplica oscurecimiento automático para preservar contraste y legibilidad.
+			</div>
+		</div>
+	</div>
+
+	<!-- Estado de Personalización de Fondos de /repuestos -->
+	<div class="mb-8 p-4 rounded-2xl bg-[#121215] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+		<div class="flex items-center gap-3">
+			<span class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-lg shrink-0">🎨</span>
+			<div>
+				<div class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+					<span>Estado de Personalización Visual</span>
+					{(!currentSearchBg && !currentCarouselBg) ? (
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-green/10 text-brand-green border border-brand-green/20">Diseño Original Activo</span>
+					) : (
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">Personalización Activa</span>
+					)}
+				</div>
+				<div class="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+					<span>Fondo Búsqueda: <strong class={currentSearchBg ? "text-brand-cyan" : "text-slate-300"}>{currentSearchBg ? "Personalizado" : "Original"}</strong></span>
+					<span>Fondo Carrusel: <strong class={currentCarouselBg ? "text-brand-green" : "text-slate-300"}>{currentCarouselBg ? "Personalizado" : "Original"}</strong></span>
+				</div>
+			</div>
+		</div>
+		<div class="flex items-center gap-2">
+			{(currentSearchBg || currentCarouselBg) && (
+				<button
+					id="btnQuickResetOriginal"
+					type="button"
+					class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+					title="Restaurar apariencia limpia original en ambas áreas"
+				>
+					<span>🔄</span>
+					<span>Restaurar Original</span>
+				</button>
+			)}
 		</div>
 	</div>
 
@@ -567,12 +904,324 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 			</form>
 		</div>
 	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: PERSONALIZAR FONDO DE BÚSQUEDA Y CATEGORÍAS -->
+	<!-- ============================================================ -->
+	<div
+		id="searchBgModal"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+			<div class="flex items-center justify-between pb-3 border-b border-white/5">
+				<div class="flex items-center gap-2.5">
+					<span class="w-8 h-8 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-sm text-brand-cyan">
+						🔍
+					</span>
+					<div>
+						<h3 class="font-outfit text-base font-bold text-white">Fondo de Búsqueda y Categorías</h3>
+						<p class="text-xs text-slate-400">Personaliza la imagen detrás de la barra de búsqueda en /repuestos.</p>
+					</div>
+				</div>
+				<button id="btnCloseSearchBgModal" type="button" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+					✕
+				</button>
+			</div>
+
+			<form id="searchBgForm" class="space-y-4">
+				<input type="hidden" name="action" value="set_search_bg" />
+				<input type="hidden" id="searchBgPresetUrl" name="preset_url" value="" />
+
+				<!-- Opción Preajuste Panorámico Halloween -->
+				<div class="p-3.5 rounded-xl bg-black/40 border border-white/10 hover:border-brand-cyan/30 transition-all">
+					<div class="flex items-center justify-between gap-3">
+						<div class="flex items-center gap-3">
+							<img
+								src="/seasonal/halloween/fondo-nav.webp"
+								alt="Preajuste Halloween"
+								class="w-16 h-10 rounded-lg object-cover border border-white/10"
+							/>
+							<div>
+								<div class="text-xs font-bold text-white">Fondo Panorámico Halloween</div>
+								<div class="text-[11px] text-slate-400">Diseño panorámico 1983x793 px curado para la tienda</div>
+							</div>
+						</div>
+						<button
+							type="button"
+							id="btnSelectSearchPresetHalloween"
+							class="px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan text-[11px] font-bold border border-brand-cyan/25 transition-all cursor-pointer whitespace-nowrap"
+						>
+							Usar este diseño
+						</button>
+					</div>
+				</div>
+
+				<!-- O Subir Archivo Nuevo -->
+				<div>
+					<label class="block text-xs font-semibold text-slate-300 mb-1.5">
+						O sube una imagen personalizada desde tu equipo
+					</label>
+					<div class="relative border-2 border-dashed border-white/15 hover:border-brand-cyan/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-black/20 group">
+						<input
+							type="file"
+							id="searchBgFileInput"
+							name="imagen"
+							accept="image/jpeg,image/png,image/webp,image/jpg"
+							class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						/>
+						<div id="searchBgPreviewWrapper" class="hidden mb-2">
+							<img id="searchBgPreviewImg" src="" alt="Vista previa fondo búsqueda" class="max-h-32 mx-auto rounded-lg border border-white/10 object-contain" />
+							<p id="searchBgFileName" class="text-[11px] text-brand-cyan font-mono mt-1.5 truncate"></p>
+						</div>
+						<div id="searchBgPlaceholder" class="space-y-1">
+							<div class="text-2xl">🖼️</div>
+							<p class="text-xs font-semibold text-white group-hover:text-brand-cyan transition-colors">
+								Haz clic o arrastra una imagen aquí
+							</p>
+							<p class="text-[11px] text-slate-400">
+								JPG, PNG o WebP (Máx. 5 MB). <span class="text-brand-cyan font-semibold">Medida ideal: 1980 × 800 px</span> (área visible: ~220 px de alto, ajuste centrado).
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+					<button
+						type="button"
+						id="btnCancelSearchBgModal"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						id="btnSubmitSearchBg"
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+					>
+						<span id="searchBgBtnText">Guardar Fondo de Búsqueda</span>
+						<span id="searchBgSpinner" class="hidden animate-spin">⏳</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: PERSONALIZAR FONDO DEL CARRUSEL -->
+	<!-- ============================================================ -->
+	<div
+		id="carouselBgModal"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+			<div class="flex items-center justify-between pb-3 border-b border-white/5">
+				<div class="flex items-center gap-2.5">
+					<span class="w-8 h-8 rounded-lg bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-sm text-brand-green">
+						🎞️
+					</span>
+					<div>
+						<h3 class="font-outfit text-base font-bold text-white">Fondo del Área del Carrusel</h3>
+						<p class="text-xs text-slate-400">Personaliza la imagen de ambientación y backdrop del carrusel en /repuestos.</p>
+					</div>
+				</div>
+				<button id="btnCloseCarouselBgModal" type="button" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+					✕
+				</button>
+			</div>
+
+			<form id="carouselBgForm" class="space-y-4">
+				<input type="hidden" name="action" value="set_carousel_bg" />
+				<input type="hidden" id="carouselBgPresetUrl" name="preset_url" value="" />
+
+				<!-- Opción Preajuste Panorámico Halloween -->
+				<div class="p-3.5 rounded-xl bg-black/40 border border-white/10 hover:border-brand-green/30 transition-all">
+					<div class="flex items-center justify-between gap-3">
+						<div class="flex items-center gap-3">
+							<img
+								src="/seasonal/halloween/fondo-nav.webp"
+								alt="Preajuste Halloween"
+								class="w-16 h-10 rounded-lg object-cover border border-white/10"
+							/>
+							<div>
+								<div class="text-xs font-bold text-white">Fondo Panorámico Halloween</div>
+								<div class="text-[11px] text-slate-400">Diseño panorámico 1983x793 px curado para la tienda</div>
+							</div>
+						</div>
+						<button
+							type="button"
+							id="btnSelectCarouselPresetHalloween"
+							class="px-2.5 py-1.5 rounded-lg bg-brand-green/10 hover:bg-brand-green/20 text-brand-green text-[11px] font-bold border border-brand-green/25 transition-all cursor-pointer whitespace-nowrap"
+						>
+							Usar este diseño
+						</button>
+					</div>
+				</div>
+
+				<!-- O Subir Archivo Nuevo -->
+				<div>
+					<label class="block text-xs font-semibold text-slate-300 mb-1.5">
+						O sube una imagen personalizada desde tu equipo
+					</label>
+					<div class="relative border-2 border-dashed border-white/15 hover:border-brand-green/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-black/20 group">
+						<input
+							type="file"
+							id="carouselBgFileInput"
+							name="imagen"
+							accept="image/jpeg,image/png,image/webp,image/jpg"
+							class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						/>
+						<div id="carouselBgPreviewWrapper" class="hidden mb-2">
+							<img id="carouselBgPreviewImg" src="" alt="Vista previa fondo carrusel" class="max-h-32 mx-auto rounded-lg border border-white/10 object-contain" />
+							<p id="carouselBgFileName" class="text-[11px] text-brand-green font-mono mt-1.5 truncate"></p>
+						</div>
+						<div id="carouselBgPlaceholder" class="space-y-1">
+							<div class="text-2xl">📸</div>
+							<p class="text-xs font-semibold text-white group-hover:text-brand-green transition-colors">
+								Haz clic o arrastra una imagen aquí
+							</p>
+							<p class="text-[11px] text-slate-400">
+								JPG, PNG o WebP (Máx. 5 MB). <span class="text-brand-green font-semibold">Medida ideal: 1920 × 880 px</span> (o 1920 × 1080 Full HD, área visible: 82vh / ~850 px).
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+					<button
+						type="button"
+						id="btnCancelCarouselBgModal"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						id="btnSubmitCarouselBg"
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+					>
+						<span id="carouselBgBtnText">Guardar Fondo del Carrusel</span>
+						<span id="carouselBgSpinner" class="hidden animate-spin">⏳</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- ============================================================ -->
+	<!-- MODAL: PERSONALIZAR FONDO DEL MENÚ PRINCIPAL -->
+	<!-- ============================================================ -->
+	<div
+		id="menuBgModal"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="bg-[#121215] border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+			<div class="flex items-center justify-between pb-3 border-b border-white/5">
+				<div class="flex items-center gap-2.5">
+					<span class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-sm text-purple-400">
+						🌐
+					</span>
+					<div>
+						<h3 class="font-outfit text-base font-bold text-white">Apariencia del Menú Principal</h3>
+						<p class="text-xs text-slate-400">Personaliza la imagen detrás de la barra de navegación superior global.</p>
+					</div>
+				</div>
+				<button id="btnCloseMenuBgModal" type="button" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+					✕
+				</button>
+			</div>
+
+			<form id="menuBgForm" class="space-y-4">
+				<input type="hidden" name="action" value="set_menu_bg" />
+				<input type="hidden" id="menuBgPresetUrl" name="preset_url" value="" />
+
+				<!-- Opción Preajuste Panorámico Halloween -->
+				<div class="p-3.5 rounded-xl bg-black/40 border border-white/10 hover:border-purple-500/30 transition-all">
+					<div class="flex items-center justify-between gap-3">
+						<div class="flex items-center gap-3">
+							<img
+								src="/seasonal/halloween/fondo-nav.webp"
+								alt="Preajuste Halloween"
+								class="w-16 h-10 rounded-lg object-cover border border-white/10"
+							/>
+							<div>
+								<div class="text-xs font-bold text-white">Fondo Panorámico Halloween</div>
+								<div class="text-[11px] text-slate-400">Diseño panorámico 1983x793 px curado para el sitio</div>
+							</div>
+						</div>
+						<button
+							type="button"
+							id="btnSelectMenuPresetHalloween"
+							class="px-2.5 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-[11px] font-bold border border-purple-500/25 transition-all cursor-pointer whitespace-nowrap"
+						>
+							Usar este diseño
+						</button>
+					</div>
+				</div>
+
+				<!-- O Subir Archivo Nuevo -->
+				<div>
+					<label class="block text-xs font-semibold text-slate-300 mb-1.5">
+						O sube una imagen personalizada desde tu equipo
+					</label>
+					<div class="relative border-2 border-dashed border-white/15 hover:border-purple-500/50 rounded-xl p-4 text-center cursor-pointer transition-colors bg-black/20 group">
+						<input
+							type="file"
+							id="menuBgFileInput"
+							name="imagen"
+							accept="image/jpeg,image/png,image/webp,image/jpg"
+							class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+						/>
+						<div id="menuBgPreviewWrapper" class="hidden mb-2">
+							<img id="menuBgPreviewImg" src="" alt="Vista previa fondo menú" class="max-h-32 mx-auto rounded-lg border border-white/10 object-contain" />
+							<p id="menuBgFileName" class="text-[11px] text-purple-400 font-mono mt-1.5 truncate"></p>
+						</div>
+						<div id="menuBgPlaceholder" class="space-y-1">
+							<div class="text-2xl">🖼️</div>
+							<p class="text-xs font-semibold text-white group-hover:text-purple-400 transition-colors">
+								Haz clic o arrastra una imagen aquí
+							</p>
+							<p class="text-[11px] text-slate-400">
+								JPG, PNG o WebP (Máx. 5 MB). <span class="text-purple-400 font-semibold">Medida ideal: 1920 × 200 px</span> (o hasta 1920 × 300, barra fija de ~80 px de alto).
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/5">
+					<button
+						type="button"
+						id="btnCancelMenuBgModal"
+						class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						id="btnSubmitMenuBg"
+						class="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-brand-cyan text-white text-xs font-bold shadow hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+					>
+						<span id="menuBgBtnText">Guardar Fondo del Menú</span>
+						<span id="menuBgSpinner" class="hidden animate-spin">⏳</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </AdminLayout>
 
 <script is:inline>
 	// ─── Control de Modales ──────────────────────────────────────────────────────────
 	const newModal = document.getElementById('newBannerModal');
 	const editModal = document.getElementById('editBannerModal');
+	const searchBgModal = document.getElementById('searchBgModal');
+	const carouselBgModal = document.getElementById('carouselBgModal');
+	const menuBgModal = document.getElementById('menuBgModal');
 
 	function openModal(modal) {
 		if (!modal) return;
@@ -592,7 +1241,19 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 	document.getElementById('btnCloseEditModal')?.addEventListener('click', () => closeModal(editModal));
 	document.getElementById('btnCancelEditModal')?.addEventListener('click', () => closeModal(editModal));
 
-	[newModal, editModal].forEach(modal => {
+	document.getElementById('btnOpenSearchBgModal')?.addEventListener('click', () => openModal(searchBgModal));
+	document.getElementById('btnCloseSearchBgModal')?.addEventListener('click', () => closeModal(searchBgModal));
+	document.getElementById('btnCancelSearchBgModal')?.addEventListener('click', () => closeModal(searchBgModal));
+
+	document.getElementById('btnOpenCarouselBgModal')?.addEventListener('click', () => openModal(carouselBgModal));
+	document.getElementById('btnCloseCarouselBgModal')?.addEventListener('click', () => closeModal(carouselBgModal));
+	document.getElementById('btnCancelCarouselBgModal')?.addEventListener('click', () => closeModal(carouselBgModal));
+
+	document.getElementById('btnOpenMenuBgModal')?.addEventListener('click', () => openModal(menuBgModal));
+	document.getElementById('btnCloseMenuBgModal')?.addEventListener('click', () => closeModal(menuBgModal));
+	document.getElementById('btnCancelMenuBgModal')?.addEventListener('click', () => closeModal(menuBgModal));
+
+	[newModal, editModal, searchBgModal, carouselBgModal, menuBgModal].forEach(modal => {
 		modal?.addEventListener('click', (e) => {
 			if (e.target === modal) closeModal(modal);
 		});
@@ -602,6 +1263,9 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 		if (e.key === 'Escape') {
 			closeModal(newModal);
 			closeModal(editModal);
+			closeModal(searchBgModal);
+			closeModal(carouselBgModal);
+			closeModal(menuBgModal);
 		}
 	});
 
@@ -905,5 +1569,398 @@ const pausedBanners = banners.filter(b => !b.activo).length;
 				}
 			}
 		});
+	});
+
+	// ─── Personalización: Fondo de Búsqueda ───────────────────────────────────────────
+	const searchBgFileInput = document.getElementById('searchBgFileInput');
+	const searchBgPreviewWrapper = document.getElementById('searchBgPreviewWrapper');
+	const searchBgPreviewImg = document.getElementById('searchBgPreviewImg');
+	const searchBgFileName = document.getElementById('searchBgFileName');
+	const searchBgPlaceholder = document.getElementById('searchBgPlaceholder');
+	const searchBgPresetUrl = document.getElementById('searchBgPresetUrl');
+	const searchBgForm = document.getElementById('searchBgForm');
+	const btnSubmitSearchBg = document.getElementById('btnSubmitSearchBg');
+	const searchBgBtnText = document.getElementById('searchBgBtnText');
+	const searchBgSpinner = document.getElementById('searchBgSpinner');
+
+	searchBgFileInput?.addEventListener('change', () => {
+		const file = searchBgFileInput.files?.[0];
+		if (file) {
+			searchBgPresetUrl.value = '';
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				if (searchBgPreviewImg && searchBgPreviewWrapper && searchBgPlaceholder && searchBgFileName) {
+					searchBgPreviewImg.src = e.target.result;
+					searchBgFileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+					searchBgPreviewWrapper.classList.remove('hidden');
+					searchBgPlaceholder.classList.add('hidden');
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	document.getElementById('btnSelectSearchPresetHalloween')?.addEventListener('click', () => {
+		if (searchBgFileInput) searchBgFileInput.value = '';
+		if (searchBgPresetUrl) searchBgPresetUrl.value = '/seasonal/halloween/fondo-nav.webp';
+		if (searchBgPreviewImg && searchBgPreviewWrapper && searchBgPlaceholder && searchBgFileName) {
+			searchBgPreviewImg.src = '/seasonal/halloween/fondo-nav.webp';
+			searchBgFileName.textContent = 'Preajuste seleccionado: Fondo Panorámico Halloween';
+			searchBgPreviewWrapper.classList.remove('hidden');
+			searchBgPlaceholder.classList.add('hidden');
+		}
+	});
+
+	searchBgForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const hasFile = searchBgFileInput?.files?.length > 0;
+		const hasPreset = Boolean(searchBgPresetUrl?.value);
+
+		if (!hasFile && !hasPreset) {
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Selección requerida',
+					message: 'Por favor sube una imagen o haz clic en "Usar este diseño" para elegir el fondo de búsqueda.',
+					type: 'warning'
+				});
+			} else {
+				alert('Selecciona una imagen o preajuste.');
+			}
+			return;
+		}
+
+		try {
+			btnSubmitSearchBg.disabled = true;
+			searchBgBtnText.textContent = 'Guardando fondo...';
+			searchBgSpinner.classList.remove('hidden');
+
+			const formData = new FormData(searchBgForm);
+			const res = await fetch('/api/admin/banners/custom-backgrounds', {
+				method: 'POST',
+				body: formData
+			});
+
+			const data = await res.json();
+			if (!res.ok || !data.success) {
+				throw new Error(data.message || data.error || 'Error al guardar fondo de búsqueda.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Fondo de búsqueda actualizado exitosamente', 'success');
+			}
+
+			closeModal(searchBgModal);
+			setTimeout(() => window.location.reload(), 700);
+		} catch (err) {
+			console.error('[Search Bg Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error al guardar',
+					message: err.message || 'No se pudo actualizar el fondo de búsqueda.',
+					type: 'danger'
+				});
+			} else {
+				alert(err.message || 'Error al guardar.');
+			}
+		} finally {
+			btnSubmitSearchBg.disabled = false;
+			searchBgBtnText.textContent = 'Guardar Fondo de Búsqueda';
+			searchBgSpinner.classList.add('hidden');
+		}
+	});
+
+	// ─── Personalización: Fondo del Carrusel ──────────────────────────────────────────
+	const carouselBgFileInput = document.getElementById('carouselBgFileInput');
+	const carouselBgPreviewWrapper = document.getElementById('carouselBgPreviewWrapper');
+	const carouselBgPreviewImg = document.getElementById('carouselBgPreviewImg');
+	const carouselBgFileName = document.getElementById('carouselBgFileName');
+	const carouselBgPlaceholder = document.getElementById('carouselBgPlaceholder');
+	const carouselBgPresetUrl = document.getElementById('carouselBgPresetUrl');
+	const carouselBgForm = document.getElementById('carouselBgForm');
+	const btnSubmitCarouselBg = document.getElementById('btnSubmitCarouselBg');
+	const carouselBgBtnText = document.getElementById('carouselBgBtnText');
+	const carouselBgSpinner = document.getElementById('carouselBgSpinner');
+
+	carouselBgFileInput?.addEventListener('change', () => {
+		const file = carouselBgFileInput.files?.[0];
+		if (file) {
+			carouselBgPresetUrl.value = '';
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				if (carouselBgPreviewImg && carouselBgPreviewWrapper && carouselBgPlaceholder && carouselBgFileName) {
+					carouselBgPreviewImg.src = e.target.result;
+					carouselBgFileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+					carouselBgPreviewWrapper.classList.remove('hidden');
+					carouselBgPlaceholder.classList.add('hidden');
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	document.getElementById('btnSelectCarouselPresetHalloween')?.addEventListener('click', () => {
+		if (carouselBgFileInput) carouselBgFileInput.value = '';
+		if (carouselBgPresetUrl) carouselBgPresetUrl.value = '/seasonal/halloween/fondo-nav.webp';
+		if (carouselBgPreviewImg && carouselBgPreviewWrapper && carouselBgPlaceholder && carouselBgFileName) {
+			carouselBgPreviewImg.src = '/seasonal/halloween/fondo-nav.webp';
+			carouselBgFileName.textContent = 'Preajuste seleccionado: Fondo Panorámico Halloween';
+			carouselBgPreviewWrapper.classList.remove('hidden');
+			carouselBgPlaceholder.classList.add('hidden');
+		}
+	});
+
+	carouselBgForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const hasFile = carouselBgFileInput?.files?.length > 0;
+		const hasPreset = Boolean(carouselBgPresetUrl?.value);
+
+		if (!hasFile && !hasPreset) {
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Selección requerida',
+					message: 'Por favor sube una imagen o haz clic en "Usar este diseño" para elegir el fondo del carrusel.',
+					type: 'warning'
+				});
+			} else {
+				alert('Selecciona una imagen o preajuste.');
+			}
+			return;
+		}
+
+		try {
+			btnSubmitCarouselBg.disabled = true;
+			carouselBgBtnText.textContent = 'Guardando fondo...';
+			carouselBgSpinner.classList.remove('hidden');
+
+			const formData = new FormData(carouselBgForm);
+			const res = await fetch('/api/admin/banners/custom-backgrounds', {
+				method: 'POST',
+				body: formData
+			});
+
+			const data = await res.json();
+			if (!res.ok || !data.success) {
+				throw new Error(data.message || data.error || 'Error al guardar fondo del carrusel.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Fondo del carrusel actualizado exitosamente', 'success');
+			}
+
+			closeModal(carouselBgModal);
+			setTimeout(() => window.location.reload(), 700);
+		} catch (err) {
+			console.error('[Carousel Bg Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error al guardar',
+					message: err.message || 'No se pudo actualizar el fondo del carrusel.',
+					type: 'danger'
+				});
+			} else {
+				alert(err.message || 'Error al guardar.');
+			}
+		} finally {
+			btnSubmitCarouselBg.disabled = false;
+			carouselBgBtnText.textContent = 'Guardar Fondo del Carrusel';
+			carouselBgSpinner.classList.add('hidden');
+		}
+	});
+
+	// ─── Acción: Volver a Colores Originales (Restaurar Ambos Fondos) ─────────────────
+	async function handleResetOriginal() {
+		let confirmado = false;
+		if (window.showAdminConfirm) {
+			confirmado = await window.showAdminConfirm({
+				title: '¿Volver a colores originales?',
+				message: 'Esta acción desactivará cualquier fondo personalizado tanto en la búsqueda como en el carrusel, devolviendo ambas áreas a su diseño original limpio.',
+				type: 'warning',
+				confirmText: 'Sí, volver a colores originales',
+				cancelText: 'Cancelar'
+			});
+		} else {
+			confirmado = confirm('¿Deseas restaurar la apariencia original en la sección de búsqueda y en el carrusel?');
+		}
+
+		if (!confirmado) return;
+
+		try {
+			const res = await fetch('/api/admin/banners/custom-backgrounds', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'reset_original' })
+			});
+
+			const data = await res.json();
+			if (!res.ok || !data.success) {
+				throw new Error(data.message || data.error || 'Error al restaurar diseño original.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Colores y apariencia original restaurados exitosamente', 'success');
+			}
+
+			setTimeout(() => window.location.reload(), 700);
+		} catch (err) {
+			console.error('[Reset Original Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error de restauración',
+					message: err.message || 'No fue posible volver a los colores originales.',
+					type: 'danger'
+				});
+			} else {
+				alert(err.message || 'Error al restaurar diseño.');
+			}
+		}
+	}
+
+	document.getElementById('btnResetOriginalColors')?.addEventListener('click', handleResetOriginal);
+	document.getElementById('btnQuickResetOriginal')?.addEventListener('click', handleResetOriginal);
+
+	// ─── Personalización: Fondo del Menú Principal Global ─────────────────────────────
+	const menuBgFileInput = document.getElementById('menuBgFileInput');
+	const menuBgPreviewWrapper = document.getElementById('menuBgPreviewWrapper');
+	const menuBgPreviewImg = document.getElementById('menuBgPreviewImg');
+	const menuBgFileName = document.getElementById('menuBgFileName');
+	const menuBgPlaceholder = document.getElementById('menuBgPlaceholder');
+	const menuBgPresetUrl = document.getElementById('menuBgPresetUrl');
+	const menuBgForm = document.getElementById('menuBgForm');
+	const btnSubmitMenuBg = document.getElementById('btnSubmitMenuBg');
+	const menuBgBtnText = document.getElementById('menuBgBtnText');
+	const menuBgSpinner = document.getElementById('menuBgSpinner');
+
+	menuBgFileInput?.addEventListener('change', () => {
+		const file = menuBgFileInput.files?.[0];
+		if (file) {
+			menuBgPresetUrl.value = '';
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				if (menuBgPreviewImg && menuBgPreviewWrapper && menuBgPlaceholder && menuBgFileName) {
+					menuBgPreviewImg.src = e.target.result;
+					menuBgFileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+					menuBgPreviewWrapper.classList.remove('hidden');
+					menuBgPlaceholder.classList.add('hidden');
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	document.getElementById('btnSelectMenuPresetHalloween')?.addEventListener('click', () => {
+		if (menuBgFileInput) menuBgFileInput.value = '';
+		if (menuBgPresetUrl) menuBgPresetUrl.value = '/seasonal/halloween/fondo-nav.webp';
+		if (menuBgPreviewImg && menuBgPreviewWrapper && menuBgPlaceholder && menuBgFileName) {
+			menuBgPreviewImg.src = '/seasonal/halloween/fondo-nav.webp';
+			menuBgFileName.textContent = 'Preajuste seleccionado: Fondo Panorámico Halloween';
+			menuBgPreviewWrapper.classList.remove('hidden');
+			menuBgPlaceholder.classList.add('hidden');
+		}
+	});
+
+	menuBgForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const hasFile = menuBgFileInput?.files?.length > 0;
+		const hasPreset = Boolean(menuBgPresetUrl?.value);
+
+		if (!hasFile && !hasPreset) {
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Selección requerida',
+					message: 'Por favor sube una imagen o haz clic en "Usar este diseño" para elegir el fondo del menú principal.',
+					type: 'warning'
+				});
+			} else {
+				alert('Selecciona una imagen o preajuste.');
+			}
+			return;
+		}
+
+		try {
+			btnSubmitMenuBg.disabled = true;
+			menuBgBtnText.textContent = 'Guardando fondo...';
+			menuBgSpinner.classList.remove('hidden');
+
+			const formData = new FormData(menuBgForm);
+			const res = await fetch('/api/admin/banners/custom-backgrounds', {
+				method: 'POST',
+				body: formData
+			});
+
+			const data = await res.json();
+			if (!res.ok || !data.success) {
+				throw new Error(data.message || data.error || 'Error al guardar fondo del menú principal.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Fondo del menú principal actualizado exitosamente', 'success');
+			}
+
+			closeModal(menuBgModal);
+			setTimeout(() => window.location.reload(), 700);
+		} catch (err) {
+			console.error('[Menu Bg Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error al guardar',
+					message: err.message || 'No se pudo actualizar el fondo del menú principal.',
+					type: 'danger'
+				});
+			} else {
+				alert(err.message || 'Error al guardar.');
+			}
+		} finally {
+			btnSubmitMenuBg.disabled = false;
+			menuBgBtnText.textContent = 'Guardar Fondo del Menú';
+			menuBgSpinner.classList.add('hidden');
+		}
+	});
+
+	// ─── Acción: Volver a Colores Originales Exclusivamente del Menú Principal ────────
+	document.getElementById('btnResetMenuOriginal')?.addEventListener('click', async () => {
+		let confirmado = false;
+		if (window.showAdminConfirm) {
+			confirmado = await window.showAdminConfirm({
+				title: '¿Volver a colores originales en el menú?',
+				message: 'Esta acción desactivará el fondo personalizado del menú principal compartido en todo el sitio, devolviéndolo a su apariencia original limpia. Los fondos de /repuestos no se verán afectados.',
+				type: 'warning',
+				confirmText: 'Sí, volver a colores originales',
+				cancelText: 'Cancelar'
+			});
+		} else {
+			confirmado = confirm('¿Deseas restaurar la apariencia original del menú principal?');
+		}
+
+		if (!confirmado) return;
+
+		try {
+			const res = await fetch('/api/admin/banners/custom-backgrounds', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'reset_menu_original' })
+			});
+
+			const data = await res.json();
+			if (!res.ok || !data.success) {
+				throw new Error(data.message || data.error || 'Error al restaurar diseño original del menú.');
+			}
+
+			if (window.showAdminToast) {
+				window.showAdminToast('Menú principal restaurado a sus colores originales', 'success');
+			}
+
+			setTimeout(() => window.location.reload(), 700);
+		} catch (err) {
+			console.error('[Reset Menu Error]', err);
+			if (window.showAdminAlert) {
+				await window.showAdminAlert({
+					title: 'Error de restauración',
+					message: err.message || 'No fue posible volver a los colores originales del menú.',
+					type: 'danger'
+				});
+			} else {
+				alert(err.message || 'Error al restaurar diseño.');
+			}
+		}
 	});
 </script>

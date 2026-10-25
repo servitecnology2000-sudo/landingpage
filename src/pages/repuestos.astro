@@ -10,6 +10,27 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import { supabase } from '../lib/supabase';
 
+// Consultar fondos personalizados activos exclusivos de /repuestos
+let customSearchBg: string | null = null;
+let customCarouselBg: string | null = null;
+
+try {
+	const { data: bgData } = await supabase
+		.from('hero_banners')
+		.select('seccion, imagen_url')
+		.in('seccion', ['repuestos_fondo_busqueda', 'repuestos_fondo_carrusel'])
+		.eq('activo', true);
+
+	if (bgData) {
+		const sBg = bgData.find(b => b.seccion === 'repuestos_fondo_busqueda');
+		const cBg = bgData.find(b => b.seccion === 'repuestos_fondo_carrusel');
+		if (sBg) customSearchBg = sBg.imagen_url;
+		if (cBg) customCarouselBg = cBg.imagen_url;
+	}
+} catch (e) {
+	console.error('Error fetching custom backgrounds for repuestos:', e);
+}
+
 // Fetch products to build Schema.org ItemList structured data
 let products: any[] = [];
 try {
@@ -79,10 +100,21 @@ const catalogSchema = {
 	
 	<main class="relative bg-black min-h-screen overflow-x-clip">
 		<!-- 1. Menú de Categorías (Arriba del Carrusel) & 2. Barra de Búsqueda (Entre el Menú y el Carrusel) -->
-		<RepuestosCatalogNav />
+		<section id="repuestos-nav-section" class="relative w-full overflow-hidden border-b border-white/5">
+			{customSearchBg && (
+				<div class="pointer-events-none select-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+					<img 
+						src={customSearchBg} 
+						alt="Fondo personalizado sección de búsqueda" 
+						class="w-full h-full object-cover object-center" 
+					/>
+				</div>
+			)}
+			<RepuestosCatalogNav />
+		</section>
 
 		<!-- 3. Carrusel de Banners Interactivo -->
-		<RepuestosBannersCarousel />
+		<RepuestosBannersCarousel customBg={customCarouselBg} />
 
 		<!-- 4. Catálogo de Repuestos (Grid de Productos) -->
 		<Catalog />

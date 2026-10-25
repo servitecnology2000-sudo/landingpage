@@ -36,7 +36,7 @@ describe('Aislamiento Crítico SDD: Portada (/) vs Tienda de Repuestos (/repuest
 			expect(fs.existsSync(repuestosPath)).toBe(true);
 			const repuestosContent = fs.readFileSync(repuestosPath, 'utf-8');
 			expect(repuestosContent).toContain('import RepuestosBannersCarousel from');
-			expect(repuestosContent).toContain('<RepuestosBannersCarousel />');
+			expect(repuestosContent).toMatch(/<RepuestosBannersCarousel[\s\S]*?\/>/);
 		});
 
 		it('src/components/RepuestosBannersCarousel.astro debe existir y consultar estrictamente seccion = "repuestos"', () => {
