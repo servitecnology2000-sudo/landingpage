@@ -22,7 +22,6 @@ export const GET: APIRoute = async () => {
 		{ path: '/cctv', priority: '0.9', changefreq: 'daily' },
 		{ path: '/impresoras', priority: '0.9', changefreq: 'daily' },
 		{ path: '/redes', priority: '0.9', changefreq: 'daily' },
-		{ path: '/desarrollo', priority: '0.9', changefreq: 'daily' },
 		{ path: '/canal-de-youtube', priority: '0.9', changefreq: 'daily' },
 		{ path: '/nosotros', priority: '0.8', changefreq: 'weekly' },
 		{ path: '/whagil', priority: '0.8', changefreq: 'weekly' },

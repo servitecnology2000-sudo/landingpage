@@ -52,7 +52,9 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 			{
 				"@context": "https://schema.org",
 				"@type": ["LocalBusiness", "Organization"],
-				"name": "SERVITECNOLOGY",
+				"name": "Servitecnology",
+				"legalName": "JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L.",
+				"taxID": "77.709.717-2",
 				"image": "https://servitecnology.com/imagenes/principal.jpg",
 				"url": "https://servitecnology.com",
 				"telephone": "+56948672300",
@@ -78,7 +80,16 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 						"contactType": "technical support",
 						"availableLanguage": "Spanish"
 					}
-				]
+				],
+				"subOrganization": {
+					"@type": "Organization",
+					"@id": "https://studiocoders.dev/#organization",
+					"name": "Studio Coders",
+					"alternateName": "Studio Coders Dev",
+					"legalName": "JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L.",
+					"taxID": "77.709.717-2",
+					"url": "https://studiocoders.dev"
+				}
 			}
 		</script>
 

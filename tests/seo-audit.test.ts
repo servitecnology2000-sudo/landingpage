@@ -90,7 +90,7 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(content).toContain('Astro.response.status = 404;');
 	});
 
-	it('index.astro y Hero.astro deben incluir explícitamente la marca SERVITECNOLOGY, Software a Medida, Agentes IA y Bots', () => {
+	it('index.astro y Hero.astro deben enfocar la marca SERVITECNOLOGY en Ecommerce y Servicios TI', () => {
 		const indexPath = path.join(rootDir, 'src', 'pages', 'index.astro');
 		const heroPath = path.join(rootDir, 'src', 'components', 'Hero.astro');
 		const featuredPath = path.join(rootDir, 'src', 'components', 'FeaturedParts.astro');
@@ -104,21 +104,25 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 
 		expect(indexContent).toContain('FeaturedParts');
 		expect(indexContent).toContain('SERVITECNOLOGY');
+		expect(indexContent).not.toContain('SaaSProducts');
 		expect(heroContent).toContain('SERVITECNOLOGY');
-		expect(heroContent).toContain('Software a Medida & Agentes IA');
-		expect(heroContent).toContain('Bots de WhatsApp');
-		expect(heroContent).toContain('Bots para WhatsApp');
+		expect(heroContent).toContain('Repuestos, Hardware &');
+		expect(heroContent).toContain('Servicios TI Garantizados');
+		expect(heroContent).toContain('/repuestos');
 	});
 
-	it('desarrollo.astro debe contener Schema.org Service y optimización para Agentes IA y Bots', () => {
+	it('desarrollo.astro debe estar eliminado y Layout.astro + llms.txt deben reflejar la identidad SII y Studio Coders', () => {
 		const desarrolloPath = path.join(rootDir, 'src', 'pages', 'desarrollo.astro');
-		expect(fs.existsSync(desarrolloPath)).toBe(true);
-		const content = fs.readFileSync(desarrolloPath, 'utf-8');
+		expect(fs.existsSync(desarrolloPath)).toBe(false);
 
-		expect(content).toContain('Agentes IA');
-		expect(content).toContain('bot para whatsapp');
-		expect(content).toContain('"@type": "Service"');
-		expect(content).toContain('"hasOfferCatalog"');
+		const layoutContent = fs.readFileSync(path.join(rootDir, 'src', 'layouts', 'Layout.astro'), 'utf-8');
+		expect(layoutContent).toContain('JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L.');
+		expect(layoutContent).toContain('77.709.717-2');
+		expect(layoutContent).toContain('https://studiocoders.dev/#organization');
+
+		const llmsContent = fs.readFileSync(path.join(rootDir, 'public', 'llms.txt'), 'utf-8');
+		expect(llmsContent).toContain('# SERVITECNOLOGY');
+		expect(llmsContent).toContain('https://studiocoders.dev');
 	});
 
 	it('sitemap.xml.ts debe incluir espacio de nombres de Google Images y lastmod', () => {

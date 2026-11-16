@@ -1,35 +1,30 @@
 # SERVITECNOLOGY
 
-> Empresa líder en desarrollo de software a medida, agentes de inteligencia artificial (Agentes IA), bots para WhatsApp y servicio técnico informático con catálogo de repuestos de hardware en Santiago de Chile.
+> Tienda ecommerce de repuestos y hardware computacional y servicios técnicos TI especializados en Santiago de Chile (marca comercial de JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L., RUT 77.709.717-2).
 
-## Información General
-- **Marca Oficial:** SERVITECNOLOGY (anteriormente SERVITECH)
-- **Sitio Web:** https://servitecnology.com/
-- **Contacto Comercial y Soporte:** WhatsApp [+56948672300](https://wa.me/56948672300)
-- **Correo Oficial:** contacto@servitecnology.com / jesusleon@servitecnology.com
-- **Ubicación y Cobertura:** Santiago de Chile (Santiago Centro, Providencia, Las Condes, Ñuñoa, La Florida, Maipú, Puente Alto, Peñalolén y despachos nacionales a todo Chile).
+## Tienda Ecommerce y Hardware
 
-## Desarrollo de Software a Medida, Bots & Agentes IA
-1. **Bots para WhatsApp con Agentes IA:** Creación de asistentes virtuales 24/7 conectados a WhatsApp Business API, entrenados con la información de tu negocio para cotizaciones automáticas, soporte técnico y calificación de clientes.
-2. **Automatización de Redes Sociales:** Automatización de comentarios a mensajes directos (DM) en Instagram y Meta/Facebook, embudos de captura de leads y conexión a CRMs.
-3. **Desarrollo de Software a Medida & Plataformas SaaS:** Ingeniería de plataformas web, sistemas de gestión empresarial (ERP/CRM), portales autoadministrables e integración de pasarelas de pago (Mercado Pago).
-4. **Whagil IA:** Ecosistema SaaS para atención multicanal y automatización con agentes IA.
-5. **Whalinkbot:** Motor cloud para campañas masivas y prospección por WhatsApp.
-6. **Infra Manager Pro:** ERP integral para gestión de soporte TI, operaciones y finanzas.
+- [Catálogo de Repuestos y Hardware](https://servitecnology.com/repuestos): Tienda online con stock en tiempo real de cargadores de notebook, teclados, pantallas, SSD, memorias RAM, repuestos de impresoras y accesorios CCTV con pago vía Mercado Pago y transferencia BancoEstado.
+- [Seguimiento de Pedidos](https://servitecnology.com/mis-pedidos): Consulta de estado de órdenes, facturación electrónica SII y trazabilidad de despachos en Santiago y regiones de Chile.
 
-## Servicios Técnicos Estrella
-1. **Soporte Técnico Especializado:** Diagnóstico, reparación, mantenimiento preventivo/correctivo y optimización avanzada de laptops, PCs y consolas de videojuegos.
-2. **Armado de PCs y Modding Gaming:** Configuración y ensamble de equipos de alto rendimiento para gaming, streaming y arquitectura.
-3. **Instalación de CCTV:** Sistemas de videovigilancia HD, cámaras IP y monitoreo remoto móvil en tiempo real.
-4. **Redes y Conectividad:** Cableado estructurado Cat6/6A, routers profesionales y optimización de redes Wi-Fi.
-5. **Reparación de Impresoras:** Mantenimiento integral multimarca (HP, Epson, Canon, Brother) con cambio de cabezales y almohadillas.
+## Servicios Técnicos TI
 
-## Tienda Ecommerce de Repuestos y Componentes
-- Stock disponible en tiempo real de cargadores de notebook (Asus, Dell, Lenovo, Toshiba, Samsung), teclados retroiluminados, tapas y chasis, pantallas, discos SSD, memorias RAM, almohadillas Epson y baluns CCTV.
-- **Canal de Venta y Transacciones:** Tienda ecommerce en https://servitecnology.com/repuestos con checkout directo.
-- **Medios de Pago Soportados:** Pasarela de pago oficial Mercado Pago (tarjetas de crédito, débito y dinero en cuenta) y Transferencia Bancaria Manual a BancoEstado con verificación automática.
-- **Modalidades de Entrega:** Retiro en punto físico en Santiago, despacho delivery RM y envío a todo Chile por Starken/Chilexpress.
+- [Soporte Técnico Especializado](https://servitecnology.com/soporte): Diagnóstico, reparación y mantenimiento preventivo/correctivo de notebooks, PCs y consolas en Santiago.
+- [Armado de PCs y Gaming](https://servitecnology.com/gaming): Ensamble personalizado de estaciones de trabajo, streaming y PCs gamer de alto rendimiento.
+- [Seguridad e Instalación de CCTV](https://servitecnology.com/cctv): Diseño e implementación de sistemas de videovigilancia HD/IP con monitoreo remoto.
+- [Redes y Conectividad](https://servitecnology.com/redes): Cableado estructurado Cat6/6A, configuración de routers profesionales y optimización Wi-Fi.
+- [Reparación de Impresoras](https://servitecnology.com/impresoras): Mantenimiento multimarca (HP, Epson, Canon, Brother), cambio de cabezales y almohadillas.
 
-## Políticas y Garantías
-- **Garantías:** Cumplimiento total con Ley del Consumidor (SERNAC). 6 meses de garantía para repuestos nuevos y 3 meses de garantía técnica de laboratorio para repuestos usados verificados.
-- **Privacidad y Datos:** Cumplimiento con Ley N° 19.628 de Protección de Datos Personales en Chile y estándares ARCOP.
+## Información Corporativa y Legal
+
+- [Quiénes Somos](https://servitecnology.com/nosotros): Historia, cobertura en la Región Metropolitana y respaldo técnico de SERVITECNOLOGY.
+- [Términos y Condiciones](https://servitecnology.com/terminos): Condiciones de compraventa electrónica, facturación SII y despachos en Chile.
+- [Política de Privacidad](https://servitecnology.com/privacidad): Tratamiento y portabilidad de datos bajo la Ley N° 21.719 de Chile.
+- [Garantías y Devoluciones](https://servitecnology.com/garantias): Cobertura de garantía legal SERNAC para hardware nuevo, verificado y soporte técnico.
+
+## División de Software e IA
+
+- [Studio Coders](https://studiocoders.dev): División de ingeniería de software a medida, plataformas SaaS, automatización y agentes de IA de JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L.
+- [Whagil IA](https://servitecnology.com/whagil): Plataforma B2B de automatización de atención y ventas con agentes de IA para WhatsApp e Instagram, desarrollada por Studio Coders.
+- [Whalinkbot](https://servitecnology.com/whalinkbot): Motor cloud para campañas y prospección por WhatsApp, desarrollado por Studio Coders.
+- [Infra Manager Pro](https://servitecnology.com/inframanagerpro): Sistema ERP de gestión operativa y financiera, desarrollado por Studio Coders.
