@@ -45,7 +45,7 @@ const phone = "56948672300";
 			<div class="text-center py-20 space-y-4">
 				<div class="text-6xl">📦</div>
 				<p class="text-slate-400 text-lg">No hay productos en el catálogo aún.</p>
-				<p class="text-slate-500 text-sm">Los productos se agregarán desde el panel de administración.</p>
+				<p class="text-slate-400 text-sm">Los productos se agregarán desde el panel de administración.</p>
 			</div>
 		) : (
 			<>
@@ -154,7 +154,7 @@ const phone = "56948672300";
 												</span>
 											)}
 										</div>
-										<span class="text-[10px] text-slate-500 uppercase tracking-wider font-medium truncate">
+										<span class="text-[10px] text-slate-400 uppercase tracking-wider font-medium truncate">
 											{product.categoria}
 										</span>
 									</div>
@@ -182,7 +182,7 @@ const phone = "56948672300";
 												</span>
 											))}
 											{product.compatibilidad.length > 3 && (
-												<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500">
+												<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400">
 													+{product.compatibilidad.length - 3} más
 												</span>
 											)}
@@ -209,7 +209,7 @@ const phone = "56948672300";
 										<span class="text-2xl font-extrabold text-white tracking-tight">
 											${product.precio_venta?.toLocaleString('es-CL') ?? '---'}
 										</span>
-										<span class="text-[10px] text-slate-500 uppercase font-semibold">CLP</span>
+										<span class="text-[10px] text-slate-400 uppercase font-semibold">CLP</span>
 									</div>
 								</div>
 

@@ -134,7 +134,7 @@ describe('Certificación DoD: Personalización de Fondos de /repuestos y Menú P
 			const content = fs.readFileSync(headerPath, 'utf-8');
 			expect(content).toContain('id="mobile-menu"');
 			expect(content).toContain('id="menu-toggle"');
-			expect(content).toContain('/imagenes/logost.png');
+			expect(content).toContain('/imagenes/logost.webp');
 			expect(content).toContain('class="h-12 w-auto object-contain');
 		});
 
@@ -153,7 +153,7 @@ describe('Certificación DoD: Personalización de Fondos de /repuestos y Menú P
 			'nosotros.astro',
 			'soporte.astro',
 			'cctv.astro',
-			'desarrollo.astro',
+			'gaming.astro',
 			'checkout.astro',
 			'canal-de-youtube.astro',
 			'404.astro'

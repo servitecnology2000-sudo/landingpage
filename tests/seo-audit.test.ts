@@ -125,7 +125,7 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(llmsContent).toContain('https://studiocoders.dev');
 	});
 
-	it('sitemap.xml.ts debe incluir espacio de nombres de Google Images y lastmod', () => {
+	it('sitemap.xml.ts debe incluir espacio de nombres de Google Images y lastmod sin anclas ni rutas privadas', () => {
 		const sitemapPath = path.join(rootDir, 'src', 'pages', 'sitemap.xml.ts');
 		expect(fs.existsSync(sitemapPath)).toBe(true);
 		const content = fs.readFileSync(sitemapPath, 'utf-8');
@@ -133,5 +133,53 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(content).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
 		expect(content).toContain('<image:image>');
 		expect(content).toContain('<lastmod>');
+		expect(content).not.toContain('/meson-servitecnology-st');
+		expect(content).not.toContain('/api/');
+	});
+
+	it('llms.txt y robots.txt deben cumplir con llmstxt.org y directrices de rastreo', () => {
+		const llmsPath = path.join(rootDir, 'public', 'llms.txt');
+		const robotsPath = path.join(rootDir, 'public', 'robots.txt');
+		expect(fs.existsSync(llmsPath)).toBe(true);
+		expect(fs.existsSync(robotsPath)).toBe(true);
+
+		const llms = fs.readFileSync(llmsPath, 'utf-8');
+		expect(llms).toMatch(/^# SERVITECNOLOGY/m);
+		expect((llms.match(/^> /gm) || []).length).toBe(1);
+		expect(llms).not.toMatch(/^---$/m);
+		expect(llms).toMatch(/^- \[.+\]\(https:\/\/.+\): .+/m);
+
+		const robots = fs.readFileSync(robotsPath, 'utf-8');
+		expect(robots).toContain('User-agent: *');
+		expect(robots).toContain('Allow: /');
+		expect(robots).toContain('Sitemap: https://servitecnology.com/sitemap.xml');
+	});
+
+	it('JSON-LD en Layout.astro y componentes clave deben cumplir a11y, CWV y ausencia de placeholders', () => {
+		const layout = fs.readFileSync(path.join(rootDir, 'src', 'layouts', 'Layout.astro'), 'utf-8');
+		expect(layout).toContain('"creator"');
+		expect(layout).toContain('"subOrganization"');
+		expect(layout).toContain('https://studiocoders.dev/#organization');
+		expect(layout).not.toContain('Studio Coders Dev EIRL');
+		expect(layout).not.toContain('SERVITECNOLOGY EIRL');
+		expect(layout).not.toContain('56912345678');
+
+		const hero = fs.readFileSync(path.join(rootDir, 'src', 'components', 'Hero.astro'), 'utf-8');
+		expect(hero).toContain('fetchpriority="high"');
+		expect(hero).toContain('width="1280"');
+		expect(hero).toContain('height="853"');
+
+		const header = fs.readFileSync(path.join(rootDir, 'src', 'components', 'Header.astro'), 'utf-8');
+		expect(header).toContain('width="152"');
+		expect(header).toContain('height="48"');
+
+		const services = fs.readFileSync(path.join(rootDir, 'src', 'components', 'Services.astro'), 'utf-8');
+		expect(services).toContain('min-w-[44px] min-h-[44px]');
+
+		const footer = fs.readFileSync(path.join(rootDir, 'src', 'components', 'Footer.astro'), 'utf-8');
+		expect(footer).not.toContain('href="#"');
+
+		const wa = fs.readFileSync(path.join(rootDir, 'src', 'components', 'WhatsAppButton.astro'), 'utf-8');
+		expect(wa).not.toContain('56912345678');
 	});
 });

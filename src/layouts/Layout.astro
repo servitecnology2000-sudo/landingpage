@@ -81,6 +81,15 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 						"availableLanguage": "Spanish"
 					}
 				],
+				"creator": {
+					"@type": "Organization",
+					"@id": "https://studiocoders.dev/#organization",
+					"name": "Studio Coders",
+					"alternateName": "Studio Coders Dev",
+					"legalName": "JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L.",
+					"taxID": "77.709.717-2",
+					"url": "https://studiocoders.dev"
+				},
 				"subOrganization": {
 					"@type": "Organization",
 					"@id": "https://studiocoders.dev/#organization",
@@ -93,10 +102,17 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 			}
 		</script>
 
-		<!-- Google Fonts: Outfit (modern, tech, geometric) & Inter -->
+		{rawPath === '' && (
+			<link rel="preload" as="image" href="/imagenes/principal.webp" type="image/webp" fetchpriority="high" />
+		)}
+
+		<!-- Google Fonts: Outfit & Inter (non-blocking) -->
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+		<noscript>
+			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+		</noscript>
 	</head>
 	<body class="bg-dark-bg text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-cyan/30 selection:text-brand-cyan">
 		<slot />

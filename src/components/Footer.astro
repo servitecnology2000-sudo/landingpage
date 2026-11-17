@@ -27,9 +27,9 @@ const coverageAreas = [
 	id="contacto"
 	class="relative bg-zinc-950 border-t border-white/5 pt-20 pb-8 overflow-hidden"
 >
-	<!-- Background glow -->
+	<!-- Background glow (pure radial-gradient) -->
 	<div
-		class="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-brand-cyan/5 rounded-full blur-[160px] pointer-events-none"
+		class="absolute inset-0 bg-[radial-gradient(circle_240px_at_25%_90%,rgba(0,207,255,0.05),transparent_70%)] pointer-events-none"
 	>
 	</div>
 
@@ -54,7 +54,7 @@ const coverageAreas = [
 					<a
 						href="/canal-de-youtube"
 						aria-label="Canal de YouTube"
-						class="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-red-500 hover:border-red-500/40 hover:bg-red-500/10 transition-all duration-300"
+						class="flex items-center justify-center w-11 h-11 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-red-500 hover:border-red-500/40 hover:bg-red-500/10 transition-all duration-300"
 					>
 						<svg
 							class="w-4 h-4"
@@ -66,41 +66,13 @@ const coverageAreas = [
 						>
 					</a>
 					<a
-						href="#"
-						aria-label="Instagram"
-						class="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all duration-300"
-					>
-						<svg
-							class="w-4 h-4"
-							fill="currentColor"
-							viewBox="0 0 24 24"
-							><path
-								d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C16.67.014 16.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"
-							></path></svg
-						>
-					</a>
-					<a
-						href="#"
-						aria-label="Facebook"
-						class="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all duration-300"
-					>
-						<svg
-							class="w-4 h-4"
-							fill="currentColor"
-							viewBox="0 0 24 24"
-							><path
-								d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-							></path></svg
-						>
-					</a>
-					<a
 						href="https://wa.me/56948672300?text=Hola%20SERVITECNOLOGY,%20requiero%20soporte%20t%C3%A9cnico..."
 						target="_blank"
 						rel="noopener noreferrer"
 						data-track-event="clic_boton"
 						data-element-id="btn_whatsapp_footer"
 						aria-label="WhatsApp"
-						class="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-brand-green hover:border-brand-green/30 transition-all duration-300"
+						class="flex items-center justify-center w-11 h-11 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-brand-green hover:border-brand-green/30 transition-all duration-300"
 					>
 						<svg
 							class="w-4 h-4"
@@ -116,11 +88,11 @@ const coverageAreas = [
 
 			<!-- Column 2: Quick Links -->
 			<div class="space-y-5">
-				<h4
+				<h3
 					class="text-sm font-bold text-white uppercase tracking-wider"
 				>
 					Enlaces Rápidos
-				</h4>
+				</h3>
 				<nav class="flex flex-col gap-3">
 					{
 						quickLinks.map((link) => (
@@ -137,11 +109,11 @@ const coverageAreas = [
 
 			<!-- Column 3: Contacto Oficial -->
 			<div class="space-y-5">
-				<h4
+				<h3
 					class="text-sm font-bold text-white uppercase tracking-wider"
 				>
 					Contacto Oficial
-				</h4>
+				</h3>
 				<div class="space-y-3">
 					<div
 						class="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1 hover:border-brand-cyan/30 transition-all duration-300"
@@ -202,11 +174,11 @@ const coverageAreas = [
 
 			<!-- Column 4: Coverage -->
 			<div class="space-y-5">
-				<h4
+				<h3
 					class="text-sm font-bold text-white uppercase tracking-wider"
 				>
 					Cobertura Técnica
-				</h4>
+				</h3>
 				<div class="flex flex-wrap gap-1.5">
 					{
 						coverageAreas.map((area) => (
@@ -216,7 +188,7 @@ const coverageAreas = [
 						))
 					}
 				</div>
-				<p class="text-xs text-slate-500 leading-relaxed pt-1">
+				<p class="text-xs text-slate-400 leading-relaxed pt-1">
 					Atendemos la RM de Santiago de Chile.
 				</p>
 			</div>
@@ -226,14 +198,14 @@ const coverageAreas = [
 		<div
 			class="border-t border-white/5 pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-center lg:text-left"
 		>
-			<p class="text-xs text-slate-500">
+			<p class="text-xs text-slate-400">
 				© {currentYear}
 				<span class="text-slate-400 font-semibold">SERVITECNOLOGY</span
 				>. Todos los derechos reservados.
 			</p>
 
 			<div
-				class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500"
+				class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400"
 			>
 				<a
 					href="/terminos"
@@ -254,7 +226,7 @@ const coverageAreas = [
 				>
 			</div>
 
-			<p class="text-xs text-slate-500 leading-relaxed">
+			<p class="text-xs text-slate-400 leading-relaxed">
 				División de Software e IA: <a href="https://studiocoders.dev" target="_blank" rel="noopener" class="text-slate-300 hover:text-brand-cyan underline decoration-white/20 underline-offset-2 transition-colors">Studio Coders</a> · SERVITECNOLOGY es marca comercial de JESUS LEON SOLUCIONES INFORMÁTICAS E.I.R.L. (RUT: 77.709.717-2)
 			</p>
 		</div>
