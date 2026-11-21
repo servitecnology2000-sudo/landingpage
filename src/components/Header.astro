@@ -43,7 +43,7 @@ const navItems: NavItem[] = [
 ];
 ---
 
-<header id="global-site-header" class="relative sticky top-0 z-50 w-full border-b border-white/5 bg-black/75 backdrop-blur-md transition-all duration-300 overflow-hidden">
+<header id="global-site-header" class="relative sticky top-0 z-50 w-full border-b border-white/5 bg-black/75 backdrop-blur-md transition-all duration-300">
 	{menuBgUrl && (
 		<div id="header-custom-bg" class="pointer-events-none select-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
 			<img src={menuBgUrl} alt="" class="w-full h-full object-cover object-center" />
@@ -60,17 +60,21 @@ const navItems: NavItem[] = [
 		<nav class="hidden md:flex items-center gap-6">
 			{navItems.map((item) => (
 				item.children ? (
-					<div class="relative group">
-						<button class="text-sm font-medium text-slate-300 hover:text-brand-cyan transition-colors duration-300 py-1 flex items-center gap-1">
+					<div class="relative group dropdown-parent">
+						<button 
+							type="button"
+							class="dropdown-toggle text-sm font-medium text-slate-300 hover:text-brand-cyan transition-colors duration-300 py-1 flex items-center gap-1 cursor-pointer focus:outline-none"
+							aria-expanded="false"
+						>
 							{item.label}
-							<svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180 dropdown-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 							</svg>
 						</button>
-						<div class="absolute left-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-							<div class="bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl py-2">
+						<div class="dropdown-menu absolute left-0 top-full pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+							<div class="bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl py-2">
 								{item.children.map(child => (
-									<a href={child.href} class="block px-4 py-2 text-sm text-slate-300 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-colors">
+									<a href={child.href} class="block px-4 py-2.5 text-sm text-slate-300 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-colors">
 										{child.label}
 									</a>
 								))}
@@ -283,6 +287,42 @@ const navItems: NavItem[] = [
 	}
 
 	menuToggle?.addEventListener('click', toggleMenu);
+
+	// Toggle dropdown de Servicios TI por click / soporte táctil
+	const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+	dropdownToggles.forEach(toggle => {
+		toggle.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const parent = toggle.closest('.dropdown-parent');
+			const menu = parent?.querySelector('.dropdown-menu');
+			const arrow = parent?.querySelector('.dropdown-arrow');
+			if (menu) {
+				const isOpen = menu.classList.contains('!opacity-100');
+				if (isOpen) {
+					menu.classList.remove('!opacity-100', '!visible', '!pointer-events-auto');
+					arrow?.classList.remove('rotate-180');
+					toggle.setAttribute('aria-expanded', 'false');
+				} else {
+					menu.classList.add('!opacity-100', '!visible', '!pointer-events-auto');
+					arrow?.classList.add('rotate-180');
+					toggle.setAttribute('aria-expanded', 'true');
+				}
+			}
+		});
+	});
+
+	// Cerrar dropdown al hacer click fuera
+	document.addEventListener('click', () => {
+		document.querySelectorAll('.dropdown-menu').forEach(menu => {
+			menu.classList.remove('!opacity-100', '!visible', '!pointer-events-auto');
+		});
+		document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
+			arrow.classList.remove('rotate-180');
+		});
+		document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+			toggle.setAttribute('aria-expanded', 'false');
+		});
+	});
 
 	// Close mobile menu when clicking a link
 	mobileNavLinks.forEach(link => {
