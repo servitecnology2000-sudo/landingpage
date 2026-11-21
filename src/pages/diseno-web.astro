@@ -7,6 +7,7 @@ import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import RelatedProducts from '../components/RelatedProducts.astro';
+import { supabase } from '../lib/supabase';
 
 const pageTitle = "Diseño Web Profesional y Tiendas Online en Chile | SERVITECNOLOGY";
 const pageDescription = "Diseño y desarrollo de páginas web profesionales en Santiago de Chile. Landing pages de alta conversión, tiendas e-commerce, catálogos de repuestos y sitios web informáticos ultrarrápidos con SEO.";
@@ -62,7 +63,7 @@ const webDesignSchema = {
 	}
 };
 
-const casosExito = [
+const fallbackCasos = [
 	{
 		id: "caso-1",
 		titulo: "E-commerce & Catálogo de Repuestos con Stock en Tiempo Real",
@@ -100,6 +101,37 @@ const casosExito = [
 		ctaWhatsapp: "Hola SERVITECNOLOGY, me interesa una web de catálogo y cotización rápida para mis productos o servicios."
 	}
 ];
+
+let casosExito = fallbackCasos;
+try {
+	const { data, error } = await supabase
+		.from('casos_exito')
+		.select('*')
+		.eq('activo', true)
+		.order('orden', { ascending: true })
+		.order('created_at', { ascending: false });
+
+	if (data && data.length > 0) {
+		casosExito = data.map((d: any) => ({
+			id: d.id,
+			titulo: d.titulo,
+			cliente: d.cliente || 'Proyecto Servitecnology',
+			tipo: d.tipo || 'Sitio Web',
+			descripcion: d.descripcion || '',
+			puntos: typeof d.puntos === 'string'
+				? d.puntos.split('\n').map((p: string) => p.trim()).filter(Boolean)
+				: (Array.isArray(d.puntos) ? d.puntos : []),
+			tags: typeof d.tags === 'string'
+				? d.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+				: (Array.isArray(d.tags) ? d.tags : []),
+			imagen: d.imagen || '/imagenes/disenoweb.jpg',
+			urlDemo: d.url_demo || '/',
+			ctaWhatsapp: d.cta_whatsapp || `Hola SERVITECNOLOGY, me interesa cotizar un sitio similar a ${d.titulo}.`
+		}));
+	}
+} catch (e) {
+	// Fallback silencioso a los 3 casos iniciales
+}
 ---
 
 <Layout 

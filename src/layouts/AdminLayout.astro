@@ -11,7 +11,8 @@ interface Props {
 		| "clientes"
 		| "metricas"
 		| "banners"
-		| "analiticas";
+		| "analiticas"
+		| "diseno-web";
 }
 
 const {
@@ -82,264 +83,350 @@ try {
 		</style>
 	</head>
 	<body
-		class="bg-[#09090b] text-slate-200 antialiased min-h-screen flex flex-col selection:bg-brand-cyan/20 selection:text-brand-cyan"
+		class="bg-[#09090b] text-slate-200 antialiased min-h-screen flex selection:bg-brand-cyan/20 selection:text-brand-cyan"
 	>
-		<!-- Header / Topbar Administrativo Unificado -->
-		<header
-			class="sticky top-0 z-50 bg-[#121215]/90 backdrop-blur-md border-b border-white/5 transition-all"
+		<!-- SIDEBAR LATERAL FIJO PARA ESCRITORIO (LG+) -->
+		<aside
+			class="hidden lg:flex flex-col w-64 xl:w-72 bg-[#0d0d10] border-r border-white/5 fixed inset-y-0 left-0 z-40"
 		>
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div class="flex items-center justify-between h-16">
-					<!-- Logo y Marca -->
-					<div class="flex items-center gap-6">
-						<a
-							href="/meson-servitecnology-st"
-							class="flex items-center gap-2 group"
-						>
-							<span
-								class="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse shadow-[0_0_8px_#00FF7F]"
-							></span>
-							<span
-								class="font-outfit font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-brand-green via-emerald-400 to-brand-cyan bg-clip-text text-transparent group-hover:opacity-90 transition-opacity"
-							>
-								SERVITECNOLOGY
-							</span>
-							<span
-								class="text-xs uppercase font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 hidden sm:inline-block"
-							>
-								Admin
-							</span>
-						</a>
+			<!-- Logo y Marca -->
+			<div class="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#121215]/50">
+				<a href="/meson-servitecnology-st" class="flex items-center gap-2.5 group">
+					<span class="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse shadow-[0_0_8px_#00FF7F]"></span>
+					<span class="font-outfit font-black text-lg tracking-tight bg-gradient-to-r from-brand-green via-emerald-400 to-brand-cyan bg-clip-text text-transparent">
+						SERVITECNOLOGY
+					</span>
+					<span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">
+						Admin
+					</span>
+				</a>
+			</div>
 
-						<!-- Navegación de Módulos (Escritorio) -->
-						<nav class="hidden md:flex items-center gap-1">
-							<a
-								href="/meson-servitecnology-st?tab=inventario"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "inventario"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>📦</span>
-								<span>Repuestos</span>
-							</a>
-
-							<a
-								href="/meson-servitecnology-st?tab=galeria"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "galeria"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>🖼️</span>
-								<span>Galería</span>
-							</a>
-
-							<a
-								href="/meson-servitecnology-st/pedidos"
-								class={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "pedidos"
-										? "bg-brand-green/10 text-brand-green border border-brand-green/30 shadow-[0_0_12px_rgba(0,255,127,0.15)]"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>📋</span>
-								<span>Pedidos</span>
-								{
-									pendingOrdersCount > 0 && (
-										<span class="ml-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold animate-pulse">
-											{pendingOrdersCount}
-										</span>
-									)
-								}
-								{
-									ordersInPrepCount > 0 &&
-										pendingOrdersCount === 0 && (
-											<span class="ml-1 px-1.5 py-0.2 rounded-full bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 text-[10px] font-mono font-bold">
-												{ordersInPrepCount}
-											</span>
-										)
-								}
-							</a>
-
-							<a
-								href="/meson-servitecnology-st/clientes"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "clientes"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>👥</span>
-								<span>Clientes</span>
-								<span
-									class="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-white/5 text-slate-400 border border-white/5"
-								></span>
-							</a>
-
-							<a
-								href="/meson-servitecnology-st/metricas"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "metricas"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>📊</span>
-								<span>Métricas</span>
-								<span
-									class="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-white/5 text-slate-400 border border-white/5"
-								></span>
-							</a>
-
-							<a
-								href="/meson-servitecnology-st/banners"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "banners"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>🎞️</span>
-								<span>Banners</span>
-							</a>
-
-							<a
-								href="/meson-servitecnology-st/analiticas"
-								class={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-									activeSection === "analiticas"
-										? "bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)]"
-										: "text-slate-400 hover:text-white hover:bg-white/5"
-								}`}
-							>
-								<span>📈</span>
-								<span>Tráfico & WhatsApp</span>
-							</a>
-						</nav>
+			<!-- Navegación Agrupada por Secciones -->
+			<div class="flex-1 overflow-y-auto py-6 px-4 space-y-6 scrollbar-thin">
+				<!-- GRUPO 1: TIENDA & E-COMMERCE -->
+				<div class="space-y-1">
+					<div class="px-3 pb-1 text-[11px] font-black uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5">
+						<span>🛒</span>
+						<span>Tienda & E-commerce</span>
 					</div>
 
-					<!-- Acciones y Perfil -->
-					<div class="flex items-center gap-2.5">
-						<a
-							href="/meson-servitecnology-st/nuevo"
-							class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
-						>
-							<span>+</span>
-							<span>Nuevo Repuesto</span>
-						</a>
-
-						<a
-							href="/"
-							target="_blank"
-							class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 border border-white/5 transition-colors"
-							title="Ver sitio público en nueva pestaña"
-						>
-							<span>🌐</span>
-							<span class="hidden md:inline">Ver Sitio</span>
-						</a>
-
-						<a
-							href="/meson-servitecnology-st/logout"
-							class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-red-400/80 hover:text-red-300 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 transition-all"
-							title="Cerrar sesión de administrador"
-						>
-							<span>🚪</span>
-							<span class="hidden sm:inline">Salir</span>
-						</a>
-					</div>
-				</div>
-
-				<!-- Navegación Móvil (Scroll Horizontal) -->
-				<div
-					class="md:hidden flex items-center gap-2 overflow-x-auto py-2.5 border-t border-white/5 scrollbar-none"
-				>
-					<a
-						href="/meson-servitecnology-st?tab=inventario"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-							activeSection === "inventario"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
-						}`}
-					>
-						📦 Repuestos
-					</a>
-					<a
-						href="/meson-servitecnology-st?tab=galeria"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-							activeSection === "galeria"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
-						}`}
-					>
-						🖼️ Galería
-					</a>
 					<a
 						href="/meson-servitecnology-st/pedidos"
-						class={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+						class={`relative flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
 							activeSection === "pedidos"
-								? "bg-brand-green text-black font-bold"
-								: "bg-white/5 text-slate-400"
+								? "bg-brand-green/15 text-brand-green border border-brand-green/30 shadow-[0_0_12px_rgba(0,255,127,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
 						}`}
 					>
-						📋 Pedidos
-						{
-							pendingOrdersCount > 0 && (
-								<span class="px-1.5 py-0.2 rounded-full bg-amber-500 text-black text-[10px] font-bold">
-									{pendingOrdersCount}
-								</span>
-							)
-						}
+						<div class="flex items-center gap-2.5">
+							<span class="text-base">📋</span>
+							<span>Pedidos</span>
+						</div>
+						{pendingOrdersCount > 0 && (
+							<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold animate-pulse">
+								{pendingOrdersCount}
+							</span>
+						)}
+						{ordersInPrepCount > 0 && pendingOrdersCount === 0 && (
+							<span class="px-2 py-0.5 rounded-full bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 text-[10px] font-mono font-bold">
+								{ordersInPrepCount}
+							</span>
+						)}
 					</a>
+
+					<a
+						href="/meson-servitecnology-st?tab=inventario"
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+							activeSection === "inventario"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						<span class="text-base">📦</span>
+						<span>Repuestos & Stock</span>
+					</a>
+
 					<a
 						href="/meson-servitecnology-st/clientes"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
 							activeSection === "clientes"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
 						}`}
 					>
-						👥 Clientes
+						<span class="text-base">👥</span>
+						<span>Clientes & CRM</span>
 					</a>
+				</div>
+
+				<!-- GRUPO 2: CONTENIDO & PORTAFOLIO -->
+				<div class="space-y-1 pt-2 border-t border-white/5">
+					<div class="px-3 pb-1 text-[11px] font-black uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5">
+						<span>🌐</span>
+						<span>Contenido Web</span>
+					</div>
+
 					<a
-						href="/meson-servitecnology-st/metricas"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-							activeSection === "metricas"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
+						href="/meson-servitecnology-st/diseno-web"
+						class={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+							activeSection === "diseno-web"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
 						}`}
 					>
-						📊 Métricas
+						<div class="flex items-center gap-2.5">
+							<span class="text-base">💻</span>
+							<span>Diseño Web</span>
+						</div>
+						<span class="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30">
+							Casos
+						</span>
 					</a>
+
+					<a
+						href="/meson-servitecnology-st?tab=galeria"
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+							activeSection === "galeria"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						<span class="text-base">🖼️</span>
+						<span>Galería de Trabajos</span>
+					</a>
+
 					<a
 						href="/meson-servitecnology-st/banners"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
 							activeSection === "banners"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
 						}`}
 					>
-						🎞️ Banners
+						<span class="text-base">🎞️</span>
+						<span>Banners & Fondos</span>
 					</a>
+				</div>
+
+				<!-- GRUPO 3: ANALÍTICAS & CONTROL -->
+				<div class="space-y-1 pt-2 border-t border-white/5">
+					<div class="px-3 pb-1 text-[11px] font-black uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5">
+						<span>📊</span>
+						<span>Métricas & Tráfico</span>
+					</div>
+
+					<a
+						href="/meson-servitecnology-st/metricas"
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+							activeSection === "metricas"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
+						}`}
+					>
+						<span class="text-base">📈</span>
+						<span>Métricas de Ventas</span>
+					</a>
+
 					<a
 						href="/meson-servitecnology-st/analiticas"
-						class={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
+						class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
 							activeSection === "analiticas"
-								? "bg-brand-cyan text-black font-bold"
-								: "bg-white/5 text-slate-400"
+								? "bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_12px_rgba(0,207,255,0.15)] font-bold"
+								: "text-slate-400 hover:text-white hover:bg-white/5"
 						}`}
 					>
-						📈 Tráfico & WhatsApp
+						<span class="text-base">💬</span>
+						<span>Tráfico & WhatsApp</span>
 					</a>
 				</div>
 			</div>
-		</header>
 
-		<!-- Contenedor Principal de la Página -->
-		<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-			<slot />
-		</main>
+			<!-- Footer Fijo de la Sidebar -->
+			<div class="p-4 border-t border-white/5 space-y-2 bg-[#121215]/50 shrink-0">
+				<a
+					href="/"
+					target="_blank"
+					class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+				>
+					<span>🌐</span>
+					<span>Ver Sitio Público</span>
+				</a>
+
+				<a
+					href="/meson-servitecnology-st/logout"
+					class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-all"
+				>
+					<span>🚪</span>
+					<span>Cerrar Sesión</span>
+				</a>
+			</div>
+		</aside>
+
+		<!-- CONTENEDOR DERECHO PRINCIPAL (CON PADDING-LEFT EN LG+) -->
+		<div class="flex-1 lg:pl-64 xl:pl-72 flex flex-col min-w-0 min-h-screen">
+			<!-- TOPBAR SUPERIOR (MÓVIL + ACCIONES RÁPIDAS) -->
+			<header class="sticky top-0 z-30 bg-[#121215]/90 backdrop-blur-md border-b border-white/5 h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+				<!-- Botón Menú Móvil + Título -->
+				<div class="flex items-center gap-3">
+					<button
+						type="button"
+						id="adminMobileToggleBtn"
+						class="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 hover:bg-white/5 cursor-pointer focus:outline-none"
+						aria-label="Abrir menú de navegación"
+					>
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+						</svg>
+					</button>
+
+					<div class="flex items-center gap-2">
+						<span class="text-xs uppercase font-mono px-2 py-0.5 rounded bg-white/5 text-brand-cyan border border-brand-cyan/20 font-bold hidden sm:inline-block">
+							{activeSection === "pedidos" ? "📋 Pedidos" :
+							 activeSection === "inventario" ? "📦 Repuestos & Stock" :
+							 activeSection === "galeria" ? "🖼️ Galería de Trabajos" :
+							 activeSection === "diseno-web" ? "💻 Diseño Web & Portafolio" :
+							 activeSection === "clientes" ? "👥 Clientes" :
+							 activeSection === "metricas" ? "📊 Métricas" :
+							 activeSection === "banners" ? "🎞️ Banners" : "📈 Analíticas"}
+						</span>
+					</div>
+				</div>
+
+				<!-- Acciones Rápidas Superior -->
+				<div class="flex items-center gap-2.5">
+					<a
+						href="/meson-servitecnology-st/nuevo"
+						class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-bold shadow hover:opacity-90 transition-all cursor-pointer"
+					>
+						<span>+</span>
+						<span class="hidden sm:inline">Nuevo Repuesto</span>
+					</a>
+
+					<a
+						href="/diseno-web"
+						target="_blank"
+						class="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-white/5 border border-white/10 transition-colors"
+						title="Ver página de Diseño Web"
+					>
+						<span>💻</span>
+						<span>Ver /diseno-web</span>
+					</a>
+
+					<a
+						href="/"
+						target="_blank"
+						class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 border border-white/5 transition-colors"
+						title="Ver sitio público en nueva pestaña"
+					>
+						<span>🌐</span>
+						<span class="hidden sm:inline">Ver Sitio</span>
+					</a>
+
+					<a
+						href="/meson-servitecnology-st/logout"
+						class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-red-400/80 hover:text-red-300 hover:bg-red-500/10 border border-red-500/10 hover:border-red-500/20 transition-all"
+						title="Cerrar sesión"
+					>
+						<span>🚪</span>
+					</a>
+				</div>
+			</header>
+
+			<!-- Contenedor Principal de la Página -->
+			<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				<slot />
+			</main>
+		</div>
+
+		<!-- DRAWER LATERAL PARA MÓVILES (SLIDE-OVER) -->
+		<div
+			id="adminMobileDrawer"
+			class="fixed inset-0 z-50 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300"
+			role="dialog"
+			aria-modal="true"
+		>
+			<!-- Backdrop Oscuro -->
+			<div id="adminMobileBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"></div>
+
+			<!-- Panel Deslizante -->
+			<div
+				id="adminMobilePanel"
+				class="relative w-72 max-w-[85vw] h-full bg-[#0d0d10] border-r border-white/10 flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl"
+			>
+				<div class="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0 bg-[#121215]">
+					<div class="flex items-center gap-2">
+						<span class="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse"></span>
+						<span class="font-outfit font-black text-base tracking-tight text-white">SERVITECNOLOGY</span>
+					</div>
+					<button
+						type="button"
+						id="adminMobileCloseBtn"
+						class="w-8 h-8 rounded-lg bg-white/5 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+					>
+						✕
+					</button>
+				</div>
+
+				<div class="flex-1 overflow-y-auto py-5 px-4 space-y-5 scrollbar-thin">
+					<!-- Tienda -->
+					<div class="space-y-1">
+						<div class="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+							🛒 Tienda & E-commerce
+						</div>
+						<a href="/meson-servitecnology-st/pedidos" class={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "pedidos" ? "bg-brand-green/20 text-brand-green font-bold" : "text-slate-300"}`}>
+							<span>📋 Pedidos</span>
+							{pendingOrdersCount > 0 && <span class="px-2 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-bold">{pendingOrdersCount}</span>}
+						</a>
+						<a href="/meson-servitecnology-st?tab=inventario" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "inventario" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							📦 Repuestos & Stock
+						</a>
+						<a href="/meson-servitecnology-st/clientes" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "clientes" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							👥 Clientes
+						</a>
+					</div>
+
+					<!-- Contenido -->
+					<div class="space-y-1 pt-2 border-t border-white/5">
+						<div class="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+							🌐 Contenido Web
+						</div>
+						<a href="/meson-servitecnology-st/diseno-web" class={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "diseno-web" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							<span>💻 Diseño Web</span>
+							<span class="text-[9px] px-1.5 py-0.2 rounded bg-brand-cyan/20 text-brand-cyan font-bold">Casos</span>
+						</a>
+						<a href="/meson-servitecnology-st?tab=galeria" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "galeria" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							🖼️ Galería de Trabajos
+						</a>
+						<a href="/meson-servitecnology-st/banners" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "banners" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							🎞️ Banners & Fondos
+						</a>
+					</div>
+
+					<!-- Analítica -->
+					<div class="space-y-1 pt-2 border-t border-white/5">
+						<div class="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+							📊 Analítica
+						</div>
+						<a href="/meson-servitecnology-st/metricas" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "metricas" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							📈 Métricas de Ventas
+						</a>
+						<a href="/meson-servitecnology-st/analiticas" class={`block px-3 py-2 rounded-xl text-xs font-semibold ${activeSection === "analiticas" ? "bg-brand-cyan/20 text-brand-cyan font-bold" : "text-slate-300"}`}>
+							💬 Tráfico & WhatsApp
+						</a>
+					</div>
+				</div>
+
+				<div class="p-4 border-t border-white/5 space-y-2 bg-[#121215]">
+					<a href="/" target="_blank" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/5">
+						🌐 Ver Sitio Público
+					</a>
+					<a href="/meson-servitecnology-st/logout" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/10">
+						🚪 Cerrar Sesión
+					</a>
+				</div>
+			</div>
+		</div>
 
 		<!-- Toast Container Global para Notificaciones Interactivas -->
 		<div
@@ -389,6 +476,36 @@ try {
 		</div>
 
 		<script is:inline>
+			// Lógica del Drawer móvil
+			const mobileToggleBtn = document.getElementById('adminMobileToggleBtn');
+			const mobileCloseBtn = document.getElementById('adminMobileCloseBtn');
+			const mobileBackdrop = document.getElementById('adminMobileBackdrop');
+			const mobileDrawer = document.getElementById('adminMobileDrawer');
+			const mobilePanel = document.getElementById('adminMobilePanel');
+
+			function openMobileDrawer() {
+				if (!mobileDrawer || !mobilePanel) return;
+				mobileDrawer.classList.remove('opacity-0', 'pointer-events-none');
+				mobilePanel.classList.remove('-translate-x-full');
+				mobilePanel.classList.add('translate-x-0');
+				document.body.style.overflow = 'hidden';
+			}
+
+			function closeMobileDrawer() {
+				if (!mobileDrawer || !mobilePanel) return;
+				mobileDrawer.classList.add('opacity-0', 'pointer-events-none');
+				mobilePanel.classList.remove('translate-x-0');
+				mobilePanel.classList.add('-translate-x-full');
+				document.body.style.overflow = '';
+			}
+
+			mobileToggleBtn?.addEventListener('click', openMobileDrawer);
+			mobileCloseBtn?.addEventListener('click', closeMobileDrawer);
+			mobileBackdrop?.addEventListener('click', closeMobileDrawer);
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape') closeMobileDrawer();
+			});
+
 			window.showAdminToast = function (message, type = "success") {
 				const container = document.getElementById(
 					"adminToastContainer",

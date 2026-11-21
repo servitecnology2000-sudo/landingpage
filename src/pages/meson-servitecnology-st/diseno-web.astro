@@ -1,0 +1,798 @@
+---
+export const prerender = false;
+
+// 1. Guardia de Seguridad SSR
+const _env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string>);
+const adminSecret = _env['ADMIN_SECRET'] || import.meta.env.ADMIN_SECRET || '20181860';
+const cookie = Astro.cookies.get('admin_session');
+if (!adminSecret || cookie?.value !== adminSecret) {
+	return Astro.redirect('/meson-servitecnology-st/login');
+}
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
+
+let notification = '';
+let notificationType = 'success';
+
+// Helper sanitizador de nombre de archivo para Supabase Storage
+function sanitizeFileName(originalName: string): string {
+	const lastDot = originalName.lastIndexOf('.');
+	const ext = lastDot !== -1 ? originalName.substring(lastDot + 1).toLowerCase() : 'jpg';
+	const nameWithoutExt = lastDot !== -1 ? originalName.substring(0, lastDot) : originalName;
+
+	const cleanBase = nameWithoutExt
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, '_')
+		.replace(/_+/g, '_')
+		.replace(/^_+|_+$/g, '');
+
+	const safeBase = cleanBase || 'caso_web';
+	const timeStamp = Date.now().toString().slice(-6);
+	return `diseno_${safeBase}_${timeStamp}.${ext}`;
+}
+
+// 2. Manejo de Formularios POST (Crear, Editar, Toggle, Eliminar)
+if (Astro.request.method === 'POST') {
+	try {
+		const formData = await Astro.request.formData();
+		const action = formData.get('action')?.toString();
+		const id = formData.get('id')?.toString();
+
+		if (action === 'toggle' && id) {
+			const activoActual = formData.get('activo')?.toString() === 'true';
+			const { error } = await supabaseAdmin
+				.from('casos_exito')
+				.update({ activo: !activoActual, updated_at: new Date().toISOString() })
+				.eq('id', id);
+
+			if (error) throw error;
+			return Astro.redirect('/meson-servitecnology-st/diseno-web?msg=toggle_ok');
+		}
+
+		if (action === 'delete' && id) {
+			const storagePath = formData.get('storage_path')?.toString();
+			if (storagePath) {
+				try {
+					await supabaseAdmin.storage.from('trabajos_galeria').remove([storagePath]);
+				} catch (e) {
+					console.warn('[Storage delete error]', e);
+				}
+			}
+			const { error } = await supabaseAdmin.from('casos_exito').delete().eq('id', id);
+			if (error) throw error;
+			return Astro.redirect('/meson-servitecnology-st/diseno-web?msg=delete_ok');
+		}
+
+		if (action === 'create' || action === 'update') {
+			const titulo = formData.get('titulo')?.toString()?.trim() || '';
+			const cliente = formData.get('cliente')?.toString()?.trim() || '';
+			const tipo = formData.get('tipo')?.toString()?.trim() || 'Sitio Web';
+			const descripcion = formData.get('descripcion')?.toString()?.trim() || '';
+			const puntos = formData.get('puntos')?.toString()?.trim() || '';
+			const tags = formData.get('tags')?.toString()?.trim() || '';
+			const url_demo = formData.get('url_demo')?.toString()?.trim() || '';
+			const cta_whatsapp = formData.get('cta_whatsapp')?.toString()?.trim() || '';
+			const orden = parseInt(formData.get('orden')?.toString() || '0', 10) || 0;
+			const activo = formData.get('activo') === 'on' || formData.get('activo') === 'true';
+
+			let imagen = formData.get('imagen_url_manual')?.toString()?.trim() || '';
+			let storage_path: string | null = null;
+
+			// Procesar subida de archivo si existe
+			const file = formData.get('imagen_file');
+			if (file instanceof File && file.size > 0) {
+				try {
+					const arrayBuffer = await file.arrayBuffer();
+					const buffer = Buffer.from(arrayBuffer);
+					const fileName = sanitizeFileName(file.name);
+
+					const { data: uploadData, error: uploadErr } = await supabaseAdmin.storage
+						.from('trabajos_galeria')
+						.upload(fileName, buffer, {
+							contentType: file.type || 'image/jpeg',
+							upsert: true
+						});
+
+					if (uploadErr) throw uploadErr;
+
+					const { data: publicUrlData } = supabaseAdmin.storage
+						.from('trabajos_galeria')
+						.getPublicUrl(fileName);
+
+					imagen = publicUrlData.publicUrl;
+					storage_path = fileName;
+				} catch (uploadError: any) {
+					console.error('[Upload error]', uploadError);
+					// Si falla la subida pero hay imagen manual previa, se mantiene
+				}
+			}
+
+			if (action === 'create') {
+				if (!imagen) {
+					imagen = '/imagenes/disenoweb.jpg'; // Imagen de fallback por defecto
+				}
+				const { error } = await supabaseAdmin.from('casos_exito').insert({
+					titulo,
+					cliente,
+					tipo,
+					descripcion,
+					puntos,
+					tags,
+					imagen,
+					storage_path,
+					url_demo,
+					cta_whatsapp,
+					orden,
+					activo,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString()
+				});
+				if (error) throw error;
+				return Astro.redirect('/meson-servitecnology-st/diseno-web?msg=create_ok');
+			}
+
+			if (action === 'update' && id) {
+				const updatePayload: Record<string, any> = {
+					titulo,
+					cliente,
+					tipo,
+					descripcion,
+					puntos,
+					tags,
+					url_demo,
+					cta_whatsapp,
+					orden,
+					activo,
+					updated_at: new Date().toISOString()
+				};
+				if (imagen) {
+					updatePayload.imagen = imagen;
+				}
+				if (storage_path) {
+					updatePayload.storage_path = storage_path;
+				}
+				const { error } = await supabaseAdmin
+					.from('casos_exito')
+					.update(updatePayload)
+					.eq('id', id);
+
+				if (error) throw error;
+				return Astro.redirect('/meson-servitecnology-st/diseno-web?msg=update_ok');
+			}
+		}
+	} catch (err: any) {
+		console.error('[Admin Diseno Web Error]', err);
+		notification = `Error al guardar: ${err.message || err}`;
+		notificationType = 'error';
+	}
+}
+
+// 3. Consulta de Casos de Éxito existentes
+let casos: any[] = [];
+let dbConnected = true;
+
+try {
+	const { data, error } = await supabaseAdmin
+		.from('casos_exito')
+		.select('*')
+		.order('orden', { ascending: true })
+		.order('created_at', { ascending: false });
+
+	if (error) {
+		dbConnected = false;
+		console.warn('[Admin Casos Exito] Error al consultar tabla casos_exito:', error.message);
+	} else {
+		casos = data || [];
+	}
+} catch (e) {
+	dbConnected = false;
+}
+
+const totalCasos = casos.length;
+const activosCasos = casos.filter(c => c.activo).length;
+const pausadosCasos = totalCasos - activosCasos;
+
+// Notificaciones por URL query param
+const urlMsg = Astro.url.searchParams.get('msg');
+if (urlMsg === 'create_ok') {
+	notification = 'Caso de éxito publicado exitosamente.';
+} else if (urlMsg === 'update_ok') {
+	notification = 'Caso de éxito actualizado correctamente.';
+} else if (urlMsg === 'delete_ok') {
+	notification = 'Caso de éxito eliminado del portafolio.';
+} else if (urlMsg === 'toggle_ok') {
+	notification = 'Estado de visibilidad modificado.';
+}
+---
+
+<AdminLayout title="Gestor de Portafolio Web — SERVITECNOLOGY" activeSection="diseno-web">
+	<!-- Top Bar / Cabecera de Sección -->
+	<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+		<div>
+			<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-bold uppercase tracking-wider mb-2">
+				<span>💻</span> Sección Exclusiva: /diseno-web
+			</div>
+			<h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-outfit">
+				Portafolio de Páginas Web y Casos de Éxito
+			</h1>
+			<p class="text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+				Administra los proyectos que se exhiben en la landing comercial <strong class="text-brand-cyan">servitecnology.com/diseno-web</strong>. 
+				Puedes editar títulos, beneficios, etiquetas, cambiar fotos, pausarlos o sumar nuevos desarrollos.
+			</p>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<a
+				href="/diseno-web"
+				target="_blank"
+				class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-cyan/30 transition-all"
+				title="Ver portafolio público en vivo"
+			>
+				<span>🌐</span>
+				<span>Ver Página en Vivo</span>
+			</a>
+
+			<button
+				type="button"
+				id="btnOpenNewModal"
+				class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-cyan to-brand-green hover:opacity-90 transition-all shadow-[0_0_20px_rgba(0,207,255,0.25)] cursor-pointer"
+			>
+				<span>+</span>
+				<span>Nuevo Caso de Éxito</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- Notificación si la tabla no existe aún en Supabase -->
+	{!dbConnected && (
+		<div class="mb-8 p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 space-y-2">
+			<div class="flex items-center gap-2 font-bold text-sm">
+				<span>⚠️</span>
+				<span>Tabla casos_exito pendiente en Supabase</span>
+			</div>
+			<p class="text-xs leading-relaxed text-slate-300">
+				La tabla aún no ha sido creada en tu base de datos Supabase. Hemos dejado lista la migración en el archivo 
+				<code class="px-1.5 py-0.5 rounded bg-black/40 text-amber-300 font-mono text-[11px]">supabase/migrations/20261121_casos_exito.sql</code>. 
+				Mientras la ejecutas, la landing pública seguirá mostrando de forma 100% segura los 3 casos iniciales sin romperse.
+			</p>
+		</div>
+	)}
+
+	<!-- Tarjetas de Estadísticas / Resumen -->
+	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+		<div class="p-5 rounded-2xl bg-zinc-950/70 border border-white/5 flex items-center justify-between">
+			<div>
+				<div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total de Proyectos</div>
+				<div class="text-3xl font-black text-white mt-1 font-outfit">{totalCasos}</div>
+			</div>
+			<div class="w-12 h-12 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-xl text-brand-cyan">
+				📁
+			</div>
+		</div>
+
+		<div class="p-5 rounded-2xl bg-zinc-950/70 border border-white/5 flex items-center justify-between">
+			<div>
+				<div class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Activos en la Web</div>
+				<div class="text-3xl font-black text-emerald-300 mt-1 font-outfit">{activosCasos}</div>
+			</div>
+			<div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl text-emerald-400">
+				✅
+			</div>
+		</div>
+
+		<div class="p-5 rounded-2xl bg-zinc-950/70 border border-white/5 flex items-center justify-between">
+			<div>
+				<div class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pausados / Borrador</div>
+				<div class="text-3xl font-black text-amber-300 mt-1 font-outfit">{pausadosCasos}</div>
+			</div>
+			<div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl text-amber-400">
+				⏸️
+			</div>
+		</div>
+	</div>
+
+	<!-- Lista / Cuadrícula de Casos -->
+	{casos.length === 0 ? (
+		<div class="text-center py-16 px-4 rounded-3xl bg-zinc-950/50 border border-dashed border-white/10 space-y-4">
+			<div class="text-5xl">💻</div>
+			<h3 class="text-lg font-bold text-white">Aún no hay casos de éxito registrados en la BD</h3>
+			<p class="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+				Crea tu primer proyecto o ejecuta el script SQL en Supabase para cargar automáticamente los 3 casos iniciales.
+			</p>
+			<button
+				type="button"
+				id="btnOpenNewModalEmpty"
+				class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-black bg-brand-cyan hover:opacity-90 transition-all cursor-pointer"
+			>
+				+ Crear Primer Proyecto
+			</button>
+		</div>
+	) : (
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			{casos.map((caso) => {
+				const puntosArr = typeof caso.puntos === 'string' 
+					? caso.puntos.split('\n').map((p: string) => p.trim()).filter(Boolean)
+					: (Array.isArray(caso.puntos) ? caso.puntos : []);
+				const tagsArr = typeof caso.tags === 'string'
+					? caso.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+					: (Array.isArray(caso.tags) ? caso.tags : []);
+
+				return (
+					<div class={`rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden bg-zinc-950/80 ${
+						caso.activo ? 'border-white/10 hover:border-brand-cyan/40 shadow-xl' : 'border-white/5 opacity-70 bg-zinc-950/40'
+					}`}>
+						<div>
+							<!-- Imagen y Badges -->
+							<div class="relative w-full aspect-[16/10] bg-zinc-900 border-b border-white/10 overflow-hidden">
+								<img 
+									src={caso.imagen || '/imagenes/disenoweb.jpg'} 
+									alt={caso.titulo}
+									class="w-full h-full object-cover"
+									loading="lazy"
+								/>
+								<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent"></div>
+								<div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+									<span class="px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-bold text-brand-cyan">
+										{caso.tipo || 'Web'}
+									</span>
+									<span class="px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-slate-300">
+										Orden: #{caso.orden}
+									</span>
+								</div>
+								<div class="absolute top-3 right-3">
+									<span class={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+										caso.activo 
+											? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+											: 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+									}`}>
+										{caso.activo ? '● Activo' : '○ Pausado'}
+									</span>
+								</div>
+							</div>
+
+							<!-- Contenido -->
+							<div class="p-5 space-y-3">
+								<div class="text-[11px] font-semibold text-brand-green uppercase tracking-wider">
+									{caso.cliente || 'Proyecto Servitecnology'}
+								</div>
+								<h3 class="text-base font-bold text-white line-clamp-2 leading-snug">
+									{caso.titulo}
+								</h3>
+								<p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+									{caso.descripcion}
+								</p>
+
+								{puntosArr.length > 0 && (
+									<ul class="text-[11px] text-slate-400 space-y-1 pt-2 border-t border-white/5">
+										{puntosArr.slice(0, 3).map((p: string) => (
+											<li class="flex items-center gap-1.5 truncate">
+												<span class="text-brand-green">✓</span>
+												<span class="truncate">{p}</span>
+											</li>
+										))}
+										{puntosArr.length > 3 && (
+											<li class="text-[10px] text-slate-400 italic">
+												+{puntosArr.length - 3} puntos adicionales...
+											</li>
+										)}
+									</ul>
+								)}
+
+								{tagsArr.length > 0 && (
+									<div class="flex flex-wrap gap-1 pt-2">
+										{tagsArr.slice(0, 3).map((t: string) => (
+											<span class="text-[9px] px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/5 font-mono">
+												{t}
+											</span>
+										))}
+										{tagsArr.length > 3 && (
+											<span class="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-mono">
+												+{tagsArr.length - 3}
+											</span>
+										)}
+									</div>
+								)}
+							</div>
+						</div>
+
+						<!-- Barra de Acciones -->
+						<div class="p-4 pt-0 border-t border-white/5 flex items-center justify-between gap-2 mt-4">
+							<!-- Botón Toggle Activo/Pausado -->
+							<form method="POST" class="inline">
+								<input type="hidden" name="action" value="toggle" />
+								<input type="hidden" name="id" value={caso.id} />
+								<input type="hidden" name="activo" value={caso.activo ? 'true' : 'false'} />
+								<button
+									type="submit"
+									class={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+										caso.activo 
+											? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20' 
+											: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+									}`}
+									title={caso.activo ? 'Ocultar temporalmente' : 'Activar en la web'}
+								>
+									{caso.activo ? 'Pausar' : 'Activar'}
+								</button>
+							</form>
+
+							<div class="flex items-center gap-1.5">
+								<!-- Botón Editar -->
+								<button
+									type="button"
+									class="btn-edit-caso px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
+									data-caso={JSON.stringify(caso)}
+								>
+									Editar
+								</button>
+
+								<!-- Botón Eliminar -->
+								<form method="POST" class="inline form-delete-caso">
+									<input type="hidden" name="action" value="delete" />
+									<input type="hidden" name="id" value={caso.id} />
+									<input type="hidden" name="storage_path" value={caso.storage_path || ''} />
+									<button
+										type="button"
+										class="btn-delete-trigger px-2.5 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors cursor-pointer"
+										title="Eliminar proyecto"
+									>
+										🗑️
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				);
+			})}
+		</div>
+	)}
+
+	<!-- MODAL PARA CREAR / EDITAR CASO DE ÉXITO -->
+	<div 
+		id="modalCaso" 
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div 
+			id="modalCasoCard"
+			class="bg-[#121215] border border-white/15 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl transform scale-95 transition-all duration-300 space-y-6 scrollbar-thin"
+		>
+			<div class="flex items-center justify-between border-b border-white/10 pb-4">
+				<div>
+					<h3 id="modalTitle" class="text-xl font-black text-white font-outfit">Nuevo Caso de Éxito</h3>
+					<p class="text-xs text-slate-400 mt-0.5">Completa los campos para publicar o actualizar el proyecto en /diseno-web.</p>
+				</div>
+				<button 
+					type="button" 
+					id="btnCloseModal"
+					class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+				>
+					✕
+				</button>
+			</div>
+
+			<form id="formCaso" method="POST" enctype="multipart/form-data" class="space-y-5">
+				<input type="hidden" name="action" id="formAction" value="create" />
+				<input type="hidden" name="id" id="formId" value="" />
+
+				<!-- Fila 1: Título y Cliente -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Título del Proyecto *
+						</label>
+						<input 
+							type="text" 
+							name="titulo" 
+							id="inputTitulo" 
+							required 
+							placeholder="Ej: E-commerce de Repuestos con Stock"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+
+					<div>
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Cliente / Subtítulo *
+						</label>
+						<input 
+							type="text" 
+							name="cliente" 
+							id="inputCliente" 
+							required 
+							placeholder="Ej: Plataforma de Comercio Electrónico"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+				</div>
+
+				<!-- Fila 2: Tipo de Solución y Orden -->
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+					<div class="sm:col-span-2">
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Tipo de Sitio Web *
+						</label>
+						<input 
+							type="text" 
+							name="tipo" 
+							id="inputTipo" 
+							required 
+							placeholder="Ej: E-commerce & Catálogo, Landing Corporativa..."
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+
+					<div>
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Orden Visual
+						</label>
+						<input 
+							type="number" 
+							name="orden" 
+							id="inputOrden" 
+							value="1" 
+							min="0"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+				</div>
+
+				<!-- Fila 3: Descripción Comercial -->
+				<div>
+					<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+						Descripción del Caso *
+					</label>
+					<textarea 
+						name="descripcion" 
+						id="inputDescripcion" 
+						rows="3" 
+						required
+						placeholder="Explica brevemente la solución técnica desarrollada, el impacto del diseño y cómo ayudó al cliente..."
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors leading-relaxed"
+					></textarea>
+				</div>
+
+				<!-- Fila 4: Puntos Clave / Beneficios (1 por línea) -->
+				<div>
+					<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+						Puntos Clave (Beneficios con ticket ✓)
+					</label>
+					<textarea 
+						name="puntos" 
+						id="inputPuntos" 
+						rows="3"
+						placeholder="Escribe un punto por línea:&#10;Buscador inteligente SKU / Modelos&#10;Integración oficial Mercado Pago&#10;Panel de control de stock en tiempo real"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs font-mono focus:border-brand-cyan focus:outline-none transition-colors leading-relaxed"
+					></textarea>
+					<p class="text-[10px] text-slate-400 mt-1">Cada salto de línea se mostrará como un check verde independiente en la tarjeta.</p>
+				</div>
+
+				<!-- Fila 5: Tags Tecnológicos -->
+				<div>
+					<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+						Etiquetas / Tecnologías (Separadas por coma)
+					</label>
+					<input 
+						type="text" 
+						name="tags" 
+						id="inputTags" 
+						placeholder="Ej: E-commerce, Mercado Pago, Astro, Supabase, SEO"
+						class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+					/>
+				</div>
+
+				<!-- Fila 6: Imagen (Subida de Archivo o URL) -->
+				<div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+					<div class="text-xs font-bold text-white uppercase tracking-wider">
+						Imagen de Portada (Recomendado: 600x375 o 1280x800)
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						<div>
+							<label class="block text-[11px] text-slate-300 mb-1">Subir archivo desde PC:</label>
+							<input 
+								type="file" 
+								name="imagen_file" 
+								id="inputImagenFile"
+								accept="image/*"
+								class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-cyan/20 file:text-brand-cyan hover:file:bg-brand-cyan/30 cursor-pointer"
+							/>
+						</div>
+						<div>
+							<label class="block text-[11px] text-slate-300 mb-1">O pegar URL de imagen:</label>
+							<input 
+								type="text" 
+								name="imagen_url_manual" 
+								id="inputImagenManual"
+								placeholder="https://... o /imagenes/..."
+								class="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+							/>
+						</div>
+					</div>
+					<div id="previewContainer" class="hidden pt-2">
+						<span class="text-[10px] text-slate-400 block mb-1">Vista previa actual:</span>
+						<img id="imgPreview" src="" alt="Vista previa" class="w-32 h-20 object-cover rounded-lg border border-white/10" />
+					</div>
+				</div>
+
+				<!-- Fila 7: URLs Demo y Mensaje WhatsApp -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Enlace del Proyecto / Demo
+						</label>
+						<input 
+							type="text" 
+							name="url_demo" 
+							id="inputUrlDemo" 
+							placeholder="Ej: https://misitio.cl o /repuestos"
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+
+					<div>
+						<label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+							Mensaje WhatsApp ("Cotizar Similar")
+						</label>
+						<input 
+							type="text" 
+							name="cta_whatsapp" 
+							id="inputCtaWhatsapp" 
+							placeholder="Ej: Hola SERVITECNOLOGY, me interesa un sitio web como..."
+							class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white text-xs focus:border-brand-cyan focus:outline-none transition-colors"
+						/>
+					</div>
+				</div>
+
+				<!-- Switch Activo -->
+				<div class="flex items-center gap-2 pt-2">
+					<input 
+						type="checkbox" 
+						name="activo" 
+						id="inputActivo" 
+						checked
+						class="w-4 h-4 rounded border-white/20 bg-black text-brand-green focus:ring-brand-green"
+					/>
+					<label for="inputActivo" class="text-xs font-bold text-slate-200 cursor-pointer">
+						Mostrar inmediatamente este caso en la página pública (/diseno-web)
+					</label>
+				</div>
+
+				<!-- Botones del Modal -->
+				<div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+					<button 
+						type="button" 
+						id="btnCancelModal"
+						class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+					>
+						Cancelar
+					</button>
+					<button 
+						type="submit" 
+						id="btnSubmitModal"
+						class="px-5 py-2.5 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-brand-cyan to-brand-green hover:opacity-90 shadow-[0_0_20px_rgba(0,207,255,0.25)] transition-all cursor-pointer"
+					>
+						Guardar Caso de Éxito
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</AdminLayout>
+
+<script is:inline define:vars={{ notification, notificationType }}>
+	// Mostrar notificación toast si existe
+	if (notification && typeof window.showAdminToast === 'function') {
+		window.showAdminToast(notification, notificationType);
+	}
+
+	// Lógica del Modal Crear / Editar
+	const modal = document.getElementById('modalCaso');
+	const modalTitle = document.getElementById('modalTitle');
+	const formAction = document.getElementById('formAction');
+	const formId = document.getElementById('formId');
+	const form = document.getElementById('formCaso');
+
+	const inputTitulo = document.getElementById('inputTitulo');
+	const inputCliente = document.getElementById('inputCliente');
+	const inputTipo = document.getElementById('inputTipo');
+	const inputOrden = document.getElementById('inputOrden');
+	const inputDescripcion = document.getElementById('inputDescripcion');
+	const inputPuntos = document.getElementById('inputPuntos');
+	const inputTags = document.getElementById('inputTags');
+	const inputImagenManual = document.getElementById('inputImagenManual');
+	const inputUrlDemo = document.getElementById('inputUrlDemo');
+	const inputCtaWhatsapp = document.getElementById('inputCtaWhatsapp');
+	const inputActivo = document.getElementById('inputActivo');
+	const previewContainer = document.getElementById('previewContainer');
+	const imgPreview = document.getElementById('imgPreview');
+
+	function openModal(caso = null) {
+		if (caso) {
+			modalTitle.textContent = 'Editar Caso de Éxito';
+			formAction.value = 'update';
+			formId.value = caso.id;
+
+			inputTitulo.value = caso.titulo || '';
+			inputCliente.value = caso.cliente || '';
+			inputTipo.value = caso.tipo || '';
+			inputOrden.value = caso.orden ?? 1;
+			inputDescripcion.value = caso.descripcion || '';
+			inputPuntos.value = typeof caso.puntos === 'string' ? caso.puntos : (Array.isArray(caso.puntos) ? caso.puntos.join('\n') : '');
+			inputTags.value = typeof caso.tags === 'string' ? caso.tags : (Array.isArray(caso.tags) ? caso.tags.join(', ') : '');
+			inputImagenManual.value = caso.imagen || '';
+			inputUrlDemo.value = caso.url_demo || caso.urlDemo || '';
+			inputCtaWhatsapp.value = caso.cta_whatsapp || caso.ctaWhatsapp || '';
+			inputActivo.checked = caso.activo !== false;
+
+			if (caso.imagen) {
+				imgPreview.src = caso.imagen;
+				previewContainer.classList.remove('hidden');
+			} else {
+				previewContainer.classList.add('hidden');
+			}
+		} else {
+			modalTitle.textContent = 'Nuevo Caso de Éxito';
+			formAction.value = 'create';
+			formId.value = '';
+			form.reset();
+			inputOrden.value = '1';
+			inputActivo.checked = true;
+			previewContainer.classList.add('hidden');
+		}
+
+		modal.classList.remove('opacity-0', 'pointer-events-none');
+		modal.querySelector('#modalCasoCard').classList.remove('scale-95');
+		modal.querySelector('#modalCasoCard').classList.add('scale-100');
+	}
+
+	function closeModal() {
+		modal.classList.add('opacity-0', 'pointer-events-none');
+		modal.querySelector('#modalCasoCard').classList.add('scale-95');
+		modal.querySelector('#modalCasoCard').classList.remove('scale-100');
+	}
+
+	document.getElementById('btnOpenNewModal')?.addEventListener('click', () => openModal(null));
+	document.getElementById('btnOpenNewModalEmpty')?.addEventListener('click', () => openModal(null));
+	document.getElementById('btnCloseModal')?.addEventListener('click', closeModal);
+	document.getElementById('btnCancelModal')?.addEventListener('click', closeModal);
+
+	modal?.addEventListener('click', (e) => {
+		if (e.target === modal) closeModal();
+	});
+
+	// Conectar botones Editar de cada tarjeta
+	document.querySelectorAll('.btn-edit-caso').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const dataStr = btn.getAttribute('data-caso');
+			if (dataStr) {
+				try {
+					const caso = JSON.parse(dataStr);
+					openModal(caso);
+				} catch (e) {
+					console.error('Error parse caso', e);
+				}
+			}
+		});
+	});
+
+	// Conectar confirmación en botones Eliminar
+	document.querySelectorAll('.form-delete-caso').forEach(f => {
+		const btn = f.querySelector('.btn-delete-trigger');
+		btn?.addEventListener('click', async () => {
+			const ok = await window.showAdminConfirm({
+				title: '¿Eliminar Caso de Éxito?',
+				message: 'Este proyecto dejará de mostrarse en la página /diseno-web. Esta acción no se puede deshacer.',
+				confirmText: 'Sí, Eliminar',
+				cancelText: 'Cancelar',
+				type: 'danger'
+			});
+			if (ok) {
+				f.submit();
+			}
+		});
+	});
+</script>
