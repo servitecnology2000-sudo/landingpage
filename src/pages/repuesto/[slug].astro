@@ -6,6 +6,8 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import Button from '../../components/Button.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import RelatedProducts from '../../components/RelatedProducts.astro';
 
 const { slug } = Astro.params;
 
@@ -30,13 +32,16 @@ const compStr = product?.compatibilidad && product.compatibilidad.length > 0
 	? product.compatibilidad.slice(0, 3).join(', ') 
 	: 'varios modelos';
 
-const titleSEO = product 
+const fallbackTitle = product 
 	? `${product.titulo} para ${compStr} - SKU: ${product.sku} | SERVITECNOLOGY`
 	: 'Repuesto no encontrado (404) | SERVITECNOLOGY';
-const descSEO = product
+const fallbackDesc = product
 	? `Compra tu ${product.titulo} compatible con ${compStr}. Repuesto original con SKU ${product.sku}. Disponible en Santiago de Chile con entrega previa coordinación.`
 	: 'El repuesto solicitado no está disponible en nuestro catálogo.';
-const keywordsSEO = product?.seo_keywords || `repuesto, ${product?.titulo || ''}, ${product?.sku || ''}, servitecnology`;
+
+const titleSEO = product?.seo_titulo?.trim() ? product.seo_titulo.trim() : fallbackTitle;
+const descSEO = product?.seo_descripcion?.trim() ? product.seo_descripcion.trim() : fallbackDesc;
+const keywordsSEO = product?.seo_keywords?.trim() ? product.seo_keywords.trim() : `repuesto, ${product?.titulo || ''}, ${product?.sku || ''}, servitecnology`;
 
 const phone = "56948672300";
 const msg = product ? encodeURIComponent(`Hola SERVITECNOLOGY, me interesa el repuesto: ${product.titulo} (SKU: ${product.sku}) que vi en su catálogo web en la URL de detalle. ¿Tienen stock o valor con instalación?`) : '';
@@ -77,7 +82,7 @@ const productSchema = product ? {
 		"priceCurrency": "CLP",
 		"price": product.precio_venta,
 		"priceValidUntil": "2027-12-31",
-		"itemCondition": "https://schema.org/UsedCondition",
+		"itemCondition": product.estado?.toLowerCase() === 'nuevo' ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
 		"availability": product.stock_cantidad > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
 		"seller": {
 			"@type": "Organization",
@@ -124,7 +129,12 @@ const productSchema = product ? {
 } : null;
 ---
 
-<Layout title={titleSEO} description={descSEO} keywords={keywordsSEO}>
+<Layout 
+	title={titleSEO} 
+	description={descSEO} 
+	keywords={keywordsSEO}
+	image={images[0] || 'https://servitecnology.com/imagenes/principal.jpg'}
+>
 	<Header />
 	
 	{!product ? (
@@ -160,10 +170,15 @@ const productSchema = product ? {
 		<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-brand-green/5 rounded-full blur-[120px] pointer-events-none"></div>
 
 		<div class="relative z-10 mx-auto max-w-5xl px-6 w-full mt-8">
-			<!-- Back Button -->
-			<a href="/repuestos" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-brand-cyan transition-colors mb-8">
-				← Volver a la Tienda Ecommerce
-			</a>
+			<!-- Breadcrumbs con datos estructurados JSON-LD BreadcrumbList -->
+			<div class="mb-6">
+				<Breadcrumbs items={[
+					{ label: 'Inicio', href: '/' },
+					{ label: 'Repuestos', href: '/repuestos' },
+					...(product.categoria ? [{ label: product.categoria, href: '/repuestos' }] : []),
+					{ label: product.titulo }
+				]} />
+			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start bg-zinc-950/45 border border-white/5 p-8 rounded-2xl backdrop-blur-sm">
 				
@@ -337,6 +352,18 @@ const productSchema = product ? {
 				</div>
 
 			</div>
+		</div>
+
+		<!-- Bloque de Productos Relacionados y Compatibles -->
+		<div class="relative z-10 w-full mt-12">
+			<RelatedProducts 
+				categoria={product.categoria}
+				excludeId={product.id}
+				tituloSeccion="Repuestos y Componentes Relacionados"
+				subtituloSeccion={`Otros repuestos de la categoría ${product.categoria || 'Hardware'} disponibles para entrega inmediata.`}
+				badgeTexto="Recomendados"
+				limite={4}
+			/>
 		</div>
 	</main>
 	</>

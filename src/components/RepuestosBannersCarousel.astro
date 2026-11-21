@@ -205,15 +205,15 @@ const slides = dbBanners.length > 0 ? dbBanners : defaultRepuestosBanners;
 									<span class="truncate sm:overflow-visible sm:whitespace-normal">SERVITECNOLOGY · Repuestos Hardware & Servicio de Instalación</span>
 								</div>
 
-								<!-- Título Comercial Principal -->
-								<h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight leading-[1.15] sm:leading-[1.05] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] max-w-4xl mx-auto font-outfit break-words px-2">
+								<!-- Título Comercial Principal del Banner (H2 para mantener único H1 en la página) -->
+								<h2 class="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight leading-[1.15] sm:leading-[1.05] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] max-w-4xl mx-auto font-outfit break-words px-2">
 									<span class="block text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-brand-cyan drop-shadow-[0_2px_18px_rgba(0,207,255,0.4)]">
 										{slide.titulo?.includes(' - ') ? slide.titulo.split(' - ')[0] : (slide.titulo?.toLowerCase().includes('no tienes') ? 'No tienes que hacerlo solo.' : (slide.titulo || 'No tienes que hacerlo solo.'))}
 									</span>
 									<span class="block mt-1 sm:mt-2 text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-brand-cyan to-brand-green break-words">
 										{slide.titulo?.includes(' - ') ? slide.titulo.split(' - ')[1] : (slide.titulo?.toLowerCase().includes('no tienes') ? 'Instalamos y configuramos tus repuestos' : '')}
 									</span>
-								</h1>
+								</h2>
 
 								<!-- Texto Explicativo Comercial -->
 								<p class="text-sm sm:text-lg md:text-xl text-slate-200 max-w-2xl sm:max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-normal px-2">

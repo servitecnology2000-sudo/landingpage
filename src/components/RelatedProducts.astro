@@ -1,0 +1,184 @@
+---
+import { supabase } from '../lib/supabase';
+
+export interface Props {
+	categoria?: string | string[];
+	excludeId?: string;
+	tituloSeccion?: string;
+	subtituloSeccion?: string;
+	badgeTexto?: string;
+	limite?: number;
+}
+
+const {
+	categoria,
+	excludeId,
+	tituloSeccion = "Repuestos y Hardware Relacionado",
+	subtituloSeccion = "Componentes verificados en laboratorio con stock disponible y garantía técnica en Santiago.",
+	badgeTexto = "Stock Garantizado",
+	limite = 4
+} = Astro.props;
+
+let products: any[] = [];
+
+try {
+	// 1. Normalizar categorías en array
+	const catList: string[] = Array.isArray(categoria)
+		? categoria.filter(Boolean)
+		: (categoria ? [categoria] : []);
+
+	// 2. Consulta con filtro de categoría si está definida
+	let query = supabase
+		.from('repuestos_productos')
+		.select('id, slug, titulo, sku, precio_venta, categoria, imagenes, stock_cantidad, estado')
+		.order('created_at', { ascending: false });
+
+	if (excludeId) {
+		query = query.neq('id', excludeId);
+	}
+
+	if (catList.length > 0) {
+		query = query.in('categoria', catList);
+	}
+
+	const { data: matchedData } = await query.limit(limite);
+	products = matchedData ?? [];
+
+	// 3. Fallback inteligente: si faltan productos para completar el límite, rellenar con repuestos generales recientes
+	if (products.length < limite) {
+		const existingIds = new Set(products.map(p => p.id));
+		if (excludeId) existingIds.add(excludeId);
+
+		const { data: fallbackData } = await supabase
+			.from('repuestos_productos')
+			.select('id, slug, titulo, sku, precio_venta, categoria, imagenes, stock_cantidad, estado')
+			.order('created_at', { ascending: false })
+			.limit(limite * 2);
+
+		if (fallbackData) {
+			for (const item of fallbackData) {
+				if (!existingIds.has(item.id)) {
+					products.push(item);
+					existingIds.add(item.id);
+					if (products.length >= limite) break;
+				}
+			}
+		}
+	}
+} catch (e) {
+	console.error('[RelatedProducts] Error fetching products:', e);
+}
+---
+
+{products.length > 0 && (
+	<section class="relative py-16 bg-black/80 overflow-hidden border-t border-white/5">
+		<!-- Subtle ambient glows -->
+		<div class="absolute top-1/3 left-1/4 w-[350px] h-[350px] bg-brand-cyan/5 rounded-full blur-[140px] pointer-events-none"></div>
+		<div class="absolute bottom-1/3 right-1/4 w-[350px] h-[350px] bg-brand-green/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+		<div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 w-full">
+			<!-- Header de Sección -->
+			<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+				<div class="space-y-2">
+					<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-green/30 bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider">
+						<span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span>
+						{badgeTexto}
+					</div>
+					<h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+						{tituloSeccion}
+					</h2>
+					<p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+						{subtituloSeccion}
+					</p>
+				</div>
+
+				<a 
+					href="/repuestos" 
+					class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-cyan hover:text-brand-green transition-colors group shrink-0"
+				>
+					<span>Ver Tienda Completa</span>
+					<svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+					</svg>
+				</a>
+			</div>
+
+			<!-- Grid de Productos -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+				{products.map((p) => {
+					const img = (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0] : '/imagenes/logost.webp';
+					return (
+						<article class="group flex flex-col justify-between p-5 rounded-2xl border border-white/5 bg-zinc-950/70 backdrop-blur-sm transition-all duration-300 hover:border-brand-green/30 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,255,127,0.06)]">
+							<div class="space-y-3.5">
+								<!-- Contenedor de Imagen -->
+								<a href={`/repuesto/${p.slug}`} class="block relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-white/10">
+									<img 
+										src={img} 
+										alt={p.titulo} 
+										width="400"
+										height="300"
+										loading="lazy"
+										decoding="async"
+										class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									{p.stock_cantidad > 0 ? (
+										<span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-green/20 border border-brand-green/30 text-brand-green backdrop-blur-md">
+											En Stock ({p.stock_cantidad})
+										</span>
+									) : (
+										<span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-500/20 border border-red-500/30 text-red-400 backdrop-blur-md">
+											Agotado
+										</span>
+									)}
+								</a>
+
+								<!-- Badges -->
+								<div class="flex items-center gap-2">
+									<span class="text-[10px] font-bold uppercase tracking-wider text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded border border-brand-cyan/20">
+										{p.categoria || 'Hardware'}
+									</span>
+									<span class="text-[10px] font-semibold text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+										SKU: {p.sku}
+									</span>
+								</div>
+
+								<!-- Título -->
+								<h3 class="text-sm font-bold text-white line-clamp-2 group-hover:text-brand-cyan transition-colors leading-snug">
+									<a href={`/repuesto/${p.slug}`}>
+										{p.titulo}
+									</a>
+								</h3>
+							</div>
+
+							<!-- Precio y Enlace -->
+							<div class="pt-4 mt-4 border-t border-white/5 flex items-center justify-between gap-3">
+								<div class="flex items-baseline gap-1">
+									<span class="text-base sm:text-lg font-black text-white">${p.precio_venta?.toLocaleString('es-CL')}</span>
+									<span class="text-[10px] text-slate-400 font-semibold">CLP</span>
+								</div>
+
+								<a 
+									href={`/repuesto/${p.slug}`}
+									class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-black bg-gradient-to-r from-brand-green to-brand-cyan hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,255,127,0.2)]"
+								>
+									Ver Ficha
+								</a>
+							</div>
+						</article>
+					);
+				})}
+			</div>
+
+			<!-- Botón Móvil a Tienda Completa -->
+			<div class="mt-8 text-center sm:hidden">
+				<a 
+					href="/repuestos" 
+					class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-all"
+				>
+					<span>Explorar Todos los Repuestos</span>
+					<svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+				</a>
+			</div>
+		</div>
+	</section>
+)}

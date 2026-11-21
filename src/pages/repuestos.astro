@@ -3,6 +3,7 @@ export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import RepuestosCatalogNav from '../components/RepuestosCatalogNav.astro';
 import RepuestosBannersCarousel from '../components/RepuestosBannersCarousel.astro';
 import Catalog from '../components/Catalog.astro';
@@ -36,7 +37,7 @@ let products: any[] = [];
 try {
 	const { data } = await supabase
 		.from('repuestos_productos')
-		.select('id, slug, titulo, descripcion, precio_venta, categoria, imagenes, stock_cantidad, sku')
+		.select('id, slug, titulo, descripcion, precio_venta, categoria, imagenes, stock_cantidad, sku, estado')
 		.order('created_at', { ascending: false })
 		.limit(100);
 	products = data ?? [];
@@ -73,7 +74,7 @@ const catalogSchema = {
 						"price": p.precio_venta || 0,
 						"priceValidUntil": "2027-12-31",
 						"availability": (p.stock_cantidad && p.stock_cantidad > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-						"itemCondition": "https://schema.org/UsedCondition",
+						"itemCondition": (p.estado?.toLowerCase() === 'nuevo') ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
 						"seller": {
 							"@type": "Organization",
 							"name": "SERVITECNOLOGY",
@@ -99,6 +100,17 @@ const catalogSchema = {
 	<Header />
 	
 	<main class="relative bg-black min-h-screen overflow-x-clip">
+		<!-- Único H1 semántico para SEO en la vista de Catálogo -->
+		<h1 class="sr-only">Catálogo y Tienda E-commerce de Repuestos de Computación e Impresoras en Santiago | SERVITECNOLOGY</h1>
+
+		<!-- Migas de pan (Breadcrumbs) para usuarios y Googlebot -->
+		<div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-1">
+			<Breadcrumbs items={[
+				{ label: 'Inicio', href: '/' },
+				{ label: 'Catálogo de Repuestos' }
+			]} />
+		</div>
+
 		<!-- 1. Menú de Categorías (Arriba del Carrusel) & 2. Barra de Búsqueda (Entre el Menú y el Carrusel) -->
 		<section id="repuestos-nav-section" class="relative w-full overflow-hidden border-b border-white/5">
 			{customSearchBg && (

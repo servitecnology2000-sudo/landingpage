@@ -6,6 +6,8 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import CintaTrabajos from '../components/CintaTrabajos.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import RelatedProducts from '../components/RelatedProducts.astro';
 
 const pageTitle = "Reparación de Computadoras, Notebooks y Laptops | Servitecnology";
 const pageDescription = "Servicio técnico de reparación de computadores y notebooks en Independencia, Santiago. Formateo, cambio de pantalla, limpieza y optimización de hardware.";
@@ -37,6 +39,14 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 
 			<!-- Hero Content -->
 			<div class="relative z-20 mx-auto max-w-5xl px-6 w-full text-center space-y-6">
+				<div class="flex justify-center -mb-2">
+					<Breadcrumbs items={[
+						{ label: 'Inicio', href: '/' },
+						{ label: 'Servicios', href: '/#servicios' },
+						{ label: 'Soporte Técnico' }
+					]} centered={true} />
+				</div>
+
 				<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs sm:text-sm font-semibold uppercase tracking-wider backdrop-blur-md shadow-lg">
 					<span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
 					Servicio Técnico Especializado
@@ -161,6 +171,15 @@ const waLink = `https://wa.me/56948672300?text=${waMessage}`;
 			categoria="soporte-tecnico" 
 			tituloSeccion="Casos de Éxito y Trabajos Realizados"
 			subtituloSeccion="Mantenimientos, reparaciones y optimizaciones de equipos computacionales."
+		/>
+
+		<!-- REPUESTOS Y COMPONENTES RELACIONADOS -->
+		<RelatedProducts 
+			categoria={['pantallas', 'teclados', 'Cargadores', 'Accesorios']}
+			tituloSeccion="Repuestos para Notebooks y Computadores"
+			subtituloSeccion="Pantallas, teclados, cargadores y componentes compatibles con tus reparaciones y mantenciones."
+			badgeTexto="Repuestos en Stock"
+			limite={4}
 		/>
 	</main>
 

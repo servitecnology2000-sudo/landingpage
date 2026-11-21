@@ -21,10 +21,6 @@ export default defineConfig({
       status: 301,
       destination: '/soporte'
     },
-    '/diseno-web': {
-      status: 301,
-      destination: '/desarrollo'
-    },
     '/pc-gaming': {
       status: 301,
       destination: '/gaming'

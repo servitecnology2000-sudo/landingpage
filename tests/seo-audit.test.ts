@@ -45,8 +45,25 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 		expect(content).toContain("trailingSlash: 'never'");
 		expect(content).toContain("destination: '/repuestos'");
 		expect(content).toContain("destination: '/soporte'");
-		expect(content).toContain("destination: '/desarrollo'");
 		expect(content).toContain("destination: '/gaming'");
+		expect(content).not.toContain("destination: '/desarrollo'");
+	});
+
+	it('diseno-web.astro debe existir como landing propia, con casos de éxito y en sitemap.xml.ts', () => {
+		const disenoWebPath = path.join(rootDir, 'src', 'pages', 'diseno-web.astro');
+		const sitemapPath = path.join(rootDir, 'src', 'pages', 'sitemap.xml.ts');
+		expect(fs.existsSync(disenoWebPath)).toBe(true);
+
+		const disenoContent = fs.readFileSync(disenoWebPath, 'utf-8');
+		expect(disenoContent).toContain('Diseño de Páginas Web');
+		expect(disenoContent).toContain('E-commerce');
+		expect(disenoContent).toContain('casosExito');
+		expect(disenoContent).toContain('RelatedProducts');
+		expect(disenoContent).toContain('Breadcrumbs');
+		expect(disenoContent).not.toContain("return Astro.redirect");
+
+		const sitemapContent = fs.readFileSync(sitemapPath, 'utf-8');
+		expect(sitemapContent).toContain("path: '/diseno-web'");
 	});
 
 	it('repuestos.astro debe consultar columnas reales de Supabase y estructurar ItemList', () => {
@@ -181,5 +198,30 @@ describe('Auditoría y Certificación de SEO Técnico SERVITECNOLOGY', () => {
 
 		const wa = fs.readFileSync(path.join(rootDir, 'src', 'components', 'WhatsAppButton.astro'), 'utf-8');
 		expect(wa).not.toContain('56912345678');
+	});
+
+	it('repuestos y repuesto/[slug] deben implementar único H1, breadcrumbs, itemCondition dinámico y prioridad SEO BD', () => {
+		const repuestosContent = fs.readFileSync(path.join(rootDir, 'src', 'pages', 'repuestos.astro'), 'utf-8');
+		const carouselContent = fs.readFileSync(path.join(rootDir, 'src', 'components', 'RepuestosBannersCarousel.astro'), 'utf-8');
+		const slugContent = fs.readFileSync(path.join(rootDir, 'src', 'pages', 'repuesto', '[slug].astro'), 'utf-8');
+		const breadcrumbsPath = path.join(rootDir, 'src', 'components', 'Breadcrumbs.astro');
+
+		// 1. Único H1 en repuestos y sin H1 en el carrusel de banners
+		expect(repuestosContent).toContain('<h1 class="sr-only">');
+		expect(carouselContent).not.toMatch(/<h1[\s>]/);
+		expect(carouselContent).toContain('<h2 class="text-2xl');
+
+		// 2. Componente Breadcrumbs existe y define BreadcrumbList
+		expect(fs.existsSync(breadcrumbsPath)).toBe(true);
+		const breadcrumbsContent = fs.readFileSync(breadcrumbsPath, 'utf-8');
+		expect(breadcrumbsContent).toContain('"@type": "BreadcrumbList"');
+
+		// 3. itemCondition dinámico
+		expect(slugContent).toContain('product.estado?.toLowerCase() === \'nuevo\' ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition"');
+		expect(repuestosContent).toContain('p.estado?.toLowerCase() === \'nuevo\'');
+
+		// 4. Prioridad de seo_titulo y seo_descripcion
+		expect(slugContent).toContain('product?.seo_titulo?.trim() ? product.seo_titulo.trim() : fallbackTitle');
+		expect(slugContent).toContain('product?.seo_descripcion?.trim() ? product.seo_descripcion.trim() : fallbackDesc');
 	});
 });

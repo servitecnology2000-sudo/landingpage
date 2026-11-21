@@ -1,0 +1,406 @@
+---
+export const prerender = false;
+
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import RelatedProducts from '../components/RelatedProducts.astro';
+
+const pageTitle = "Diseño Web Profesional y Tiendas Online en Chile | SERVITECNOLOGY";
+const pageDescription = "Diseño y desarrollo de páginas web profesionales en Santiago de Chile. Landing pages de alta conversión, tiendas e-commerce, catálogos de repuestos y sitios web informáticos ultrarrápidos con SEO.";
+const pageKeywords = "diseno web chile, diseno de paginas web santiago, crear tienda online chile, landing page santiago, desarrollo web a medida, paginas web informatica, catalogo de productos web, servitecnology";
+
+const waMessage = encodeURIComponent(`Hola SERVITECNOLOGY, me interesa cotizar el diseño y desarrollo de una página web / tienda online para mi negocio.`);
+const waLink = `https://wa.me/56948672300?text=${waMessage}`;
+
+const webDesignSchema = {
+	"@context": "https://schema.org",
+	"@type": "Service",
+	"name": "Diseño y Desarrollo de Páginas Web Profesionales",
+	"provider": {
+		"@type": "Organization",
+		"name": "SERVITECNOLOGY",
+		"url": "https://servitecnology.com"
+	},
+	"serviceType": "Web Design & E-commerce Development",
+	"description": pageDescription,
+	"areaServed": {
+		"@type": "Country",
+		"name": "Chile"
+	},
+	"hasOfferCatalog": {
+		"@type": "OfferCatalog",
+		"name": "Planes y Soluciones de Diseño Web",
+		"itemListElement": [
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Landing Pages de Alta Conversión",
+					"description": "Sitios web de una sola página diseñados para captar clientes potenciales mediante Google Ads, redes sociales y contacto directo a WhatsApp."
+				}
+			},
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Tiendas E-commerce y Catálogos Interactivos",
+					"description": "Tiendas online completas con catálogo autoadministrable, pasarela de pago Mercado Pago integrada, control de stock y cálculo de envíos."
+				}
+			},
+			{
+				"@type": "Offer",
+				"itemOffered": {
+					"@type": "Service",
+					"name": "Sitios Web Corporativos e Institucionales",
+					"description": "Portales web para empresas y servicios informáticos con arquitectura moderna, carga ultrarrápida y optimización SEO integral."
+				}
+			}
+		]
+	}
+};
+
+const casosExito = [
+	{
+		id: "caso-1",
+		titulo: "E-commerce & Catálogo de Repuestos con Stock en Tiempo Real",
+		cliente: "Plataforma de Comercio Electrónico",
+		tipo: "E-commerce & Catálogo",
+		descripcion: "Desarrollo integral de tienda online con buscador universal por SKU, filtros reactivos de categorías, pasarela Mercado Pago y panel administrativo para control de inventario de taller.",
+		puntos: ["Buscador inteligente SKU / Modelos", "Integración oficial Mercado Pago", "Panel de gestión de stock en tiempo real"],
+		tags: ["E-commerce", "Mercado Pago", "Astro + Supabase", "SEO Shopping"],
+		imagen: "/imagenes/disenoweb.jpg",
+		urlDemo: "/repuestos",
+		ctaWhatsapp: "Hola SERVITECNOLOGY, me interesa un E-commerce con catálogo autoadministrable como el de repuestos."
+	},
+	{
+		id: "caso-2",
+		titulo: "Portal Corporativo de Servicios TI y Captación de Clientes",
+		cliente: "Sitio Web Institucional",
+		tipo: "Landing Corporativa",
+		descripcion: "Sitio web de alto rendimiento optimizado para Google Lighthouse (95+ en Core Web Vitals), con modo oscuro estético, galerías interactivas y esquema de datos estructurados para presencia local en Santiago.",
+		puntos: ["Tiempo de carga inferior a 1 segundo", "SEO Técnico y LocalBusiness Schema", "Diseño responsive adaptado a móviles"],
+		tags: ["Alta Velocidad", "SEO Técnico", "Dark Mode", "Diseño Moderno"],
+		imagen: "/imagenes/principal.webp",
+		urlDemo: "/",
+		ctaWhatsapp: "Hola SERVITECNOLOGY, me interesa una página web corporativa con diseño profesional como servitecnology.com."
+	},
+	{
+		id: "caso-3",
+		titulo: "Catálogo Digital y Tienda de Cotización Directa",
+		cliente: "Plataforma de Cotizaciones B2B",
+		tipo: "Tienda de Cotizaciones",
+		descripcion: "Sistema web enfocado en la presentación clara de productos y servicios con botón directo de cotización a WhatsApp, eliminando fricciones y facilitando el cierre inmediato de ventas.",
+		puntos: ["Cero comisiones mensuales por venta", "Cotización directa por WhatsApp con mensaje precargado", "Catálogo dinámico autoadministrable"],
+		tags: ["Cotizador Web", "WhatsApp Sales", "Catálogo Interactivo"],
+		imagen: "/imagenes/soportepc.webp",
+		urlDemo: "/soporte",
+		ctaWhatsapp: "Hola SERVITECNOLOGY, me interesa una web de catálogo y cotización rápida para mis productos o servicios."
+	}
+];
+---
+
+<Layout 
+	title={pageTitle} 
+	description={pageDescription}
+	keywords={pageKeywords}
+	image="https://servitecnology.com/imagenes/disenoweb.jpg"
+>
+	<!-- Structured Data JSON-LD Service Schema -->
+	<script type="application/ld+json" is:inline set:html={JSON.stringify(webDesignSchema)} />
+
+	<Header />
+
+	<main class="relative bg-black min-h-screen pb-20 overflow-hidden text-slate-100">
+		<!-- HERO SECTION BANNER -->
+		<section class="relative min-h-[55vh] md:min-h-[65vh] flex items-center justify-center overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 bg-black border-b border-white/10 mb-12">
+			<!-- Background Image with Overlay -->
+			<div class="absolute inset-0 z-0 pointer-events-none">
+				<img 
+					src="/imagenes/disenoweb.jpg" 
+					alt="Diseño de Páginas Web Profesionales y Tiendas Online" 
+					width="1280"
+					height="853"
+					class="w-full h-full object-cover object-center scale-105 filter brightness-75" 
+				/>
+				<div class="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/70 z-10"></div>
+				<div class="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black z-10"></div>
+			</div>
+
+			<!-- Decorative Glows & Grid Pattern -->
+			<div class="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-brand-cyan/20 rounded-full blur-[150px] pointer-events-none z-10"></div>
+			<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-brand-green/15 rounded-full blur-[150px] pointer-events-none z-10"></div>
+			<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-10"></div>
+
+			<!-- Hero Content -->
+			<div class="relative z-20 mx-auto max-w-5xl px-6 w-full text-center space-y-6">
+				<div class="flex justify-center -mb-2">
+					<Breadcrumbs items={[
+						{ label: 'Inicio', href: '/' },
+						{ label: 'Servicios', href: '/#servicios' },
+						{ label: 'Diseño Web' }
+					]} centered={true} />
+				</div>
+
+				<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs sm:text-sm font-semibold uppercase tracking-wider backdrop-blur-md shadow-lg">
+					<span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+					Desarrollo Web Profesional · E-commerce & Catálogos
+				</div>
+
+				<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] max-w-4xl mx-auto">
+					Diseño de Páginas Web y <br class="hidden sm:inline" />
+					<span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-brand-cyan to-brand-green drop-shadow-[0_2px_10px_rgba(0,207,255,0.4)]">
+						Tiendas Online de Alto Rendimiento
+					</span>
+				</h1>
+
+				<p class="text-slate-200 text-base md:text-xl max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] font-medium">
+					Creamos sitios web rápidos, modernos y optimizados para Google. Desde landing pages comerciales hasta tiendas e-commerce completas con pasarelas de pago y catálogo autoadministrable en Chile.
+				</p>
+
+				<div class="pt-4 flex flex-wrap justify-center gap-4">
+					<a 
+						href={waLink}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex justify-center items-center gap-3 bg-gradient-to-r from-brand-cyan to-brand-green text-black hover:opacity-90 px-8 py-4 rounded-xl font-black text-sm sm:text-base uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(0,207,255,0.35)] hover:scale-105"
+					>
+						Cotizar Mi Página Web
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+					</a>
+					<a 
+						href="#casos-exito"
+						class="inline-flex justify-center items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/15 px-8 py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-300 backdrop-blur-md"
+					>
+						Ver Sitios Diseñados
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- SECCIÓN DE CASOS DE ÉXITO / WEBS DISEÑADAS -->
+		<section id="casos-exito" class="relative z-10 mx-auto max-w-7xl px-6 w-full py-16">
+			<div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+				<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-brand-green/30 bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider">
+					✦ Portafolio Comprobado
+				</div>
+				<h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+					Páginas Web y Proyectos <span class="text-brand-cyan">Diseñados Recientemente</span>
+				</h2>
+				<p class="text-slate-400 text-base max-w-2xl mx-auto leading-relaxed">
+					Revisa algunos de los sitios web y plataformas desarrolladas con nuestra metodología: velocidad instantánea, diseño a medida y código limpio sin plantillas lentas.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				{casosExito.map((caso) => {
+					const waCasoLink = `https://wa.me/56948672300?text=${encodeURIComponent(caso.ctaWhatsapp)}`;
+					return (
+						<article class="group relative rounded-3xl bg-zinc-950/80 border border-white/10 hover:border-brand-cyan/40 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-2xl hover:-translate-y-1.5">
+							<div>
+								<!-- Preview Image Container -->
+								<div class="relative w-full aspect-[16/10] overflow-hidden bg-zinc-900 border-b border-white/10">
+									<img 
+										src={caso.imagen} 
+										alt={caso.titulo}
+										width="600"
+										height="375"
+										loading="lazy"
+										decoding="async"
+										class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+									/>
+									<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
+									<span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[11px] font-bold text-brand-cyan uppercase tracking-wider">
+										{caso.tipo}
+									</span>
+								</div>
+
+								<!-- Contenido del Caso -->
+								<div class="p-6 sm:p-7 space-y-4">
+									<h3 class="text-xl font-bold text-white group-hover:text-brand-cyan transition-colors leading-snug">
+										{caso.titulo}
+									</h3>
+									
+									<p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+										{caso.descripcion}
+									</p>
+
+									<!-- Puntos Clave -->
+									<ul class="space-y-2 text-xs text-slate-400 pt-2 border-t border-white/5">
+										{caso.puntos.map(punto => (
+											<li class="flex items-center gap-2">
+												<span class="text-brand-green font-bold text-sm">✓</span>
+												<span>{punto}</span>
+											</li>
+										))}
+									</ul>
+
+									<!-- Tags Tecnológicos -->
+									<div class="flex flex-wrap gap-1.5 pt-3">
+										{caso.tags.map(t => (
+											<span class="text-[10px] px-2.5 py-1 rounded-md bg-white/5 text-slate-300 border border-white/5 font-mono">
+												{t}
+											</span>
+										))}
+									</div>
+								</div>
+							</div>
+
+							<!-- Acciones del Caso -->
+							<div class="p-6 sm:p-7 pt-0 space-y-3">
+								<div class="flex items-center gap-3">
+									<a 
+										href={caso.urlDemo}
+										class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-bold transition-all"
+									>
+										<span>Ver Proyecto</span>
+										<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+									</a>
+									<a 
+										href={waCasoLink}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-green text-black text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,207,255,0.25)]"
+									>
+										<span>Cotizar Similar</span>
+										<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+									</a>
+								</div>
+							</div>
+						</article>
+					);
+				})}
+			</div>
+		</section>
+
+		<!-- SOLUCIONES Y TIPOS DE SITIOS QUE DESARROLLAMOS -->
+		<section class="relative z-10 mx-auto max-w-7xl px-6 w-full py-16 border-t border-white/5">
+			<div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+				<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs font-bold uppercase tracking-wider">
+					Soluciones Web a Medida
+				</div>
+				<h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+					¿Qué Tipo de Página Web <span class="text-brand-green">Necesita tu Empresa</span>?
+				</h2>
+				<p class="text-slate-400 text-base">
+					Diseñamos cada proyecto desde cero enfocado en tus objetivos comerciales y sin costos ocultos.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<!-- Card 1: Landing Pages -->
+				<div class="p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-brand-green/40 transition-all duration-300 flex flex-col justify-between">
+					<div class="space-y-4">
+						<div class="w-12 h-12 rounded-xl bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white">Landing Pages de Conversión</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Ideales para campañas en Google Ads, Meta o promocionar un servicio específico. Diseñadas para convertir visitas en consultas por WhatsApp de inmediato.
+						</p>
+						<ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2"><span class="text-brand-green font-bold">✓</span> Carga en menos de 1 segundo</li>
+							<li class="flex items-center gap-2"><span class="text-brand-green font-bold">✓</span> Botones de contacto flotantes y trazables</li>
+							<li class="flex items-center gap-2"><span class="text-brand-green font-bold">✓</span> Adaptada 100% a smartphones</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-brand-green hover:underline flex items-center gap-1.5">
+							Cotizar Landing Page →
+						</a>
+					</div>
+				</div>
+
+				<!-- Card 2: Tiendas E-commerce -->
+				<div class="p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-brand-cyan/40 transition-all duration-300 flex flex-col justify-between">
+					<div class="space-y-4">
+						<div class="w-12 h-12 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center text-brand-cyan">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white">Tiendas E-commerce con Pagos</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Vende productos con pasarela de pago (Mercado Pago, tarjetas de crédito/débito y transferencias), cálculo de despacho y panel para controlar stock.
+						</p>
+						<ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2"><span class="text-brand-cyan font-bold">✓</span> Sin comisiones mensuales por uso de plataforma</li>
+							<li class="flex items-center gap-2"><span class="text-brand-cyan font-bold">✓</span> Checkout seguro y comprobantes automáticos</li>
+							<li class="flex items-center gap-2"><span class="text-brand-cyan font-bold">✓</span> Panel para subir productos y fotos</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-brand-cyan hover:underline flex items-center gap-1.5">
+							Cotizar Tienda E-commerce →
+						</a>
+					</div>
+				</div>
+
+				<!-- Card 3: Catálogos y Cotizadores -->
+				<div class="p-8 rounded-2xl bg-zinc-950/70 border border-white/10 hover:border-purple-500/40 transition-all duration-300 flex flex-col justify-between">
+					<div class="space-y-4">
+						<div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+						</div>
+						<h3 class="text-2xl font-bold text-white">Catálogos & Cotizadores Web</h3>
+						<p class="text-slate-400 text-sm leading-relaxed">
+							Para negocios B2B o talleres con listas extensas de repuestos y servicios. Permite a los clientes buscar piezas y solicitar cotización al instante.
+						</p>
+						<ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-white/5">
+							<li class="flex items-center gap-2"><span class="text-purple-400 font-bold">✓</span> Buscador en tiempo real por SKU y marca</li>
+							<li class="flex items-center gap-2"><span class="text-purple-400 font-bold">✓</span> Carrito de cotización directa a WhatsApp</li>
+							<li class="flex items-center gap-2"><span class="text-purple-400 font-bold">✓</span> Optimización para Google (Rich Results)</li>
+						</ul>
+					</div>
+					<div class="pt-6 mt-6 border-t border-white/5">
+						<a href={waLink} target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1.5">
+							Cotizar Catálogo Web →
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- PROCESO DE DESARROLLO -->
+		<section class="relative z-10 mx-auto max-w-5xl px-6 w-full py-16 border-t border-white/5">
+			<h2 class="text-2xl md:text-4xl font-extrabold text-white text-center mb-12">
+				Proceso de Trabajo: <span class="text-brand-cyan">Rápido, Claro y Profesional</span>
+			</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">1</div>
+					<h3 class="text-xl font-bold text-white mb-3">1. Levantamiento & Estructura</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Definimos los objetivos comerciales, organizamos el menú, los textos y diseñamos la arquitectura pensada en la experiencia de tus clientes.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">2</div>
+					<h3 class="text-xl font-bold text-white mb-3">2. Desarrollo & Optimización SEO</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Construimos la página con código moderno y ultrarrápido, configurando etiquetas meta, Schema.org y velocidad móvil para posicionar en Google.
+					</p>
+				</div>
+				<div class="bg-zinc-950/50 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+					<div class="absolute -top-4 -right-4 text-8xl font-black text-white/5 select-none">3</div>
+					<h3 class="text-xl font-bold text-white mb-3">3. Publicación & Entrega</h3>
+					<p class="text-slate-400 text-sm leading-relaxed">
+						Conectamos tu dominio (.cl o .com), instalamos el certificado de seguridad SSL y te capacitamos para administrar tu contenido con total autonomía.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- PRODUCTOS Y COMPONENTES RELACIONADOS AL PIE -->
+		<RelatedProducts 
+			categoria={['Accesorios', 'Video']}
+			tituloSeccion="Equipamiento y Hardware para tu Puesto de Trabajo Digital"
+			subtituloSeccion="Cargadores, teclados y accesorios testeados para potenciar la productividad de tu estación de trabajo."
+			badgeTexto="Hardware & Productividad"
+			limite={4}
+		/>
+	</main>
+
+	<Footer />
+	<WhatsAppButton phone="56948672300" message="Hola SERVITECNOLOGY, consulto por diseño de páginas web..." />
+</Layout>

@@ -6,12 +6,14 @@ interface Props {
 	title?: string;
 	description?: string;
 	keywords?: string;
+	image?: string;
 }
 
 const { 
 	title = "SERVITECNOLOGY - Soluciones Informáticas, Consultoría y Soporte IT",
 	description = "Soluciones informáticas profesionales, consultoría de sistemas y soporte IT para empresas y particulares. Optimiza tu infraestructura tecnológica con SERVITECNOLOGY.",
-	keywords = "soporte tecnico, reparacion computadores, informatica, CCTV, redes, santiago"
+	keywords = "soporte tecnico, reparacion computadores, informatica, CCTV, redes, santiago",
+	image = "https://servitecnology.com/imagenes/principal.jpg"
 } = Astro.props;
 const rawPath = (Astro.url.pathname || '/').toLowerCase().replace(/\/+$/, '');
 const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://servitecnology.com${rawPath}`;
@@ -38,14 +40,14 @@ const canonicalUrl = rawPath === '' ? 'https://servitecnology.com/' : `https://s
 		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content="https://servitecnology.com/imagenes/principal.jpg" />
+		<meta property="og:image" content={image} />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content={canonicalUrl} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
-		<meta property="twitter:image" content="https://servitecnology.com/imagenes/principal.jpg" />
+		<meta property="twitter:image" content={image} />
 
 		<!-- JSON-LD LocalBusiness & Organization Schema for Google and AI search engines -->
 		<script type="application/ld+json" is:inline>
